@@ -1,0 +1,55 @@
+.notify-container {
+    width: 75%;
+    position: fixed;
+    bottom: 0px; right: 0px;
+    padding: 0 10px 0 10px;
+}
+
+@media screen and (min-width: 576px) {
+    .notify-container {
+        width: 62%;
+    }
+}
+
+@media screen and (min-width: 992px) {
+    .notify-container {
+        width: 35%;
+    }
+}
+
+@media screen and (min-width: 1600px) {
+    .notify-container {
+        width: 21%;
+    }
+}
+
+.alert {
+    padding: 20px;
+    color: white;
+    opacity: 1;
+    transition: opacity 0.6s;
+    margin-bottom: 15px;
+    border-radius: 15px;
+}
+
+.alert.success {
+    background-color: #04AA6D;
+}
+.alert.error {
+    background-color: #f44336;
+}
+
+.close-btn {
+    margin-left: 15px;
+    color: white;
+    font-weight: bold;
+    float: right;
+    font-size: 22px;
+    line-height: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.close-btn:hover {
+    color: black;
+}
