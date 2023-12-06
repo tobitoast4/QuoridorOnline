@@ -12,16 +12,15 @@ var game_board;
 var fields = [];
 var players = [];
 var walls = [];
+var last_wall = {
+    wall: null,
+    wall_can_be_placed: false,
+    field_where_wall_is_attached: null
+}
 // its_this_players_turn should be an integer indicating whos turn it is. 
 // Should reference the player by index in the players array.
 var its_this_players_turn = 0;
 var players_action_state = STATE_MOVE;  // action that the player is performing
-
-var last_sticky_wall = {
-    x: null,
-    y: null,
-    is_vertical: null
-}
 
 function clear(){
     ctx.clearRect(0, 0, innerWidth, innerHeight)
@@ -42,11 +41,16 @@ window.addEventListener("mouseup", function(event) {
         field_clicked = getFieldByCoordinates(event.x, event.y);
         if (field_clicked != null) {
             current_player = players[its_this_players_turn];
-            
             movePlayer(current_player, field_clicked);
         }
     } else if (players_action_state == STATE_PLACE_WALL) {
-
+        if (last_wall.wall_can_be_placed){
+            current_player = players[its_this_players_turn];
+            last_wall.wall.placed_by = current_player;
+            walls.push(last_wall.wall);
+            last_wall.wall = new Wall();
+            nextPlayersTurn();
+        }
     }
 });
 
@@ -66,7 +70,6 @@ window.addEventListener("resize", function(event) {
     fields = [];
     clear();
     drawFields(); 
-    drawPlayers();
 })
 
 
@@ -165,78 +168,90 @@ function Player(name, color){
 function Wall(){
     this.x = null;
     this.y = null;
-    this.width = game_board.margin_between_fields;
-    this.length = game_board.field_size * 2 - game_board.margin_between_fields;
-    this.is_vertical = true;
+    this.width = null;
+    this.length = null;
+    this.is_vertical = true;  // gets changed when mouse hovers betweeen fields
     this.placed_by = null;
 
-    this.draw = function(x, y, width, height) {
-        ctx.beginPath();
-        ctx.roundRect(x, y, width, height, 9);
-        ctx.fillStyle = "brown";
-        ctx.fill();
+    this.setSizes = function(x, y, width, length) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.length = length;
     }
     
-    this.drawSelf = function(x, y, width, height) {
+    this.draw = function() {
         ctx.beginPath();
-        ctx.roundRect(x, y, width, height, 9);
+        ctx.roundRect(this.x, this.y, this.width, this.length, 9);
         ctx.fillStyle = "brown";
         ctx.fill();
     }
     
     this.drawOnHover = function() {
+        // this method takes care:
+        //  1. that a wall is drawn in empty space
+        //  2. that a wall is drwan between two fields (sticky wall)
+        //  3. the information of where the wall is is stored and can be used on mouseclick to place the wall
+        last_wall.wall_can_be_placed = false; // states that the wall is currently not sticked to a field (-> loose in space)
+        var width = game_board.wall_width;
+        var length = game_board.wall_length;
         var is_not_yet_drawn = true;
         fields.forEach(field => {
             if (mouse.x < field.x && mouse.x > field.x - game_board.margin_between_fields * 2 &&
                 mouse.y > field.y && mouse.y < field.y + game_board.field_size - game_board.margin_between_fields * 2) {
                 // drawing the wall vertically between cells
                     if (field.row_num == 8){  // in the last row, the cells should not hang out of the bottom of the field
-                        this.draw(field.x - game_board.margin_between_fields * 1.5, 
+                        this.setSizes(field.x - game_board.margin_between_fields * 1.5, 
                             field.y - game_board.margin_between_fields * 0.5 - game_board.field_size, 
-                            this.width, this.length);
+                            width, length);
+                        field = getFieldByColAndRow(field.col_num, field.row_num - 1);
+                        this.drawWallAndSaveIntermediate(true, field);
+                        is_not_yet_drawn = false;
                     } else if (field.col_num != 0){
-                        this.draw(field.x - game_board.margin_between_fields * 1.5,
+                        this.setSizes(field.x - game_board.margin_between_fields * 1.5,
                             field.y - game_board.margin_between_fields * 0.5, 
-                            this.width, this.length);
+                            width, length);
+                        this.drawWallAndSaveIntermediate(true, field);
+                        is_not_yet_drawn = false;
                     }
-                    is_not_yet_drawn = false;
-                    this.is_vertical = true;
             } else if (mouse.y < field.y && mouse.y > field.y - game_board.margin_between_fields * 2 &&
                 mouse.x > field.x && mouse.x < field.x + game_board.field_size - game_board.margin_between_fields * 2) {
                 // drawing the wall horizontally between two cells
                     if (field.col_num == 8) {  // in the last row, the cells should not hang out of field (to the right side)
-                        this.draw(field.x - game_board.margin_between_fields * 0.5 - game_board.field_size, 
+                        this.setSizes(field.x - game_board.margin_between_fields * 0.5 - game_board.field_size, 
                             field.y - game_board.margin_between_fields * 1.5,
-                            this.length, this.width);
+                            length, width);
+                        field = getFieldByColAndRow(field.col_num - 1, field.row_num);
+                        this.drawWallAndSaveIntermediate(false, field);
+                        is_not_yet_drawn = false;
                     } else if (field.row_num != 0) {
-                        this.draw(field.x - game_board.margin_between_fields * 0.5, 
+                        this.setSizes(field.x - game_board.margin_between_fields * 0.5, 
                             field.y - game_board.margin_between_fields * 1.5,
-                            this.length, this.width);
+                            length, width);
+                        this.drawWallAndSaveIntermediate(false, field);
+                        is_not_yet_drawn = false;
                     }
-                    is_not_yet_drawn = false;
-                    this.is_vertical = false;
             } 
         });
 
         if (is_not_yet_drawn) {  // draw the wall at mouse position if it is not drawn already ('sticky') between two cells
             if (this.is_vertical) {  // keep the last orientation
-                this.draw(mouse.x - 0.5 * this.width, mouse.y - 0.25 * this.length, this.width, this.length);
+                this.setSizes(mouse.x - 0.5 * width, mouse.y - 0.25 * length, width, length);
+                this.draw();
             } else {
-                this.draw(mouse.x - 0.25 * this.length, mouse.y - 0.5 * this.width, this.length, this.width);
+                this.setSizes(mouse.x - 0.25 * length, mouse.y - 0.5 * width, length, width);
+                this.draw();
             }
         }
     }
+    
+    this.drawWallAndSaveIntermediate = function(is_vertical, field) {
+        this.draw();
+        this.is_vertical = is_vertical;
+        last_wall.wall_can_be_placed = true;
+        last_wall.field_where_wall_is_attached = field;
+    }
 }
-
-this.drawNewWallByLastPosition = function() {
-    wall = new Wall();
-    ctx.beginPath();
-    ctx.roundRect(last_sticky_wall.x, last_sticky_wall.y, last_sticky_wall.width, last_sticky_wall.height, 9);
-    ctx.fillStyle = "brown";
-    ctx.fill();
-}
-
-
 
 
 
@@ -271,6 +286,7 @@ function nextPlayersTurn(){
     }
     player = players[its_this_players_turn];
     players_turn_div.innerHTML = "It's your turn, " + player.name + "!";
+    players_action_state = STATE_MOVE;
 }
 
 function movePlayer(the_player, new_field, is_initial_move=false) {
@@ -282,7 +298,7 @@ function movePlayer(the_player, new_field, is_initial_move=false) {
         if (total_distance == 0){
             showNotify("error", "", "You have to move", 30);
         } else if (total_distance > 1){
-            showNotify("error", "", "You can only move one field up/down or one to the sides", 300);
+            showNotify("error", "", "Illegal move", 300);
         } else {
             new_field.player = the_player;
             the_player.field = new_field
@@ -332,11 +348,6 @@ function drawFields() {
     });
 }
 
-function drawPlayers() {
-    players.forEach(player => {
-        player.draw();
-    });
-}
 
 
 function animate(){
@@ -349,19 +360,28 @@ function animate(){
         fields[i].update();
     }
     
-    drawPlayers();
+    // drawing the players
+    players.forEach(player => {
+        player.draw();
+    });
+    
+    // drawing the walls
+    walls.forEach(wall => {
+        wall.draw();
+    });
+
     // draw move options for current player
     if (players.length > 1) {
         if (players_action_state == STATE_MOVE) {
             players[its_this_players_turn].drawMoveOptions();
         } else if (players_action_state == STATE_PLACE_WALL) {
-            wall.drawOnHover();
+            last_wall.wall.drawOnHover();
         } 
     }
 }
 
 drawBoard();
 drawFields();
-wall = new Wall();
+last_wall.wall = new Wall();
 animate();
 
