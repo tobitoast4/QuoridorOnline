@@ -5,7 +5,7 @@ var canvas = document.querySelector("canvas");
 var players_turn_div = document.getElementById("players_turn");
 
 canvas.width = window.innerWidth;
-canvas.height = window.innerHeight * 0.9;
+canvas.height = window.innerHeight;
 var ctx = canvas.getContext("2d");
 
 var game_board;
@@ -32,8 +32,8 @@ var mouse = {
 }
 
 window.addEventListener("mousemove", function(event) {
-    mouse.x = event.x;
-    mouse.y = event.y;
+    mouse.x = event.x + window.scrollX;  // scrollXY corrects mouse position 
+    mouse.y = event.y + window.scrollY;  // when window is scrolled
 });
 
 window.addEventListener("mouseup", function(event) {
@@ -69,8 +69,6 @@ window.addEventListener("resize", function(event) {
     if (canvas.height < game_board.size) {
         canvas.height = game_board.size;
     }
-    fields = [];
-    createFields();
 })
 
 
@@ -93,9 +91,9 @@ function GameBoard(size) {
     }
 }
 
-function Field(x, y, col_num, row_num, game_board) {
-    this.x = x + game_board.margin_between_fields;
-    this.y = y + game_board.margin_between_fields;
+function Field(x, y, col_num, row_num) {
+    this.x = x + game_board.margin_between_fields - game_board.start_x;
+    this.y = y + game_board.margin_between_fields - game_board.start_y;
     this.col_num = col_num;
     this.row_num = row_num;
     this.size = game_board.field_size - game_board.margin_between_fields;
@@ -106,7 +104,7 @@ function Field(x, y, col_num, row_num, game_board) {
     this.draw = function() {
         ctx.beginPath();
         size = this.size - game_board.margin_between_fields;
-        ctx.roundRect(this.x, this.y, size, size, 15);
+        ctx.roundRect(this.x + game_board.start_x, this.y + game_board.start_y, size, size, 15);
         ctx.strokeStyle = "black";
         ctx.fillStyle = this.fill_color;
         ctx.stroke();
@@ -115,8 +113,8 @@ function Field(x, y, col_num, row_num, game_board) {
 
     this.update = function() {
         // hover effect
-        if (mouse.x > this.x && mouse.x < this.x + this.size - game_board.margin_between_fields 
-           && mouse.y > this.y && mouse.y < this.y + this.size - game_board.margin_between_fields){
+        if (mouse.x > this.x + game_board.start_x && mouse.x < this.x + game_board.start_x + this.size - game_board.margin_between_fields 
+           && mouse.y > this.y + game_board.start_y && mouse.y < this.y + game_board.start_y + this.size - game_board.margin_between_fields){
             this.fill_color = "#e0e0e0";
             // console.log("Col: " + this.col_num + " Row: " + this.row_num);
             //console.log(this);
@@ -144,8 +142,8 @@ function Player(name, color){
         this.field = getFieldByColAndRow(this.field.col_num, this.field.row_num);  // This line is necessary for 
         // resize event. Otherwise players will not move on resizing.
         ctx.beginPath();
-        ctx.roundRect(this.field.x + game_board.field_size/2 - game_board.margin_between_fields - this.size/2, 
-                      this.field.y + game_board.field_size/2 - game_board.margin_between_fields - this.size/2, 
+        ctx.roundRect(this.field.x + game_board.start_x + game_board.field_size/2 - game_board.margin_between_fields - this.size/2, 
+                      this.field.y + game_board.start_y + game_board.field_size/2 - game_board.margin_between_fields - this.size/2, 
                       this.size, this.size, 9);
         ctx.strokeStyle = this.color;
         ctx.fillStyle = this.color;
@@ -163,8 +161,8 @@ function Player(name, color){
     this.drawMoveOption = function(field) {
         radius = 3;
         ctx.beginPath();
-        ctx.arc(field.x + game_board.field_size/2 - game_board.margin_between_fields, 
-                field.y + game_board.field_size/2 - game_board.margin_between_fields, 
+        ctx.arc(field.x + game_board.start_x + game_board.field_size/2 - game_board.margin_between_fields, 
+                field.y + game_board.start_y + game_board.field_size/2 - game_board.margin_between_fields, 
                 radius, 0, 2 * Math.PI);
         ctx.fillStyle = this.color;
         ctx.fill();
@@ -204,36 +202,38 @@ function Wall(){
         var is_not_yet_drawn = true;
         if (!isWallOverlappingWithOtherWall(last_wall.wall)) {
             fields.forEach(field => {
-                if (mouse.x < field.x && mouse.x > field.x - game_board.margin_between_fields * 2 &&
-                    mouse.y > field.y && mouse.y < field.y + game_board.field_size - game_board.margin_between_fields * 2) {
+                var field_x = field.x + game_board.start_x;
+                var field_y = field.y + game_board.start_y;
+                if (mouse.x < field_x && mouse.x > field_x - game_board.margin_between_fields * 2 &&
+                    mouse.y > field_y && mouse.y < field_y + game_board.field_size - game_board.margin_between_fields * 2) {
                     // drawing the wall vertically between cells
                         if (field.row_num == 8){  // in the last row, the cells should not hang out of the bottom of the field
-                            this.setSizes(field.x - game_board.margin_between_fields * 1.5, 
-                                field.y - game_board.margin_between_fields * 0.5 - game_board.field_size, 
+                            this.setSizes(field_x - game_board.margin_between_fields * 1.5, 
+                                field_y - game_board.margin_between_fields * 0.5 - game_board.field_size, 
                                 width, length);
                             field = getFieldByColAndRow(field.col_num, field.row_num - 1);
                             this.drawWallAndSaveIntermediate(true, field);
                             is_not_yet_drawn = false;
                         } else if (field.col_num != 0){
-                            this.setSizes(field.x - game_board.margin_between_fields * 1.5,
-                                field.y - game_board.margin_between_fields * 0.5, 
+                            this.setSizes(field_x - game_board.margin_between_fields * 1.5,
+                                field_y - game_board.margin_between_fields * 0.5, 
                                 width, length);
                             this.drawWallAndSaveIntermediate(true, field);
                             is_not_yet_drawn = false;
                         }
-                } else if (mouse.y < field.y && mouse.y > field.y - game_board.margin_between_fields * 2 &&
-                    mouse.x > field.x && mouse.x < field.x + game_board.field_size - game_board.margin_between_fields * 2) {
+                } else if (mouse.y < field_y && mouse.y > field_y - game_board.margin_between_fields * 2 &&
+                    mouse.x > field_x && mouse.x < field_x + game_board.field_size - game_board.margin_between_fields * 2) {
                     // drawing the wall horizontally between two cells
                         if (field.col_num == 8) {  // in the last row, the cells should not hang out of field (to the right side)
-                            this.setSizes(field.x - game_board.margin_between_fields * 0.5 - game_board.field_size, 
-                                field.y - game_board.margin_between_fields * 1.5,
+                            this.setSizes(field_x - game_board.margin_between_fields * 0.5 - game_board.field_size, 
+                                field_y - game_board.margin_between_fields * 1.5,
                                 length, width);
                             field = getFieldByColAndRow(field.col_num - 1, field.row_num);
                             this.drawWallAndSaveIntermediate(false, field);
                             is_not_yet_drawn = false;
                         } else if (field.row_num != 0) {
-                            this.setSizes(field.x - game_board.margin_between_fields * 0.5, 
-                                field.y - game_board.margin_between_fields * 1.5,
+                            this.setSizes(field_x - game_board.margin_between_fields * 0.5, 
+                                field_y - game_board.margin_between_fields * 1.5,
                                 length, width);
                             this.drawWallAndSaveIntermediate(false, field);
                             is_not_yet_drawn = false;
@@ -269,8 +269,10 @@ function Wall(){
 function getFieldByCoordinates(x, y) {
     var field_to_return = null;
     fields.forEach(field => {
-        if (x > field.x && x < field.x + field.size - game_board.margin_between_fields 
-            && y > field.y && y < field.y + field.size - game_board.margin_between_fields){
+        var field_x = field.x + game_board.start_x;
+        var field_y = field.y + game_board.start_y;
+        if (x > field_x && x < field_x + field.size - game_board.margin_between_fields 
+            && y > field_y && y < field_y + field.size - game_board.margin_between_fields){
                 field_to_return = field;
         }
     });
@@ -385,7 +387,7 @@ function removeFromArray(array, value) {
 
 
 function drawBoard() {
-    game_board = new GameBoard(600); 
+    game_board = new GameBoard(800); 
     game_board.draw();
 }
 
@@ -425,7 +427,6 @@ function animate(){
     fields.forEach(field => {
         field.update();
     });
-    console.log(fields[0].x);
     
     // drawing the players
     players.forEach(player => {
