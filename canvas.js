@@ -62,10 +62,15 @@ document.addEventListener('keyup', function(event) {
 
 window.addEventListener("resize", function(event) {
     canvas.width = window.innerWidth;
+    if (canvas.width < game_board.size) {
+        canvas.width = game_board.size;
+    }
     canvas.height = window.innerHeight;
+    if (canvas.height < game_board.size) {
+        canvas.height = game_board.size;
+    }
     fields = [];
-    clear();
-    drawFields(); 
+    createFields();
 })
 
 
@@ -175,15 +180,15 @@ function Wall(){
     this.placed_by = null;
 
     this.setSizes = function(x, y, width, length) {
-        this.x = x;
-        this.y = y;
+        this.x = x - game_board.start_x;  // making it work for resizing
+        this.y = y - game_board.start_y;
         this.width = width;
         this.length = length;
     }
     
     this.draw = function() {
         ctx.beginPath();
-        ctx.roundRect(this.x, this.y, this.width, this.length, 9);
+        ctx.roundRect(this.x + game_board.start_x, this.y + game_board.start_y, this.width, this.length, 9);
         ctx.fillStyle = "brown";
         ctx.fill();
     }
@@ -197,7 +202,6 @@ function Wall(){
         var width = game_board.wall_width;
         var length = game_board.wall_length;
         var is_not_yet_drawn = true;
-        console.log(isWallOverlappingWithOtherWall(last_wall.wall));
         if (!isWallOverlappingWithOtherWall(last_wall.wall)) {
             fields.forEach(field => {
                 if (mouse.x < field.x && mouse.x > field.x - game_board.margin_between_fields * 2 &&
@@ -385,14 +389,13 @@ function drawBoard() {
     game_board.draw();
 }
 
-function drawFields() {
+function createFields() {
     var field_col_num = 0;
     for (var x = game_board.start_x; x < game_board.start_x + game_board.size - 1; x += game_board.field_size) {
         var field_row_num = 0;
         for (var y = game_board.start_y; y < game_board.start_y + game_board.size - 1; y += game_board.field_size) {
             var field = new Field(x, y, field_col_num, field_row_num, game_board);
             fields.push(field);
-            field.draw();
             field_row_num++;
         }
         field_col_num++;
@@ -418,10 +421,11 @@ function animate(){
     clear();
     drawBoard();
 
-    // update fields on hover
-    for (var i = 0; i < fields.length; i++){
-        fields[i].update();
-    }
+    // drawing the fields (and updating on hover)
+    fields.forEach(field => {
+        field.update();
+    });
+    console.log(fields[0].x);
     
     // drawing the players
     players.forEach(player => {
@@ -444,7 +448,7 @@ function animate(){
 }
 
 drawBoard();
-drawFields();
+createFields();
 last_wall.wall = new Wall();
 animate();
 
