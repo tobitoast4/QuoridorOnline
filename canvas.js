@@ -45,11 +45,7 @@ window.addEventListener("mouseup", function(event) {
         }
     } else if (players_action_state == STATE_PLACE_WALL) {
         if (last_wall.wall_can_be_placed){
-            current_player = players[its_this_players_turn];
-            last_wall.wall.placed_by = current_player;
-            walls.push(last_wall.wall);
-            last_wall.wall = new Wall();
-            nextPlayersTurn();
+            placeWall();
         }
     }
 });
@@ -124,6 +120,11 @@ function Field(x, y, col_num, row_num, game_board) {
         }
 
         this.draw();
+    }
+
+    this.removeNeighbour = function(field) {
+        field.neighbour_fields = removeFromArray(field.neighbour_fields, this);
+        this.neighbour_fields = removeFromArray(this.neighbour_fields, field);
     }
 }
 
@@ -279,6 +280,24 @@ function getFieldByColAndRow(col_num, row_num){
     return field_to_return;
 }
 
+function getNeighbourField(actual_field, position) {
+    // Returns the neighbour of the actual field
+    // Position can be "right", "bottom", "left" or "top"
+    if (position == "right") {
+        return getFieldByColAndRow(actual_field.col_num + 1, actual_field.row_num);
+    } else if (position == "bottom") {
+        return getFieldByColAndRow(actual_field.col_num, actual_field.row_num + 1);
+    } else if (position == "left") {
+        return getFieldByColAndRow(actual_field.col_num - 1, actual_field.row_num);
+    } else if (position == "top") {
+        return getFieldByColAndRow(actual_field.col_num, actual_field.row_num - 1);
+    } else {
+        return null;
+    }
+}
+
+
+
 function nextPlayersTurn(){
     its_this_players_turn += 1;
     if (its_this_players_turn >= players.length) {
@@ -295,9 +314,9 @@ function movePlayer(the_player, new_field, is_initial_move=false) {
         distance_x = Math.abs(new_field.col_num - old_field.col_num);  // amount fields in x axis
         distance_y = Math.abs(new_field.row_num - old_field.row_num);  // amount fields in y axis
         total_distance = distance_x + distance_y;
-        if (total_distance == 0){
+        if (old_field == new_field){
             showNotify("error", "", "You have to move", 30);
-        } else if (total_distance > 1){
+        } else if (!old_field.neighbour_fields.includes(new_field)){
             showNotify("error", "", "Illegal move", 300);
         } else {
             new_field.player = the_player;
@@ -312,7 +331,31 @@ function movePlayer(the_player, new_field, is_initial_move=false) {
     }
 }
 
+function placeWall() {
+    current_player = players[its_this_players_turn];
+    last_wall.wall.placed_by = current_player;
+    walls.push(last_wall.wall);
+    attached_field = last_wall.field_where_wall_is_attached;
+    if (last_wall.wall.is_vertical) {  // removing the connection between the fields
+        attached_field.removeNeighbour(getNeighbourField(attached_field, "left"));
+        field_on_botton = getNeighbourField(attached_field, "bottom");
+        field_on_botton.removeNeighbour(getNeighbourField(field_on_botton, "left"));
+    } else {
+        attached_field.removeNeighbour(getNeighbourField(attached_field, "top"));
+        field_on_right = getNeighbourField(attached_field, "right");
+        field_on_right.removeNeighbour(getNeighbourField(field_on_right, "top"));
+    }
+    last_wall.wall = new Wall();
+    nextPlayersTurn();
+}
 
+function removeFromArray(array, value) {
+    var idx = array.indexOf(value);
+    if (idx !== -1) {
+        array.splice(idx, 1);
+    }
+    return array;
+}
 
 
 
