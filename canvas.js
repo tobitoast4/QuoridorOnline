@@ -197,43 +197,47 @@ function Wall(){
         var width = game_board.wall_width;
         var length = game_board.wall_length;
         var is_not_yet_drawn = true;
-        fields.forEach(field => {
-            if (mouse.x < field.x && mouse.x > field.x - game_board.margin_between_fields * 2 &&
-                mouse.y > field.y && mouse.y < field.y + game_board.field_size - game_board.margin_between_fields * 2) {
-                // drawing the wall vertically between cells
-                    if (field.row_num == 8){  // in the last row, the cells should not hang out of the bottom of the field
-                        this.setSizes(field.x - game_board.margin_between_fields * 1.5, 
-                            field.y - game_board.margin_between_fields * 0.5 - game_board.field_size, 
-                            width, length);
-                        field = getFieldByColAndRow(field.col_num, field.row_num - 1);
-                        this.drawWallAndSaveIntermediate(true, field);
-                        is_not_yet_drawn = false;
-                    } else if (field.col_num != 0){
-                        this.setSizes(field.x - game_board.margin_between_fields * 1.5,
-                            field.y - game_board.margin_between_fields * 0.5, 
-                            width, length);
-                        this.drawWallAndSaveIntermediate(true, field);
-                        is_not_yet_drawn = false;
-                    }
-            } else if (mouse.y < field.y && mouse.y > field.y - game_board.margin_between_fields * 2 &&
-                mouse.x > field.x && mouse.x < field.x + game_board.field_size - game_board.margin_between_fields * 2) {
-                // drawing the wall horizontally between two cells
-                    if (field.col_num == 8) {  // in the last row, the cells should not hang out of field (to the right side)
-                        this.setSizes(field.x - game_board.margin_between_fields * 0.5 - game_board.field_size, 
-                            field.y - game_board.margin_between_fields * 1.5,
-                            length, width);
-                        field = getFieldByColAndRow(field.col_num - 1, field.row_num);
-                        this.drawWallAndSaveIntermediate(false, field);
-                        is_not_yet_drawn = false;
-                    } else if (field.row_num != 0) {
-                        this.setSizes(field.x - game_board.margin_between_fields * 0.5, 
-                            field.y - game_board.margin_between_fields * 1.5,
-                            length, width);
-                        this.drawWallAndSaveIntermediate(false, field);
-                        is_not_yet_drawn = false;
-                    }
-            } 
-        });
+        console.log(isWallOverlappingWithOtherWall(last_wall.wall));
+        if (!isWallOverlappingWithOtherWall(last_wall.wall)) {
+            fields.forEach(field => {
+                if (mouse.x < field.x && mouse.x > field.x - game_board.margin_between_fields * 2 &&
+                    mouse.y > field.y && mouse.y < field.y + game_board.field_size - game_board.margin_between_fields * 2) {
+                    // drawing the wall vertically between cells
+                        if (field.row_num == 8){  // in the last row, the cells should not hang out of the bottom of the field
+                            this.setSizes(field.x - game_board.margin_between_fields * 1.5, 
+                                field.y - game_board.margin_between_fields * 0.5 - game_board.field_size, 
+                                width, length);
+                            field = getFieldByColAndRow(field.col_num, field.row_num - 1);
+                            this.drawWallAndSaveIntermediate(true, field);
+                            is_not_yet_drawn = false;
+                        } else if (field.col_num != 0){
+                            this.setSizes(field.x - game_board.margin_between_fields * 1.5,
+                                field.y - game_board.margin_between_fields * 0.5, 
+                                width, length);
+                            this.drawWallAndSaveIntermediate(true, field);
+                            is_not_yet_drawn = false;
+                        }
+                } else if (mouse.y < field.y && mouse.y > field.y - game_board.margin_between_fields * 2 &&
+                    mouse.x > field.x && mouse.x < field.x + game_board.field_size - game_board.margin_between_fields * 2) {
+                    // drawing the wall horizontally between two cells
+                        if (field.col_num == 8) {  // in the last row, the cells should not hang out of field (to the right side)
+                            this.setSizes(field.x - game_board.margin_between_fields * 0.5 - game_board.field_size, 
+                                field.y - game_board.margin_between_fields * 1.5,
+                                length, width);
+                            field = getFieldByColAndRow(field.col_num - 1, field.row_num);
+                            this.drawWallAndSaveIntermediate(false, field);
+                            is_not_yet_drawn = false;
+                        } else if (field.row_num != 0) {
+                            this.setSizes(field.x - game_board.margin_between_fields * 0.5, 
+                                field.y - game_board.margin_between_fields * 1.5,
+                                length, width);
+                            this.drawWallAndSaveIntermediate(false, field);
+                            is_not_yet_drawn = false;
+                        }
+                } 
+            });
+        }
+        
 
         if (is_not_yet_drawn) {  // draw the wall at mouse position if it is not drawn already ('sticky') between two cells
             if (this.is_vertical) {  // keep the last orientation
@@ -244,6 +248,8 @@ function Wall(){
                 this.draw();
             }
         }
+
+        isWallOverlappingWithOtherWall(last_wall.wall);
     }
     
     this.drawWallAndSaveIntermediate = function(is_vertical, field) {
@@ -294,6 +300,20 @@ function getNeighbourField(actual_field, position) {
     } else {
         return null;
     }
+}
+
+function isWallOverlappingWithOtherWall(wall_to_ckeck) {
+    // Returns true if two walls are overlapping, otherwise false.
+    // Checking:    RectA.Left < RectB.Right && RectA.Right > RectB.Left &&
+    //              RectA.Top > RectB.Bottom && RectA.Bottom < RectB.Top
+    var is_opverlapping = false;
+    walls.forEach(wall => {
+        if (wall_to_ckeck.x < wall.x + wall.width && wall_to_ckeck.x + wall_to_ckeck.width > wall.x &&
+            wall_to_ckeck.y + wall_to_ckeck.length > wall.y && wall_to_ckeck.y < wall.y + wall.length) {
+                is_opverlapping = true;
+        }
+    });
+    return is_opverlapping;
 }
 
 
