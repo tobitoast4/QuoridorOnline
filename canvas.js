@@ -37,8 +37,9 @@ window.addEventListener("mousemove", function(event) {
 });
 
 window.addEventListener("mouseup", function(event) {
+    console.log("clicked");
     if (players_action_state == STATE_MOVE) {
-        field_clicked = getFieldByCoordinates(event.x, event.y);
+        field_clicked = getFieldByCoordinates(event.x + window.scrollX, event.y + window.scrollY);
         if (field_clicked != null) {
             current_player = players[its_this_players_turn];
             movePlayer(current_player, field_clicked);
@@ -117,7 +118,7 @@ function Field(x, y, col_num, row_num) {
            && mouse.y > this.y + game_board.start_y && mouse.y < this.y + game_board.start_y + this.size - game_board.margin_between_fields){
             this.fill_color = "#e0e0e0";
             // console.log("Col: " + this.col_num + " Row: " + this.row_num);
-            //console.log(this);
+            // console.log(this);
         } else {
             this.fill_color = "white";
         }
@@ -152,10 +153,26 @@ function Player(name, color){
     }
 
     this.drawMoveOptions = function() {
-        current_players_field = getFieldByColAndRow(this.field.col_num, this.field.row_num);
-        current_players_field.neighbour_fields.forEach(field => {
+        var move_option_fields = this.getMoveOptions();
+        move_option_fields.forEach(field => {
             this.drawMoveOption(field);
         });
+    }
+
+    this.getMoveOptions = function() {
+        var move_option_fields = [];
+        this.field.neighbour_fields.forEach(field => {
+            if (field.player == null) {
+                move_option_fields.push(field);
+            } else {
+                location_of_neighbour_field = getNeighbourFieldLocation(this.field, field);
+                var new_move_option_field = getNeighbourField(field, location_of_neighbour_field);
+                if (new_move_option_field != null){
+                    move_option_fields.push(new_move_option_field);
+                }
+            }
+        });
+        return move_option_fields;
     }
 
     this.drawMoveOption = function(field) {
@@ -276,6 +293,9 @@ function getFieldByCoordinates(x, y) {
                 field_to_return = field;
         }
     });
+    if (field_to_return == null){
+        console.log(x + " " + y);
+    }
     return field_to_return;
 }
 
@@ -303,6 +323,21 @@ function getNeighbourField(actual_field, position) {
         return getFieldByColAndRow(actual_field.col_num - 1, actual_field.row_num);
     } else if (position == "top") {
         return getFieldByColAndRow(actual_field.col_num, actual_field.row_num - 1);
+    } else {
+        return null;
+    }
+}
+
+function getNeighbourFieldLocation(actual_field, field_to_ckeck) {
+    // The inverse function of getNeighbourField()
+    if (field_to_ckeck == getFieldByColAndRow(actual_field.col_num + 1, actual_field.row_num)) {
+        return "right";
+    } else if (field_to_ckeck == getFieldByColAndRow(actual_field.col_num, actual_field.row_num + 1)) {
+        return "bottom";
+    } else if (field_to_ckeck == getFieldByColAndRow(actual_field.col_num - 1, actual_field.row_num)) {
+        return "left";
+    } else if (field_to_ckeck == getFieldByColAndRow(actual_field.col_num, actual_field.row_num - 1)) {
+        return "top";
     } else {
         return null;
     }
@@ -341,18 +376,19 @@ function movePlayer(the_player, new_field, is_initial_move=false) {
         distance_y = Math.abs(new_field.row_num - old_field.row_num);  // amount fields in y axis
         total_distance = distance_x + distance_y;
         if (old_field == new_field){
-            showNotify("error", "", "You have to move", 30);
-        } else if (!old_field.neighbour_fields.includes(new_field)){
-            showNotify("error", "", "Illegal move", 300);
+            showNotify("error", "", "You have to move", 3);
+        } else if (!the_player.getMoveOptions().includes(new_field)){
+            showNotify("error", "", "Illegal move", 3);
         } else {
             new_field.player = the_player;
-            the_player.field = new_field
+            the_player.field.player = null; 
+            the_player.field = new_field;
             the_player.draw();
             nextPlayersTurn();
         }
     } else {
         new_field.player = the_player;
-        the_player.field = new_field
+        the_player.field = new_field;
         the_player.draw();
     }
 }
@@ -387,7 +423,7 @@ function removeFromArray(array, value) {
 
 
 function drawBoard() {
-    game_board = new GameBoard(800); 
+    game_board = new GameBoard(600); 
     game_board.draw();
 }
 
