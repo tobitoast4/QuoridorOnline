@@ -1,5 +1,7 @@
+const STATE_PLACE_PLAYER = -1;
 const STATE_MOVE = 0;
 const STATE_PLACE_WALL = 1;
+const STATE_PLAYER_DID_WIN = 2;
 
 var canvas = document.querySelector("canvas");
 var players_turn_div = document.getElementById("players_turn");
@@ -20,15 +22,15 @@ var last_wall = {
 // its_this_players_turn should be an integer indicating whos turn it is. 
 // Should reference the player by index in the players array.
 var its_this_players_turn = 0;
-var players_action_state = STATE_MOVE;  // action that the player is performing
-
-function clear(){
-    ctx.clearRect(0, 0, innerWidth, innerHeight)
-}
+var players_action_state = STATE_PLACE_PLAYER;  // action that the player is performing
 
 var mouse = {
     x: undefined,
     y: undefined
+}
+
+function clear(){
+    ctx.clearRect(0, 0, innerWidth, innerHeight)
 }
 
 window.addEventListener("mousemove", function(event) {
@@ -37,8 +39,19 @@ window.addEventListener("mousemove", function(event) {
 });
 
 window.addEventListener("mouseup", function(event) {
-    console.log("clicked");
-    if (players_action_state == STATE_MOVE) {
+    if (players_action_state == STATE_PLACE_PLAYER) {
+        field_clicked = getFieldByCoordinates(event.x + window.scrollX, event.y + window.scrollY);
+        if (field_clicked != null) {
+            current_player = players[its_this_players_turn];
+            movePlayer(current_player, field_clicked, true);
+            if (its_this_players_turn == players.length-1) {
+                // if the last player placed its figure
+                nextPlayersTurn();
+            } else {
+                nextPlayersTurn(STATE_PLACE_PLAYER);
+            }
+        }
+    } else if (players_action_state == STATE_MOVE) {
         field_clicked = getFieldByCoordinates(event.x + window.scrollX, event.y + window.scrollY);
         if (field_clicked != null) {
             current_player = players[its_this_players_turn];
@@ -77,7 +90,8 @@ function GameBoard(size) {
     this.size = size;
     this.start_x = canvas.width/2 - this.size/2;
     this.start_y = 100;
-    this.field_size = this.size / 9; // this is the field size INCLUDING the GAP
+    this.amount_fields = 9;
+    this.field_size = this.size / this.amount_fields; // this is the field size INCLUDING the GAP
     this.margin_between_fields = 8;
     this.wall_width = this.margin_between_fields;
     this.wall_length = this.field_size * 2 - this.margin_between_fields;
@@ -132,24 +146,29 @@ function Field(x, y, col_num, row_num) {
     }
 }
 
-function Player(name, color){
+function Player(name, color) {
     this.name = name;
     this.color = color;
     this.field = null;  // this is the field where the player is at
     this.size = 24;
+    this.amount_walls_left = 10;  // each player has 10 walls per game by default
+    this.start_option_fields = [];  // the fields this player is allowed to start from needs to reach for win
+    this.win_option_fields = [];  // the fields this player needs to reach for win
 
     this.draw = function() {
-        // expects the field where to draw the player
-        this.field = getFieldByColAndRow(this.field.col_num, this.field.row_num);  // This line is necessary for 
-        // resize event. Otherwise players will not move on resizing.
-        ctx.beginPath();
-        ctx.roundRect(this.field.x + game_board.start_x + game_board.field_size/2 - game_board.margin_between_fields - this.size/2, 
-                      this.field.y + game_board.start_y + game_board.field_size/2 - game_board.margin_between_fields - this.size/2, 
-                      this.size, this.size, 9);
-        ctx.strokeStyle = this.color;
-        ctx.fillStyle = this.color;
-        ctx.stroke();
-        ctx.fill();
+        if (this.field != null) {  // if player is not placed yet, dont draw it
+            // expects the field where to draw the player
+            this.field = getFieldByColAndRow(this.field.col_num, this.field.row_num);  // This line is necessary for 
+            // resize event. Otherwise players will not move on resizing.
+            ctx.beginPath();
+            ctx.roundRect(this.field.x + game_board.start_x + game_board.field_size/2 - game_board.margin_between_fields - this.size/2, 
+                          this.field.y + game_board.start_y + game_board.field_size/2 - game_board.margin_between_fields - this.size/2, 
+                          this.size, this.size, 9);
+            ctx.strokeStyle = this.color;
+            ctx.fillStyle = this.color;
+            ctx.stroke();
+            ctx.fill();
+        }
     }
 
     this.drawMoveOptions = function() {
@@ -160,6 +179,10 @@ function Player(name, color){
     }
 
     this.getMoveOptions = function() {
+        if (players_action_state == STATE_PLACE_PLAYER) {
+            // if player is not placed yet, return the fields where he can be placed
+            return this.start_option_fields;
+        }
         var move_option_fields = [];
         this.field.neighbour_fields.forEach(field => {
             if (field.player == null) {
@@ -186,7 +209,7 @@ function Player(name, color){
     }
 }
 
-function Wall(){
+function Wall() {
     this.x = null;
     this.y = null;
     this.width = null;
@@ -224,7 +247,7 @@ function Wall(){
                 if (mouse.x < field_x && mouse.x > field_x - game_board.margin_between_fields * 2 &&
                     mouse.y > field_y && mouse.y < field_y + game_board.field_size - game_board.margin_between_fields * 2) {
                     // drawing the wall vertically between cells
-                        if (field.row_num == 8){  // in the last row, the cells should not hang out of the bottom of the field
+                        if (field.row_num == game_board.amount_fields-1){  // in the last row, the cells should not hang out of the bottom of the field
                             this.setSizes(field_x - game_board.margin_between_fields * 1.5, 
                                 field_y - game_board.margin_between_fields * 0.5 - game_board.field_size, 
                                 width, length);
@@ -241,7 +264,7 @@ function Wall(){
                 } else if (mouse.y < field_y && mouse.y > field_y - game_board.margin_between_fields * 2 &&
                     mouse.x > field_x && mouse.x < field_x + game_board.field_size - game_board.margin_between_fields * 2) {
                     // drawing the wall horizontally between two cells
-                        if (field.col_num == 8) {  // in the last row, the cells should not hang out of field (to the right side)
+                        if (field.col_num == game_board.amount_fields-1) {  // in the last row, the cells should not hang out of field (to the right side)
                             this.setSizes(field_x - game_board.margin_between_fields * 0.5 - game_board.field_size, 
                                 field_y - game_board.margin_between_fields * 1.5,
                                 length, width);
@@ -293,14 +316,11 @@ function getFieldByCoordinates(x, y) {
                 field_to_return = field;
         }
     });
-    if (field_to_return == null){
-        console.log(x + " " + y);
-    }
     return field_to_return;
 }
 
-function getFieldByColAndRow(col_num, row_num){
-    if (col_num < 0 || row_num < 0 || col_num > 8 || row_num > 8){
+function getFieldByColAndRow(col_num, row_num) {
+    if (col_num < 0 || row_num < 0 || col_num > game_board.amount_fields-1 || row_num > game_board.amount_fields-1){
         return null;
     }
     var field_to_return = null;
@@ -310,6 +330,28 @@ function getFieldByColAndRow(col_num, row_num){
         }
     });
     return field_to_return;
+}
+
+function getFieldByColOrRow(col_num, row_num) {
+    // Returns all fields in the specified column / row.
+    // Inputs can be col_num=k, row_num=null or col_num=null, row_num=k . 
+    // Other inputs will return null.
+    if (col_num < 0 || row_num < 0 || col_num > game_board.amount_fields-1 || row_num > game_board.amount_fields-1){
+        return null;
+    }
+    var fields_to_return = [];
+    if (col_num == null) {
+        for (var i = 0; i < game_board.amount_fields; i++) {
+            fields_to_return.push(getFieldByColAndRow(i, row_num));
+        }
+    } else if (row_num == null) {
+        for (var i = 0; i < game_board.amount_fields; i++) {
+            fields_to_return.push(getFieldByColAndRow(col_num, i));
+        }
+    } else {
+        return null;
+    }
+    return fields_to_return;
 }
 
 function getNeighbourField(actual_field, position) {
@@ -359,14 +401,14 @@ function isWallOverlappingWithOtherWall(wall_to_ckeck) {
 
 
 
-function nextPlayersTurn(){
+function nextPlayersTurn(next_players_action_state=STATE_MOVE){
     its_this_players_turn += 1;
     if (its_this_players_turn >= players.length) {
         its_this_players_turn = 0;
     }
     player = players[its_this_players_turn];
     players_turn_div.innerHTML = "It's your turn, " + player.name + "!";
-    players_action_state = STATE_MOVE;
+    players_action_state = next_players_action_state;
 }
 
 function movePlayer(the_player, new_field, is_initial_move=false) {
@@ -383,14 +425,13 @@ function movePlayer(the_player, new_field, is_initial_move=false) {
             new_field.player = the_player;
             the_player.field.player = null; 
             the_player.field = new_field;
-            the_player.draw();
             nextPlayersTurn();
         }
     } else {
         new_field.player = the_player;
         the_player.field = new_field;
-        the_player.draw();
     }
+    the_player.draw();
 }
 
 function placeWall() {
@@ -475,12 +516,12 @@ function animate(){
     });
 
     // draw move options for current player
-    if (players.length > 1) {
-        if (players_action_state == STATE_MOVE) {
-            players[its_this_players_turn].drawMoveOptions();
-        } else if (players_action_state == STATE_PLACE_WALL) {
+    if (players.length >= 1) {
+        if (players_action_state == STATE_PLACE_WALL) {
             last_wall.wall.drawOnHover();
-        } 
+        } else {
+            players[its_this_players_turn].drawMoveOptions();
+        }
     }
 }
 
