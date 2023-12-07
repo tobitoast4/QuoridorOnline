@@ -167,7 +167,7 @@ function Player(name, color){
             } else {
                 location_of_neighbour_field = getNeighbourFieldLocation(this.field, field);
                 var new_move_option_field = getNeighbourField(field, location_of_neighbour_field);
-                if (new_move_option_field != null){
+                if (new_move_option_field != null && new_move_option_field.player == null){
                     move_option_fields.push(new_move_option_field);
                 }
             }
