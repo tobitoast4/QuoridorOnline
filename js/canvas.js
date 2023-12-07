@@ -436,6 +436,7 @@ function movePlayer(the_player, new_field, is_initial_move=false) {
 
 function placeWall() {
     current_player = players[its_this_players_turn];
+    current_player.amount_walls_left -= 1;
     last_wall.wall.placed_by = current_player;
     walls.push(last_wall.wall);
     attached_field = last_wall.field_where_wall_is_attached;
@@ -448,6 +449,7 @@ function placeWall() {
         field_on_right = getNeighbourField(attached_field, "right");
         field_on_right.removeNeighbour(getNeighbourField(field_on_right, "top"));
     }
+    refreshPlayerStats();
     last_wall.wall = new Wall();
     nextPlayersTurn();
 }
@@ -464,7 +466,7 @@ function removeFromArray(array, value) {
 
 
 function drawBoard() {
-    game_board = new GameBoard(600); 
+    game_board = new GameBoard(650); 
     game_board.draw();
 }
 

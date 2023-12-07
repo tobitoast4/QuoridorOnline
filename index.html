@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="notify.css">
+    <link rel="stylesheet" href="./styles/notify.css">
+    <link rel="stylesheet" href="./styles/stats.css">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <!-- <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> --> <!-- use this for production -->
 </head>
 <body>
     <style>
@@ -20,9 +24,18 @@
     <div style="width: 100%;">
         <div id="notify-holder" class="notify-container"></div>
     </div>
+    
+    <div class="stats-container">
+        <div class="stats-padding">
+            <div id="stats_grid" class="stats-grid">
+                
+            </div>
+        </div>
+    </div>
 
-    <script src="notify.js"></script>
-    <script src="canvas.js"></script>
+    <script src="./js/stats.js"></script>
+    <script src="./js/notify.js"></script>
+    <script src="./js/canvas.js"></script>
     <script>
         player1 = new Player("Green", "green");
         player1.start_option_fields = getFieldByColOrRow(null, 0);
@@ -30,17 +43,21 @@
         player2 = new Player("Red", "red");
         player2.start_option_fields = getFieldByColOrRow(null, game_board.amount_fields-1);
         player2.win_option_fields = getFieldByColOrRow(null, 0);
-        // player3 = new Player("Blue", "blue");
-        // player3.start_option_fields = getFieldByColOrRow(0, null);
-        // player3.win_option_fields = getFieldByColOrRow(null, game_board.amount_fields-1);
+        player3 = new Player("Blue", "blue");
+        player3.start_option_fields = getFieldByColOrRow(0, null);
+        player3.win_option_fields = getFieldByColOrRow(null, game_board.amount_fields-1);
         players.push(player1);
         players.push(player2);
-        // players.push(player3);
+        players.push(player3);
         var field = getFieldByColAndRow(4, 0);
         movePlayer(player1, field, true);
         var field = getFieldByColAndRow(4, 8);
         movePlayer(player2, field, true);
+        var field = getFieldByColAndRow(0, 4);
+        movePlayer(player3, field, true);
         players_action_state = STATE_MOVE; 
+
+        refreshPlayerStats();
     </script>
 </body>
 </html>
