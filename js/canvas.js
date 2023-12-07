@@ -4,7 +4,6 @@ const STATE_PLACE_WALL = 1;
 const STATE_PLAYER_DID_WIN = 2;
 
 var canvas = document.querySelector("canvas");
-var players_turn_div = document.getElementById("players_turn");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -407,7 +406,7 @@ function nextPlayersTurn(next_players_action_state=STATE_MOVE){
         its_this_players_turn = 0;
     }
     player = players[its_this_players_turn];
-    players_turn_div.innerHTML = "It's your turn, " + player.name + "!";
+    updatePlayersTurnInstuction(player.name);
     players_action_state = next_players_action_state;
 }
 
@@ -419,7 +418,7 @@ function movePlayer(the_player, new_field, is_initial_move=false) {
         total_distance = distance_x + distance_y;
         if (old_field == new_field){
             showNotify("error", "", "You have to move", 3);
-        } else if (!the_player.getMoveOptions().includes(new_field)){
+        } else if (!the_player.getMoveOptions().includes(new_field)) {
             showNotify("error", "", "Illegal move", 3);
         } else {
             new_field.player = the_player;
@@ -430,6 +429,10 @@ function movePlayer(the_player, new_field, is_initial_move=false) {
     } else {
         new_field.player = the_player;
         the_player.field = new_field;
+    }
+    if (the_player.win_option_fields.includes(the_player.field)) {
+        updatePlayerWonTheGame(the_player.name);
+        players_action_state = STATE_PLAYER_DID_WIN;
     }
     the_player.draw();
 }
@@ -521,7 +524,7 @@ function animate(){
     if (players.length >= 1) {
         if (players_action_state == STATE_PLACE_WALL) {
             last_wall.wall.drawOnHover();
-        } else {
+        } else if (players_action_state != STATE_PLAYER_DID_WIN) {
             players[its_this_players_turn].drawMoveOptions();
         }
     }

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="./styles/notify.css">
+    <link rel="stylesheet" href="./styles/header.css">
     <link rel="stylesheet" href="./styles/stats.css">
 
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
@@ -17,9 +18,11 @@
         }
     </style>
 
-    <div style="position: fixed; width: 100%;">
-        <div id="players_turn" style="width: 100%; text-align: center;">INSTUCTION</div>
+    
+    <div class="header-container">
+        <h3 id="players_turn" style="text-align: center; margin: 10px 0;">INSTUCTION</h3>
     </div>
+    
     <canvas></canvas>
     <div style="width: 100%;">
         <div id="notify-holder" class="notify-container"></div>
@@ -28,11 +31,12 @@
     <div class="stats-container">
         <div class="stats-padding">
             <div id="stats_grid" class="stats-grid">
-                
+                <!-- the stats of the players will be placed here (e.g. the remaining walls) (see /js/stats.js) -->
             </div>
         </div>
     </div>
 
+    <script src="./js/header.js"></script>
     <script src="./js/stats.js"></script>
     <script src="./js/notify.js"></script>
     <script src="./js/canvas.js"></script>
@@ -48,7 +52,7 @@
         player3.win_option_fields = getFieldByColOrRow(null, game_board.amount_fields-1);
         players.push(player1);
         players.push(player2);
-        players.push(player3);
+        // players.push(player3);
         var field = getFieldByColAndRow(4, 0);
         movePlayer(player1, field, true);
         var field = getFieldByColAndRow(4, 8);
