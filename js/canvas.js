@@ -64,7 +64,10 @@ window.addEventListener("mouseup", function(event) {
 });
 
 document.addEventListener('keyup', function(event) {
-    if (event.key = ' ') {
+    if (event.key == '.') {
+        field_clicked = getFieldByCoordinates(mouse.x + window.scrollX, mouse.y + window.scrollY);
+        console.log(field_clicked);
+    } else if (event.key) {
         if (players_action_state == STATE_MOVE) {
             players_action_state = STATE_PLACE_WALL;
         } else if (players_action_state == STATE_PLACE_WALL) {
@@ -93,7 +96,7 @@ function GameBoard(size) {
     this.field_size = this.size / this.amount_fields; // this is the field size INCLUDING the GAP
     this.margin_between_fields = 8;
     this.wall_width = this.margin_between_fields;
-    this.wall_length = this.field_size * 2 - this.margin_between_fields;
+    this.wall_length = this.field_size * 2 - this.margin_between_fields * 1.5;
 
     this.draw = function() {
         ctx.beginPath();
@@ -137,6 +140,11 @@ function Field(x, y, col_num, row_num) {
         }
 
         this.draw();
+    }
+
+    this.addNeighbour = function(field) {
+        this.neighbour_fields.push(field);
+        field.neighbour_fields.push(this);
     }
 
     this.removeNeighbour = function(field) {
@@ -239,47 +247,45 @@ function Wall() {
         var width = game_board.wall_width;
         var length = game_board.wall_length;
         var is_not_yet_drawn = true;
-        if (!isWallOverlappingWithOtherWall(last_wall.wall)) {
-            fields.forEach(field => {
-                var field_x = field.x + game_board.start_x;
-                var field_y = field.y + game_board.start_y;
-                if (mouse.x < field_x && mouse.x > field_x - game_board.margin_between_fields * 2 &&
-                    mouse.y > field_y && mouse.y < field_y + game_board.field_size - game_board.margin_between_fields * 2) {
-                    // drawing the wall vertically between cells
-                        if (field.row_num == game_board.amount_fields-1){  // in the last row, the cells should not hang out of the bottom of the field
-                            this.setSizes(field_x - game_board.margin_between_fields * 1.5, 
-                                field_y - game_board.margin_between_fields * 0.5 - game_board.field_size, 
-                                width, length);
-                            field = getFieldByColAndRow(field.col_num, field.row_num - 1);
-                            this.drawWallAndSaveIntermediate(true, field);
-                            is_not_yet_drawn = false;
-                        } else if (field.col_num != 0){
-                            this.setSizes(field_x - game_board.margin_between_fields * 1.5,
-                                field_y - game_board.margin_between_fields * 0.5, 
-                                width, length);
-                            this.drawWallAndSaveIntermediate(true, field);
-                            is_not_yet_drawn = false;
-                        }
-                } else if (mouse.y < field_y && mouse.y > field_y - game_board.margin_between_fields * 2 &&
-                    mouse.x > field_x && mouse.x < field_x + game_board.field_size - game_board.margin_between_fields * 2) {
-                    // drawing the wall horizontally between two cells
-                        if (field.col_num == game_board.amount_fields-1) {  // in the last row, the cells should not hang out of field (to the right side)
-                            this.setSizes(field_x - game_board.margin_between_fields * 0.5 - game_board.field_size, 
-                                field_y - game_board.margin_between_fields * 1.5,
-                                length, width);
-                            field = getFieldByColAndRow(field.col_num - 1, field.row_num);
-                            this.drawWallAndSaveIntermediate(false, field);
-                            is_not_yet_drawn = false;
-                        } else if (field.row_num != 0) {
-                            this.setSizes(field_x - game_board.margin_between_fields * 0.5, 
-                                field_y - game_board.margin_between_fields * 1.5,
-                                length, width);
-                            this.drawWallAndSaveIntermediate(false, field);
-                            is_not_yet_drawn = false;
-                        }
-                } 
-            });
-        }
+        fields.forEach(field => {
+            var field_x = field.x + game_board.start_x;
+            var field_y = field.y + game_board.start_y;
+            if (mouse.x < field_x && mouse.x > field_x - game_board.margin_between_fields * 2 &&
+                mouse.y > field_y && mouse.y < field_y + game_board.field_size - game_board.margin_between_fields * 2) {
+                // drawing the wall vertically between cells
+                    if (field.row_num == game_board.amount_fields-1){  // in the last row, the cells should not hang out of the bottom of the field
+                        this.setSizes(field_x - game_board.margin_between_fields * 1.5, 
+                            field_y - game_board.margin_between_fields * 0.25 - game_board.field_size, 
+                            width, length);
+                        field = getFieldByColAndRow(field.col_num, field.row_num - 1);
+                        this.drawWallAndSaveIntermediate(true, field);
+                        is_not_yet_drawn = false;
+                    } else if (field.col_num != 0){
+                        this.setSizes(field_x - game_board.margin_between_fields * 1.5,
+                            field_y - game_board.margin_between_fields * 0.25, 
+                            width, length);
+                        this.drawWallAndSaveIntermediate(true, field);
+                        is_not_yet_drawn = false;
+                    }
+            } else if (mouse.y < field_y && mouse.y > field_y - game_board.margin_between_fields * 2 &&
+                mouse.x > field_x && mouse.x < field_x + game_board.field_size - game_board.margin_between_fields * 2) {
+                // drawing the wall horizontally between two cells
+                    if (field.col_num == game_board.amount_fields-1) {  // in the last row, the cells should not hang out of field (to the right side)
+                        this.setSizes(field_x - game_board.margin_between_fields * 0.25 - game_board.field_size, 
+                            field_y - game_board.margin_between_fields * 1.5,
+                            length, width);
+                        field = getFieldByColAndRow(field.col_num - 1, field.row_num);
+                        this.drawWallAndSaveIntermediate(false, field);
+                        is_not_yet_drawn = false;
+                    } else if (field.row_num != 0) {
+                        this.setSizes(field_x - game_board.margin_between_fields * 0.25, 
+                            field_y - game_board.margin_between_fields * 1.5,
+                            length, width);
+                        this.drawWallAndSaveIntermediate(false, field);
+                        is_not_yet_drawn = false;
+                    }
+            } 
+        });
         
 
         if (is_not_yet_drawn) {  // draw the wall at mouse position if it is not drawn already ('sticky') between two cells
@@ -291,8 +297,6 @@ function Wall() {
                 this.draw();
             }
         }
-
-        isWallOverlappingWithOtherWall(last_wall.wall);
     }
     
     this.drawWallAndSaveIntermediate = function(is_vertical, field) {
@@ -331,7 +335,7 @@ function getFieldByColAndRow(col_num, row_num) {
     return field_to_return;
 }
 
-function getFieldByColOrRow(col_num, row_num) {
+function getFieldsByColOrRow(col_num, row_num) {
     // Returns all fields in the specified column / row.
     // Inputs can be col_num=k, row_num=null or col_num=null, row_num=k . 
     // Other inputs will return null.
@@ -438,23 +442,58 @@ function movePlayer(the_player, new_field, is_initial_move=false) {
 }
 
 function placeWall() {
-    current_player = players[its_this_players_turn];
-    current_player.amount_walls_left -= 1;
-    last_wall.wall.placed_by = current_player;
-    walls.push(last_wall.wall);
-    attached_field = last_wall.field_where_wall_is_attached;
-    if (last_wall.wall.is_vertical) {  // removing the connection between the fields
-        attached_field.removeNeighbour(getNeighbourField(attached_field, "left"));
-        field_on_botton = getNeighbourField(attached_field, "bottom");
-        field_on_botton.removeNeighbour(getNeighbourField(field_on_botton, "left"));
+    if (!isWallOverlappingWithOtherWall(last_wall.wall)) {
+        attached_field = last_wall.field_where_wall_is_attached;
+        if (last_wall.wall.is_vertical) {  // removing the connection between the fields
+            attached_field.removeNeighbour(getNeighbourField(attached_field, "left"));
+            field_on_botton = getNeighbourField(attached_field, "bottom");
+            field_on_botton.removeNeighbour(getNeighbourField(field_on_botton, "left"));
+        } else {
+            attached_field.removeNeighbour(getNeighbourField(attached_field, "top"));
+            field_on_right = getNeighbourField(attached_field, "right");
+            field_on_right.removeNeighbour(getNeighbourField(field_on_right, "top"));
+        }
+
+        var can_all_players_win = true;
+        for (var i = 0; i < players.length; i++) {
+            player = players[i];
+            var can_win = checkIfPathToWinExists(player.field, player.win_option_fields);
+            console.log(player.name + " - Can win: " + can_win);
+            if (can_win == false) {
+                can_all_players_win = false;
+            }
+        }
+
+        if (can_all_players_win) {
+            current_player = players[its_this_players_turn];
+            current_player.amount_walls_left -= 1;
+            last_wall.wall.placed_by = current_player;
+            walls.push(last_wall.wall);
+            
+            refreshPlayerStats();
+            last_wall.wall = new Wall();
+            nextPlayersTurn();
+        } else {
+            // readding the connection between the fields (because wall could not be placed)
+            if (last_wall.wall.is_vertical) {
+                field_left = getNeighbourField(attached_field, "left");
+                field_on_botton = getNeighbourField(attached_field, "bottom");
+                field_on_botton_left = getNeighbourField(field_on_botton, "left");
+                attached_field.addNeighbour(field_left);
+                field_on_botton.addNeighbour(field_on_botton_left);
+            } else {
+                field_on_top = getNeighbourField(attached_field, "top");
+                field_right = getNeighbourField(attached_field, "right");
+                field_on_top_right = getNeighbourField(field_on_top, "right");
+                attached_field.addNeighbour(field_on_top);
+                field_right.addNeighbour(field_on_top_right);
+
+            }
+            showNotify("error", "Could not place wall", "This wall would block one player from winning", 10);
+        }
     } else {
-        attached_field.removeNeighbour(getNeighbourField(attached_field, "top"));
-        field_on_right = getNeighbourField(attached_field, "right");
-        field_on_right.removeNeighbour(getNeighbourField(field_on_right, "top"));
+        showNotify("error", "", "Walls should not overlap", 10);
     }
-    refreshPlayerStats();
-    last_wall.wall = new Wall();
-    nextPlayersTurn();
 }
 
 function removeFromArray(array, value) {
@@ -463,6 +502,22 @@ function removeFromArray(array, value) {
         array.splice(idx, 1);
     }
     return array;
+}
+
+function checkIfPathToWinExists(field, fields_to_win) {
+    // Returns true if there is at least one path from field to one of 
+    // the fields in fields_to_win. Otherwise returns false.
+    // TODO: Find fancier way (recursion going through all paths is to much)
+    for (var i = 0; i < 10000; i++) {
+        if (!fields_to_win.includes(field)) {
+            var next_fieldnumber = Math.floor(Math.random() * field.neighbour_fields.length);
+            field = field.neighbour_fields[next_fieldnumber];
+        } else {
+            return true;
+        }
+    }
+    return false;
+    
 }
 
 

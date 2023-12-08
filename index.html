@@ -42,14 +42,14 @@
     <script src="./js/canvas.js"></script>
     <script>
         player1 = new Player("Green", "green");
-        player1.start_option_fields = getFieldByColOrRow(null, 0);
-        player1.win_option_fields = getFieldByColOrRow(null, game_board.amount_fields-1);
+        player1.start_option_fields = getFieldsByColOrRow(null, 0);
+        player1.win_option_fields = getFieldsByColOrRow(null, game_board.amount_fields-1);
         player2 = new Player("Red", "red");
-        player2.start_option_fields = getFieldByColOrRow(null, game_board.amount_fields-1);
-        player2.win_option_fields = getFieldByColOrRow(null, 0);
+        player2.start_option_fields = getFieldsByColOrRow(null, game_board.amount_fields-1);
+        player2.win_option_fields = getFieldsByColOrRow(null, 0);
         player3 = new Player("Blue", "blue");
-        player3.start_option_fields = getFieldByColOrRow(0, null);
-        player3.win_option_fields = getFieldByColOrRow(null, game_board.amount_fields-1);
+        player3.start_option_fields = getFieldsByColOrRow(0, null);
+        player3.win_option_fields = getFieldsByColOrRow(null, game_board.amount_fields-1);
         players.push(player1);
         players.push(player2);
         // players.push(player3);
