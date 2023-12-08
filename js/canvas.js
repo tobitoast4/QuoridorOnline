@@ -151,6 +151,37 @@ function Field(x, y, col_num, row_num) {
         field.neighbour_fields = removeFromArray(field.neighbour_fields, this);
         this.neighbour_fields = removeFromArray(this.neighbour_fields, field);
     }
+
+    this.getNeighbourField = function(position) {
+        // Returns the neighbour of the actual field
+        // Position can be "right", "bottom", "left" or "top"
+        if (position == "right") {
+            return getFieldByColAndRow(this.col_num + 1, this.row_num);
+        } else if (position == "bottom") {
+            return getFieldByColAndRow(this.col_num, this.row_num + 1);
+        } else if (position == "left") {
+            return getFieldByColAndRow(this.col_num - 1, this.row_num);
+        } else if (position == "top") {
+            return getFieldByColAndRow(this.col_num, this.row_num - 1);
+        } else {
+            return null;
+        }
+    }
+
+    this.getNeighbourFieldLocation = function(field_to_ckeck) {
+        // The inverse function of getNeighbourField()
+        if (field_to_ckeck == getFieldByColAndRow(this.col_num + 1, this.row_num)) {
+            return "right";
+        } else if (field_to_ckeck == getFieldByColAndRow(this.col_num, this.row_num + 1)) {
+            return "bottom";
+        } else if (field_to_ckeck == getFieldByColAndRow(this.col_num - 1, this.row_num)) {
+            return "left";
+        } else if (field_to_ckeck == getFieldByColAndRow(this.col_num, this.row_num - 1)) {
+            return "top";
+        } else {
+            return null;
+        }
+    }
 }
 
 function Player(name, color) {
@@ -195,8 +226,8 @@ function Player(name, color) {
             if (field.player == null) {
                 move_option_fields.push(field);
             } else {
-                location_of_neighbour_field = getNeighbourFieldLocation(this.field, field);
-                var new_move_option_field = getNeighbourField(field, location_of_neighbour_field);
+                location_of_neighbour_field = this.field.getNeighbourFieldLocation(field);
+                var new_move_option_field = field.getNeighbourField(location_of_neighbour_field);
                 if (new_move_option_field != null && new_move_option_field.player == null){
                     move_option_fields.push(new_move_option_field);
                 }
@@ -357,37 +388,6 @@ function getFieldsByColOrRow(col_num, row_num) {
     return fields_to_return;
 }
 
-function getNeighbourField(actual_field, position) {
-    // Returns the neighbour of the actual field
-    // Position can be "right", "bottom", "left" or "top"
-    if (position == "right") {
-        return getFieldByColAndRow(actual_field.col_num + 1, actual_field.row_num);
-    } else if (position == "bottom") {
-        return getFieldByColAndRow(actual_field.col_num, actual_field.row_num + 1);
-    } else if (position == "left") {
-        return getFieldByColAndRow(actual_field.col_num - 1, actual_field.row_num);
-    } else if (position == "top") {
-        return getFieldByColAndRow(actual_field.col_num, actual_field.row_num - 1);
-    } else {
-        return null;
-    }
-}
-
-function getNeighbourFieldLocation(actual_field, field_to_ckeck) {
-    // The inverse function of getNeighbourField()
-    if (field_to_ckeck == getFieldByColAndRow(actual_field.col_num + 1, actual_field.row_num)) {
-        return "right";
-    } else if (field_to_ckeck == getFieldByColAndRow(actual_field.col_num, actual_field.row_num + 1)) {
-        return "bottom";
-    } else if (field_to_ckeck == getFieldByColAndRow(actual_field.col_num - 1, actual_field.row_num)) {
-        return "left";
-    } else if (field_to_ckeck == getFieldByColAndRow(actual_field.col_num, actual_field.row_num - 1)) {
-        return "top";
-    } else {
-        return null;
-    }
-}
-
 function isWallOverlappingWithOtherWall(wall_to_ckeck) {
     // Returns true if two walls are overlapping, otherwise false.
     // Checking:    RectA.Left < RectB.Right && RectA.Right > RectB.Left &&
@@ -445,13 +445,13 @@ function placeWall() {
     if (!isWallOverlappingWithOtherWall(last_wall.wall)) {
         attached_field = last_wall.field_where_wall_is_attached;
         if (last_wall.wall.is_vertical) {  // removing the connection between the fields
-            attached_field.removeNeighbour(getNeighbourField(attached_field, "left"));
-            field_on_botton = getNeighbourField(attached_field, "bottom");
-            field_on_botton.removeNeighbour(getNeighbourField(field_on_botton, "left"));
+            attached_field.removeNeighbour(attached_field.getNeighbourField("left"));
+            field_on_botton = attached_field.getNeighbourField("bottom");
+            field_on_botton.removeNeighbour(field_on_botton.getNeighbourField("left"));
         } else {
-            attached_field.removeNeighbour(getNeighbourField(attached_field, "top"));
-            field_on_right = getNeighbourField(attached_field, "right");
-            field_on_right.removeNeighbour(getNeighbourField(field_on_right, "top"));
+            attached_field.removeNeighbour(attached_field.getNeighbourField("top"));
+            field_on_right = attached_field.getNeighbourField("right");
+            field_on_right.removeNeighbour(field_on_right.getNeighbourField("top"));
         }
 
         var can_all_players_win = true;
@@ -475,15 +475,15 @@ function placeWall() {
         } else {
             // readding the connection between the fields (because wall could not be placed)
             if (last_wall.wall.is_vertical) {
-                field_left = getNeighbourField(attached_field, "left");
-                field_on_botton = getNeighbourField(attached_field, "bottom");
-                field_on_botton_left = getNeighbourField(field_on_botton, "left");
+                field_left = attached_field.getNeighbourField("left");
+                field_on_botton = attached_field.getNeighbourField("bottom");
+                field_on_botton_left = attached_field.getNeighbourField("left");
                 attached_field.addNeighbour(field_left);
                 field_on_botton.addNeighbour(field_on_botton_left);
             } else {
-                field_on_top = getNeighbourField(attached_field, "top");
-                field_right = getNeighbourField(attached_field, "right");
-                field_on_top_right = getNeighbourField(field_on_top, "right");
+                field_on_top = attached_field.getNeighbourField("top");
+                field_right = attached_field.getNeighbourField("right");
+                field_on_top_right = attached_field.getNeighbourField("right");
                 attached_field.addNeighbour(field_on_top);
                 field_right.addNeighbour(field_on_top_right);
 
