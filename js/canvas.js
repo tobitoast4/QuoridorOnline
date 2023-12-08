@@ -458,7 +458,6 @@ function placeWall() {
         for (var i = 0; i < players.length; i++) {
             player = players[i];
             var can_win = checkIfPathToWinExists(player.field, player.win_option_fields);
-            console.log(player.name + " - Can win: " + can_win);
             if (can_win == false) {
                 can_all_players_win = false;
             }
