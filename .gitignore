@@ -1,2 +1,5 @@
 /.idea
 /venv
+*.pyc
+.vscode/settings.json
+local/.vscode/settings.json

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <!-- <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> --> <!-- use this for production -->
+</head>
+<body>
+    <h1>LOBBY</h1>
+
+    lobby_id
+    {{ lobby.lobby_id }}
+    <hr/>
+    user.id {{ user.id }} <br/>
+    user.name {{ user.name }} <br/>
+
+    <hr/>
+    List of players:
+    <ul id="list_of_players">
+    </ul>
+
+    <script>
+
+        async function getLobby() {
+            try {
+                const response = await fetch("http://127.0.0.1:5009/get_lobby/{{ lobby.lobby_id }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        "user_id": "{{ user.id }}",
+                        "user_name": "{{ user.name }}",
+                    })
+                });
+                var data = await response.json();
+                var status = response.status;
+                console.log(data);
+                console.log(status);
+                if (status == 200) {
+                    var list_of_players = $('#list_of_players');
+                    list_of_players.empty();
+                    data.players.forEach(player => {
+                        list_of_players.append("<li>" + player.name + " | " + player.id + "</li>");
+                    });
+                }
+
+            } catch (error) {
+                console.log('Error:', error);
+            }
+        }
+
+        getLobby();
+        let intervalID = setInterval(() => { // see https://rapidapi.com/guides/api-requests-intervals
+            getLobby();
+        }, 500);
+    </script>
+</body>
+</html>
