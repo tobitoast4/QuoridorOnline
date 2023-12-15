@@ -10,6 +10,12 @@ class User(UserMixin):
     def __str__(self):
         return f"{self.name} ({self.id})"
 
+    def __json__(self):
+        return {
+            "id": self.id,
+            "name": self.name
+        }
+
 
 def get_user_from_dict(json_dict):
     """Returns a user based on a dict.
