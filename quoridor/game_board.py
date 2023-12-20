@@ -52,7 +52,7 @@ class GameBoard:
                 player.win_option_fields = self.getFieldsByColOrRow(0, None)
 
     def getFieldByColAndRow(self, col_num, row_num) -> Field:
-        if not (col_num < 0 or row_num < 0 or col_num >= self.amount_fields or row_num >= self.amount_fields):
+        if 0 <= col_num < self.amount_fields and 0 <= row_num < self.amount_fields:
             for field in self.fields:
                 if field.col_num == col_num and field.row_num == row_num:
                     return field
@@ -79,6 +79,12 @@ class GameBoard:
         else:
             raise QuoridorOnlineGameError("Exactly one of the arguments col_num, row_num should be none")
         return fields_to_return
+
+    def is_new_wall_overlapping_old_walls(self, new_wall):
+        for wall in self.walls:
+            if wall.is_overlapping_other_wall(new_wall):
+                return True
+        return False
 
     def print_fields(self):
         """Use this for debugging to print the game board"""
@@ -116,5 +122,6 @@ class GameBoard:
             }
         else:
             return {
-                "players": [p.__json__(initial) for p in self.players],
+                "players": [p.__json__() for p in self.players],
+                "walls": [w.__json__() for w in self.walls]
             }

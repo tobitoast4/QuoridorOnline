@@ -3,7 +3,7 @@ import time
 import utils
 import json
 
-PLAYER_TIME_OUT_TIME = 1  # how long (in sec) is the player allowed to not poll until removed from the lobby
+PLAYER_TIME_OUT_TIME = 0.5  # how long (in sec) is the player allowed to not poll until removed from the lobby
 
 LOBBY_STATE_IN_LOBBY = 0
 LOBBY_STATE_IN_GAME = 1
@@ -14,7 +14,7 @@ class LobbyManager:
         self.lobbies = []
         self.start_check_players_last_seen_time_task()
 
-    def create_new_lobby(self):
+    def create_new_lobby(self,):
         new_lobby = Lobby()
         self.lobbies.append(new_lobby)
         return new_lobby
@@ -49,7 +49,7 @@ class LobbyManager:
                     if utils.get_current_time() - player_last_seen_time > PLAYER_TIME_OUT_TIME:
                         del lobby.players[p]
                         del lobby.players_last_seen[p]
-            time.sleep(1)
+            time.sleep(0.5)
 
 
 class Lobby:
