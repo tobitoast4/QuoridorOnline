@@ -1,8 +1,8 @@
 from errors import QuoridorOnlineGameError
-import utils
-import game_board
+import quoridor.game_board as game_board
+import quoridor.wall as wall
 import user
-import wall
+import utils
 
 STATE_PLACING_PLAYERS = -1
 STATE_PLAYING = 0
@@ -16,7 +16,7 @@ class Game:
         self.its_this_players_turn = 0
         self.turn = 0
         self.game_data = {
-            "inital_setup": self.game_board.__json__(initial=True),
+            "initial_setup": self.game_board.__json__(initial=True),
             "game": []
         }
         self._append_game_data()
@@ -64,34 +64,3 @@ class Game:
             "time": utils.get_current_time(),
             "game_board": self.game_board.__json__(),
         })
-
-
-
-user1 = user.User()
-user1.id = "id_player_1"
-user1.name = "Red"
-
-user2 = user.User()
-user2.id = "id_player_2"
-user2.name = "Green"
-
-users = [user1, user2]
-
-game = Game(users)
-
-print(game.state)
-game.move_player(user1, 4, 0)
-print(game.state)
-game.move_player(user2, 4, 8)
-print(game.state)
-game.move_player(user1, 4, 1)
-print(game.state)
-
-print(game.game_data)
-
-game.place_wall(0.5, 0, 0.5, 1)
-game.place_wall(0, 1.5, 1, 1.5)
-
-game.game_board.print_fields()
-print(game.game_data)
-

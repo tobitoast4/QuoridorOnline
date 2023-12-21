@@ -1,7 +1,7 @@
 from errors import QuoridorOnlineGameError
-from player import *
-from field import *
-from wall import *
+from quoridor.player import *
+from quoridor.field import *
+from quoridor.wall import *
 
 
 class GameBoard:

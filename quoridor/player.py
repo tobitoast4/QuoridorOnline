@@ -1,6 +1,6 @@
 from errors import QuoridorOnlineGameError
+import quoridor.field as field
 import user
-import field
 
 
 class Player:

@@ -49,7 +49,7 @@ class LobbyManager:
                     if utils.get_current_time() - player_last_seen_time > PLAYER_TIME_OUT_TIME:
                         del lobby.players[p]
                         del lobby.players_last_seen[p]
-            time.sleep(0.5)
+            time.sleep(0.6)
 
 
 class Lobby:

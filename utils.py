@@ -1,3 +1,4 @@
+import random
 import time
 import uuid
 
@@ -17,3 +18,9 @@ def get_current_time():
 
 def get_player_guest_name():
     return f"Guest-{str(uuid.uuid4())[:6]}"
+
+
+def get_random_color():
+    # these are html colors (https://htmlcolorcodes.com/color-names/)
+    colors = ["red", "blue", "green", "black", "deepPink", "orangeRed"]
+    return colors[random.randint(0, len(colors)-1)]

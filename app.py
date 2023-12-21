@@ -4,6 +4,9 @@ from flask_login import login_user, LoginManager, login_required, logout_user, c
 import user
 import utils
 import lobby
+from lobby import LOBBY_STATE_IN_LOBBY, LOBBY_STATE_IN_GAME
+from quoridor.game import Game
+
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "asdf7878"
@@ -46,14 +49,63 @@ def lobby(lobby_id=None):
 @app.route("/get_lobby/<string:lobby_id>", methods=['POST'])
 def get_lobby(lobby_id=None):
     if lobby_id is None:
-        return {"Error": f"Lobby with id {lobby_id} does not exist."}, 502
+        return {"error": f"lobby with id {lobby_id} does not exist."}, 502
     user_sending_the_request = user.get_user_from_dict(request.json)
     the_lobby = lobby_manager.get_lobby(lobby_id)
     if the_lobby is not None:
-        lobby_manager.add_player_to_lobby(lobby_id, user_sending_the_request)
-        return the_lobby.to_json(), 200
+        if the_lobby.state == LOBBY_STATE_IN_LOBBY:  # game not started yet
+            lobby_manager.add_player_to_lobby(lobby_id, user_sending_the_request)
+            return the_lobby.to_json(), 200
+        else:  # the_lobby.state == LOBBY_STATE_IN_GAME
+            return {"game": f"http://127.0.0.1:5009/game/{lobby_id}"}
     else:
-        return {"Error": f"Lobby with id {lobby_id} does not exist."}, 502
+        return {"error": f"lobby with id {lobby_id} does not exist."}, 502
+
+
+@app.route("/start_game/<string:lobby_id>", methods=['POST'])
+def start_game(lobby_id):
+    the_lobby = lobby_manager.get_lobby(lobby_id)
+    the_lobby.state = LOBBY_STATE_IN_GAME
+    return {"status": "game started"}, 200
+
+
+@app.route("/game/<string:lobby_id>")
+def game(lobby_id):
+    the_user = log_in_user()
+    the_lobby = lobby_manager.get_lobby(lobby_id)
+    return render_template("game.html", user=the_user, lobby=the_lobby)
+
+
+@app.route("/get_game/<string:lobby_id>", methods=['POST'])
+def get_game():
+    user1 = user.User()
+    user1.id = "id_player_1"
+    user1.name = "Red"
+
+    user2 = user.User()
+    user2.id = "id_player_2"
+    user2.name = "Green"
+
+    users = [user1, user2]
+
+    game = Game(users)
+
+    print(game.state)
+    game.move_player(user1, 4, 0)
+    print(game.state)
+    game.move_player(user2, 4, 8)
+    print(game.state)
+    game.move_player(user1, 4, 1)
+    print(game.state)
+
+    print(game.game_data)
+
+    game.place_wall(0.5, 0, 0.5, 1)
+    game.place_wall(0, 1.5, 1, 1.5)
+
+    game.game_board.print_fields()
+    print(game.game_data)
+    return game.game_data
 
 
 def log_in_user():
