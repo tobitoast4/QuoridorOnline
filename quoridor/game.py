@@ -21,9 +21,11 @@ class Game:
         }
         self._append_game_data()
 
-    def move_player(self, the_user, new_field_col, new_field_row):
+    def move_player(self, user_id, new_field_col, new_field_row):
         """Can be used to move a player."""
-        player = self._get_player_of_user(the_user)
+        if self._get_current_player().user.id != user_id:  # TODO: make this a decorator?
+            raise QuoridorOnlineGameError("It's not your turn currently")
+        player = self._get_player_of_user(user_id)
         new_field = self.game_board.getFieldByColAndRow(new_field_col, new_field_row)
         if self.state == STATE_PLACING_PLAYERS:
             player.move_to_field(new_field, True)
@@ -33,8 +35,10 @@ class Game:
             player.move_to_field(new_field)
         self._next_players_turn()
 
-    def place_wall(self, col_start, row_start, col_end, row_end):
+    def place_wall(self, user_id, col_start, row_start, col_end, row_end):
         """Can be used to place a wall."""
+        if self._get_current_player().user.id != user_id:  # TODO: make this a decorator?
+            raise QuoridorOnlineGameError("It's not your turn currently")
         new_wall = wall.Wall(col_start, row_start, col_end, row_end, self.game_board)
         self.game_board.walls.append(new_wall)
         self._next_players_turn()
@@ -50,11 +54,14 @@ class Game:
             self.turn += 1
         self._append_game_data()
 
-    def _get_player_of_user(self, the_user):
+    def _get_player_of_user(self, user_id):
         for player in self.game_board.players:
-            if player.user.id == the_user.id:
+            if player.user.id == user_id:
                 return player
         return None
+
+    def _get_current_player(self):
+        return self.game_board.players[self.its_this_players_turn]
 
     def _append_game_data(self):
         self.game_data["game"].append({

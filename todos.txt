@@ -1,0 +1,8 @@
+- game_board soll clientseitig rein aus serverdaten der letzten Runde erzeugt werden
+- lokale Error messages sollen allein von server kommen (nicht aus lokalem js code)
+
+- placing walls
+- getGameDataAsync auch gleichzeitig als heartbeat nutzen (-> wenn spieler lange nicht mehr darauf queried, ist dieser vmtl offline)
+- in jeder route (-> endpunkt) exceptions abfangen + lobby_id==None prüfen
+
+- FIX performance issue!!!!!!!!!!!!!!!!!! (After some time in game, website gets laggy) :((((

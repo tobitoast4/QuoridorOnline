@@ -23,9 +23,9 @@
 
     <script>
 
-        async function startGame() {
+        async function startGameAsync() {
             try {
-                const response = await fetch("http://127.0.0.1:5009/start_game/{{ lobby.lobby_id }}", {
+                var response = await fetch("http://127.0.0.1:5009/start_game/{{ lobby.lobby_id }}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -44,9 +44,9 @@
             }
         }
 
-        async function getLobby() {
+        async function getLobbyAsync() {
             try {
-                const response = await fetch("http://127.0.0.1:5009/get_lobby/{{ lobby.lobby_id }}", {
+                var response = await fetch("http://127.0.0.1:5009/get_lobby/{{ lobby.lobby_id }}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -57,7 +57,6 @@
                     })
                 });
                 var data = await response.json();
-                console.log(data);
                 var status = response.status;
                 if (status == 200) {
                     if (data.hasOwnProperty("players")) {
@@ -76,12 +75,12 @@
             }
         }
 
-        getLobby();
+        getLobbyAsync();
         let intervalID = setInterval(() => { // see https://rapidapi.com/guides/api-requests-intervals
-            getLobby();
+            getLobbyAsync();
         }, 500);
     </script>
 
-    <button onclick="startGame()">Start game</button>
+    <button onclick="startGameAsync()">Start game</button>
 </body>
 </html>

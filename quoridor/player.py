@@ -19,7 +19,7 @@ class Player:
             if new_field not in self.start_option_fields:
                 raise QuoridorOnlineGameError("Field not allowed for this player as initial move.")
         else:
-            if new_field not in self.field.neighbour_fields:
+            if new_field not in self.getMoveOptions():
                 raise QuoridorOnlineGameError("Field not allowed for this player.")
         if new_field in self.win_option_fields:
             return self  # THE PLAYER DID WIN! (Maybe return something different here?)
@@ -27,6 +27,23 @@ class Player:
             self.field.player = None  # remove player from old field
         new_field.player = self
         self.field = new_field
+
+    def getMoveOptions(self):
+        """Gets the move option fields for the player at their current position respecting other players.
+           A player can jump over one other player but not over two.
+           Two players can not share the same field and one can not kick another out of their field.
+        """
+        move_option_fields = []
+        for the_field in self.field.neighbour_fields:
+            if the_field.player is None:
+                move_option_fields.append(the_field)
+            else:
+                location_of_neighbour_field = self.field.getNeighbourFieldLocation(the_field)
+                new_move_option_field = the_field.getNeighbourField(location_of_neighbour_field)
+                if new_move_option_field is not None and new_move_option_field.player is None:
+                    move_option_fields.append(new_move_option_field)
+        return move_option_fields
+
 
     def __json__(self, initial=False):
         if initial:

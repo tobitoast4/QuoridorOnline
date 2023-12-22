@@ -41,63 +41,18 @@
     <script src="{{ url_for('static', filename='js/header.js' )}}"></script>
     <script src="{{ url_for('static', filename='js/stats.js' )}}"></script>
     <script src="{{ url_for('static', filename='js/notify.js' )}}"></script>
-    <script src="{{ url_for('static', filename='js/game.js' )}}"></script>
+    <script src="{{ url_for('static', filename='js/game_online.js' )}}"></script>
     <script src="{{ url_for('static', filename='js/query_server.js' )}}"></script>
 
     <script>
-        async function getGameData() {
-        var data_to_be_returned = null;
-            try {
-                const response = await fetch("http://127.0.0.1:5009/get_game/", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        "user_id": "user.id",
-                        "user_name": "user.name",
-                    })
-                });
-                data_to_be_returned = await response.json();
-
-            } catch (error) {
-                console.log('Error:', error);
-            }
-
-            return data_to_be_returned;
-        }
-
-        async function createPlayers() {
-            var game_data = await getGameData();
-            var initial_setup_json = game_data["initial_setup"]; //TODO: Use the amount fields property??
-            var players_json = initial_setup_json["players"];
-            var colors = ["red", "blue", "green", "black"];
-            for (var p = 0; p < players_json.length; p++) {
-                var player_json = players_json[p];
-                var player = new Player(player_json["user"]["id"], player_json["user"]["name"], colors[p]);
-
-                // Add start_ and win_option_fields
-                for (var i = 0; i < player_json["start_option_fields"].length; i++) {
-                    var col_num = player_json["start_option_fields"][i]["col_num"];
-                    var row_num = player_json["start_option_fields"][i]["row_num"];
-                    var field = getFieldByColAndRow(col_num, row_num);
-                    player.start_option_fields.push(field);
-                }
-                for (var i = 0; i < player_json["win_option_fields"].length; i++) {
-                    var col_num = player_json["win_option_fields"][i]["col_num"];
-                    var row_num = player_json["win_option_fields"][i]["row_num"];
-                    var field = getFieldByColAndRow(col_num, row_num);
-                    player.win_option_fields.push(field);
-                }
-
-                players.push(player);  // players is defined in game.js
-            }
-
-            refreshPlayerStats();
-        }
-
+        current_lobby_id = "{{ lobby.lobby_id }}";
         players_action_state = STATE_PLACE_PLAYER;
         createPlayers();
+
+
+        let intervalID = setInterval(() => { // see https://rapidapi.com/guides/api-requests-intervals
+            updatePlayers();
+        }, 500);
     </script>
 </body>
 </html>

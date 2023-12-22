@@ -43,12 +43,6 @@ window.addEventListener("mouseup", function(event) {
         if (field_clicked != null) {
             current_player = players[its_this_players_turn];
             movePlayer(current_player, field_clicked, true);
-            if (its_this_players_turn == players.length-1) {
-                // if the last player placed its figure
-                nextPlayersTurn();
-            } else {
-                nextPlayersTurn(STATE_PLACE_PLAYER);
-            }
         }
     } else if (players_action_state == STATE_MOVE) {
         field_clicked = getFieldByCoordinates(event.x + window.scrollX, event.y + window.scrollY);
@@ -404,17 +398,6 @@ function isWallOverlappingWithOtherWall(wall_to_ckeck) {
 }
 
 
-
-function nextPlayersTurn(next_players_action_state=STATE_MOVE){
-    its_this_players_turn += 1;
-    if (its_this_players_turn >= players.length) {
-        its_this_players_turn = 0;
-    }
-    player = players[its_this_players_turn];
-    updatePlayersTurnInstuction(player.name);
-    players_action_state = next_players_action_state;
-}
-
 function movePlayer(the_player, new_field, is_initial_move=false) {
     if (!is_initial_move) {
         old_field = the_player.field;
@@ -426,14 +409,12 @@ function movePlayer(the_player, new_field, is_initial_move=false) {
         } else if (!the_player.getMoveOptions().includes(new_field)) {
             showNotify("error", "", "Illegal move", 3);
         } else {
-            new_field.player = the_player;
-            the_player.field.player = null; 
-            the_player.field = new_field;
-            nextPlayersTurn();
+            movePlayerAsync(the_player.player_id, new_field.col_num, new_field.row_num);
         }
     } else {
         new_field.player = the_player;
         the_player.field = new_field;
+        movePlayerAsync(the_player.player_id, new_field.col_num, new_field.row_num);
     }
     if (the_player.win_option_fields.includes(the_player.field)) {
         updatePlayerWonTheGame(the_player.name);
@@ -472,7 +453,7 @@ function placeWall() {
             
             refreshPlayerStats();
             last_wall.wall = new Wall();
-            nextPlayersTurn();
+            nextPlayersTurn();  // TODO: should be removed
         } else {
             // readding the connection between the fields (because wall could not be placed)
             if (last_wall.wall.is_vertical) {
@@ -540,8 +521,13 @@ function createFields() {
         field_col_num++;
     }
 
+    refreshFields();
+}
+
+function refreshFields() {
     // Add the neighbour fields as references of each field
     fields.forEach(field => {
+        field.player = null;
         field_on_top = getFieldByColAndRow(field.col_num - 1, field.row_num);
         if (field_on_top != null) field.neighbour_fields.push(field_on_top);
         field_on_bottom = getFieldByColAndRow(field.col_num + 1, field.row_num);
@@ -550,6 +536,14 @@ function createFields() {
         if (field_left != null) field.neighbour_fields.push(field_left);
         field_right = getFieldByColAndRow(field.col_num, field.row_num + 1);
         if (field_right != null) field.neighbour_fields.push(field_right);
+    });
+
+    players.forEach(player => {
+        // player.field is set in updatePlayerPosition
+        var players_field = player.field;
+        if (players_field != null) {
+            players_field.player = player;
+        }
     });
 }
 
@@ -564,6 +558,7 @@ function animate(){
     fields.forEach(field => {
         field.update();
     });
+    refreshFields();
     
     // drawing the players
     players.forEach(player => {

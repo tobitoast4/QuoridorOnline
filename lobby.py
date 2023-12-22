@@ -1,12 +1,10 @@
 from threading import Thread
+from quoridor.game import Game
 import time
 import utils
 import json
 
 PLAYER_TIME_OUT_TIME = 0.5  # how long (in sec) is the player allowed to not poll until removed from the lobby
-
-LOBBY_STATE_IN_LOBBY = 0
-LOBBY_STATE_IN_GAME = 1
 
 
 class LobbyManager:
@@ -59,7 +57,10 @@ class Lobby:
         self.players = []
         self.players_last_seen = []  # this list contains the timestamp when the player was seen at last
                                      # the order corresponds to the order of self.players
-        self.state = LOBBY_STATE_IN_LOBBY
+        self.game = None
+
+    def start_game(self):
+        self.game = Game(self.players)
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__)

@@ -4,7 +4,6 @@ from flask_login import login_user, LoginManager, login_required, logout_user, c
 import user
 import utils
 import lobby
-from lobby import LOBBY_STATE_IN_LOBBY, LOBBY_STATE_IN_GAME
 from quoridor.game import Game
 
 
@@ -53,10 +52,10 @@ def get_lobby(lobby_id=None):
     user_sending_the_request = user.get_user_from_dict(request.json)
     the_lobby = lobby_manager.get_lobby(lobby_id)
     if the_lobby is not None:
-        if the_lobby.state == LOBBY_STATE_IN_LOBBY:  # game not started yet
+        if the_lobby.game is None:  # game not started yet
             lobby_manager.add_player_to_lobby(lobby_id, user_sending_the_request)
             return the_lobby.to_json(), 200
-        else:  # the_lobby.state == LOBBY_STATE_IN_GAME
+        else:  # game started
             return {"game": f"http://127.0.0.1:5009/game/{lobby_id}"}
     else:
         return {"error": f"lobby with id {lobby_id} does not exist."}, 502
@@ -65,7 +64,7 @@ def get_lobby(lobby_id=None):
 @app.route("/start_game/<string:lobby_id>", methods=['POST'])
 def start_game(lobby_id):
     the_lobby = lobby_manager.get_lobby(lobby_id)
-    the_lobby.state = LOBBY_STATE_IN_GAME
+    the_lobby.start_game()
     return {"status": "game started"}, 200
 
 
@@ -76,36 +75,29 @@ def game(lobby_id):
     return render_template("game.html", user=the_user, lobby=the_lobby)
 
 
-@app.route("/get_game/<string:lobby_id>", methods=['POST'])
-def get_game():
-    user1 = user.User()
-    user1.id = "id_player_1"
-    user1.name = "Red"
+@app.route("/game_move_player/<string:lobby_id>", methods=['POST'])
+def game_move_player(lobby_id):
+    the_lobby = lobby_manager.get_lobby(lobby_id)
+    the_game = the_lobby.game
+    print(the_game.game_data)
+    request_data = request.json
+    print(request_data)
+    the_game.move_player(request_data["user_id"],
+                         request_data["new_field_col_num"],
+                         request_data["new_field_row_num"])
+    return {"status": "player moved"}, 200
 
-    user2 = user.User()
-    user2.id = "id_player_2"
-    user2.name = "Green"
 
-    users = [user1, user2]
+@app.route("/game_place_wall/<string:lobby_id>", methods=['POST'])
+def game_place_wall(lobby_id):
+    print(request.json)
 
-    game = Game(users)
 
-    print(game.state)
-    game.move_player(user1, 4, 0)
-    print(game.state)
-    game.move_player(user2, 4, 8)
-    print(game.state)
-    game.move_player(user1, 4, 1)
-    print(game.state)
-
-    print(game.game_data)
-
-    game.place_wall(0.5, 0, 0.5, 1)
-    game.place_wall(0, 1.5, 1, 1.5)
-
-    game.game_board.print_fields()
-    print(game.game_data)
-    return game.game_data
+@app.route("/get_game_data/<string:lobby_id>", methods=['POST'])
+def get_game_data(lobby_id):
+    the_lobby = lobby_manager.get_lobby(lobby_id)
+    the_game = the_lobby.game
+    return the_game.game_data
 
 
 def log_in_user():

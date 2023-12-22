@@ -19,7 +19,7 @@ class GameBoard:
         # create fields
         for col in range(self.amount_fields):
             for row in range(self.amount_fields):
-                self.fields.append(Field(col, row))
+                self.fields.append(Field(col, row, self))
         # create links between fields
         for the_field in self.fields:
             field_on_top = self.getFieldByColAndRow(the_field.col_num - 1, the_field.row_num)
