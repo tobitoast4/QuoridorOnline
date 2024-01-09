@@ -409,6 +409,9 @@ function movePlayer(the_player, new_field, is_initial_move=false) {
         } else if (!the_player.getMoveOptions().includes(new_field)) {
             showNotify("error", "", "Illegal move", 3);
         } else {
+            new_field.player = the_player;
+            the_player.field.player = null;
+            the_player.field = new_field;
             movePlayerAsync(the_player.player_id, new_field.col_num, new_field.row_num);
         }
     } else {
@@ -502,8 +505,6 @@ function checkIfPathToWinExists(field, fields_to_win) {
 }
 
 
-
-
 function drawBoard() {
     game_board = new GameBoard(650); 
     game_board.draw();
@@ -521,10 +522,6 @@ function createFields() {
         field_col_num++;
     }
 
-    refreshFields();
-}
-
-function refreshFields() {
     // Add the neighbour fields as references of each field
     fields.forEach(field => {
         field.player = null;
@@ -537,17 +534,7 @@ function refreshFields() {
         field_right = getFieldByColAndRow(field.col_num, field.row_num + 1);
         if (field_right != null) field.neighbour_fields.push(field_right);
     });
-
-    players.forEach(player => {
-        // player.field is set in updatePlayerPosition
-        var players_field = player.field;
-        if (players_field != null) {
-            players_field.player = player;
-        }
-    });
 }
-
-
 
 function animate(){
     requestAnimationFrame(animate);
@@ -558,7 +545,6 @@ function animate(){
     fields.forEach(field => {
         field.update();
     });
-    refreshFields();
     
     // drawing the players
     players.forEach(player => {

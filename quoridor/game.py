@@ -17,7 +17,7 @@ class Game:
         self.turn = 0
         self.game_data = {
             "initial_setup": self.game_board.__json__(initial=True),
-            "game": []
+            "game": dict()
         }
         self._append_game_data()
 
@@ -32,7 +32,9 @@ class Game:
             if self.its_this_players_turn == len(self.game_board.players)-1:  # last player placed his piece initially
                 self.state = STATE_PLAYING
         else:
-            player.move_to_field(new_field)
+            result = player.move_to_field(new_field)
+            if result is not None:
+                self.state = STATE_PLAYER_DID_WIN
         self._next_players_turn()
 
     def place_wall(self, user_id, col_start, row_start, col_end, row_end):
@@ -64,10 +66,10 @@ class Game:
         return self.game_board.players[self.its_this_players_turn]
 
     def _append_game_data(self):
-        self.game_data["game"].append({
+        self.game_data["game"] = {
             "state": self.state,
             "its_this_players_turn": self.its_this_players_turn,
             "turn": self.turn,
             "time": utils.get_current_time(),
             "game_board": self.game_board.__json__(),
-        })
+        }

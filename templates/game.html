@@ -51,7 +51,9 @@
 
 
         let intervalID = setInterval(() => { // see https://rapidapi.com/guides/api-requests-intervals
-            updatePlayers();
+            if (players_action_state != 2) {
+                updatePlayers();
+            }
         }, 500);
     </script>
 </body>

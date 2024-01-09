@@ -1,4 +1,5 @@
 current_lobby_id = null;
+game_data = null;
 
 
 async function getGameDataAsync() {
@@ -33,8 +34,6 @@ async function movePlayerAsync(player_id, new_field_col_num, new_field_row_num) 
             })
         });
         data = await response.json();
-        console.log(data);
-
     } catch (error) {
         console.log('Error:', error);
     }
@@ -70,32 +69,42 @@ async function createPlayers() {
 }
 
 async function updatePlayers() {
-    var game_data = await getGameDataAsync();
-    var current_game = game_data["game"];
-    var current_game_round = current_game[current_game.length-1];
-    var players_json = current_game_round["game_board"]["players"];
+    let new_game_data = await getGameDataAsync();
+    if (JSON.stringify(new_game_data) != JSON.stringify(game_data)) {
+        console.log(new_game_data);
+        game_data = new_game_data;
+        let current_game_round = game_data.game;
+        let players_json = current_game_round.game_board.players;
 
-    players_json.forEach(player_json => {
-        players_field = player_json["field"];
-        if (players_field != null) {
-            this.updatePlayerPosition(player_json["user"]["id"], players_field["col_num"], players_field["row_num"]);
+        players_json.forEach(player_json => {
+            let players_field = player_json["field"];
+            if (players_field != null) {
+                this.updatePlayerPosition(player_json["user"]["id"], players_field["col_num"], players_field["row_num"]);
+            }
+        });
+
+        players_action_state = current_game_round["state"];
+        if (players_action_state == 2) {
+            updatePlayerWonTheGame(player.name);
+        } else {
+            its_this_players_turn = current_game_round["its_this_players_turn"];
+            player = players[its_this_players_turn];
+            updatePlayersTurnInstuction(player.name);
         }
-    });
-
-    its_this_players_turn = current_game_round["its_this_players_turn"];
-    players_action_state = current_game_round["state"];
-    player = players[its_this_players_turn];
-    updatePlayersTurnInstuction(player.name);
-
-    console.log(game_data.length);
+    }
 }
 
 function updatePlayerPosition(player_id, col_num, row_num) {
     // get the correct player in the game
     for (var p = 0; p < players.length; p++) {
-        var player = players[p];
-        if (player.player_id == player_id) {
-            player.field = getFieldByColAndRow(col_num, row_num);
+        var the_player = players[p];
+        if (the_player.player_id == player_id) {
+            let new_field = getFieldByColAndRow(col_num, row_num);
+            new_field.player = the_player;
+            if (the_player.field != null) {
+                the_player.field.player = null;
+            }
+            the_player.field = new_field;
             break;
         }
     }
