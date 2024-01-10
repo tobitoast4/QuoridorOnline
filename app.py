@@ -4,6 +4,7 @@ from flask_login import login_user, LoginManager, login_required, logout_user, c
 import user
 import utils
 import lobby
+from errors import QuoridorOnlineGameError
 from quoridor.game import Game
 
 
@@ -82,9 +83,13 @@ def game_move_player(lobby_id):
     print(the_game.game_data)
     request_data = request.json
     print(request_data)
-    the_game.move_player(request_data["user_id"],
-                         request_data["new_field_col_num"],
-                         request_data["new_field_row_num"])
+    if request_data["user_id"] != session['user_id']:
+        # raise QuoridorOnlineGameError("User can not move another player")
+        return {"error": "User can not move another player"}
+    else:
+        the_game.move_player(request_data["user_id"],
+                             request_data["new_field_col_num"],
+                             request_data["new_field_row_num"])
     return {"status": "player moved"}, 200
 
 

@@ -21,12 +21,12 @@ class Player:
         else:
             if new_field not in self.getMoveOptions():
                 raise QuoridorOnlineGameError("Field not allowed for this player.")
-        if new_field in self.win_option_fields:
-            return self  # THE PLAYER DID WIN! (Maybe return something different here?)
         if self.field is not None:
             self.field.player = None  # remove player from old field
         new_field.player = self
         self.field = new_field
+        if new_field in self.win_option_fields:
+            return self  # THE PLAYER DID WIN! (Maybe return something different here?)
 
     def getMoveOptions(self):
         """Gets the move option fields for the player at their current position respecting other players.

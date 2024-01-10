@@ -1,5 +1,6 @@
-current_lobby_id = null;
-game_data = null;
+var current_lobby_id = null;
+var this_player_id = null;
+var game_data = null;
 
 
 async function getGameDataAsync() {

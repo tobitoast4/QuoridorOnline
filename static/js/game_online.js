@@ -162,15 +162,15 @@ function Field(x, y, col_num, row_num) {
         }
     }
 
-    this.getNeighbourFieldLocation = function(field_to_ckeck) {
+    this.getNeighbourFieldLocation = function(field_to_check) {
         // The inverse function of getNeighbourField()
-        if (field_to_ckeck == getFieldByColAndRow(this.col_num + 1, this.row_num)) {
+        if (field_to_check == getFieldByColAndRow(this.col_num + 1, this.row_num)) {
             return "right";
-        } else if (field_to_ckeck == getFieldByColAndRow(this.col_num, this.row_num + 1)) {
+        } else if (field_to_check == getFieldByColAndRow(this.col_num, this.row_num + 1)) {
             return "bottom";
-        } else if (field_to_ckeck == getFieldByColAndRow(this.col_num - 1, this.row_num)) {
+        } else if (field_to_check == getFieldByColAndRow(this.col_num - 1, this.row_num)) {
             return "left";
-        } else if (field_to_ckeck == getFieldByColAndRow(this.col_num, this.row_num - 1)) {
+        } else if (field_to_check == getFieldByColAndRow(this.col_num, this.row_num - 1)) {
             return "top";
         } else {
             return null;
@@ -216,6 +216,7 @@ function Player(player_id, name, color) {
             // if player is not placed yet, return the fields where he can be placed
             return this.start_option_fields;
         }
+
         var move_option_fields = [];
         this.field.neighbour_fields.forEach(field => {
             if (field.player == null) {
@@ -404,10 +405,16 @@ function movePlayer(the_player, new_field, is_initial_move=false) {
         distance_x = Math.abs(new_field.col_num - old_field.col_num);  // amount fields in x axis
         distance_y = Math.abs(new_field.row_num - old_field.row_num);  // amount fields in y axis
         total_distance = distance_x + distance_y;
+        console.log(the_player.getMoveOptions());
         if (old_field == new_field){
             showNotify("error", "", "You have to move", 3);
+            return;
+        } else if (!itsLoggedInPlayersTurn()) {
+            showNotify("error", "", "It's not your turn", 3);
+            return;
         } else if (!the_player.getMoveOptions().includes(new_field)) {
             showNotify("error", "", "Illegal move", 3);
+            return;
         } else {
             new_field.player = the_player;
             the_player.field.player = null;
@@ -504,6 +511,16 @@ function checkIfPathToWinExists(field, fields_to_win) {
     
 }
 
+function itsLoggedInPlayersTurn(field, fields_to_win) {
+    // Indicates if the currently logged in player is at turn.
+    // Returns ture if yes, false if no.
+    if (this_player_id == players[its_this_players_turn].player_id) {  // it's the other players turn
+        return true;
+    } else {
+        return false;
+    }
+}
+
 
 function drawBoard() {
     game_board = new GameBoard(650); 
@@ -561,7 +578,9 @@ function animate(){
         if (players_action_state == STATE_PLACE_WALL) {
             last_wall.wall.drawOnHover();
         } else if (players_action_state != STATE_PLAYER_DID_WIN) {
-            players[its_this_players_turn].drawMoveOptions();
+            if (itsLoggedInPlayersTurn()) {
+                players[its_this_players_turn].drawMoveOptions();
+            }
         }
     }
 }
