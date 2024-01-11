@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+        <!-- <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> --> <!-- use this for production -->
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/notify.css' )}}">
+        <script src="{{ url_for('static', filename='js/notify.js' )}}"></script>
+    </head>
+    <body>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        {% block body %}{% endblock %}
+
+        <div style="width: 100%;">
+            <div id="notify-holder" class="notify-container"></div>
+        </div>
+
+        <div>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% set error_id = 0 %}
+                    {% for error in messages %}
+                            <script>
+                                showNotify("error", "", "{{ error }}", 6);
+                            </script>
+                        {% set error_id = error_id + 1 %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+    </body>
+</html>

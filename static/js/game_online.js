@@ -18,7 +18,7 @@ var last_wall = {
     wall_can_be_placed: false,
     field_where_wall_is_attached: null
 }
-// its_this_players_turn should be an integer indicating whos turn it is. 
+// its_this_players_turn should be an integer indicating whose turn it is.
 // Should reference the player by index in the players array.
 var its_this_players_turn = 0;
 var players_action_state = STATE_PLACE_PLAYER;  // action that the player is performing
@@ -589,4 +589,3 @@ drawBoard();
 createFields();
 last_wall.wall = new Wall();
 animate();
-

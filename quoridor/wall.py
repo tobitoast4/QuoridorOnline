@@ -4,7 +4,7 @@ import math
 
 class Wall:
     def __init__(self, col_start, row_start, col_end, row_end, game_board):
-        """Walls can be plaed like this:
+        """Walls can be placed like this:
         Wall is placed vertically:
                           ->  col_start=0.5, row_start=0, col_end=0.5, row_end=1
           field (0, 0)

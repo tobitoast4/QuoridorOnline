@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template, redirect, url_for, session, make_response, session, flash, get_flashed_messages
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
+from werkzeug.exceptions import HTTPException
 
 import user
 import utils
@@ -15,6 +16,14 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 lobby_manager = lobby.LobbyManager()
+
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # pass through HTTP errors
+    if isinstance(e, HTTPException):
+        return e
+    return {"error": str(e)}, 500
 
 
 @login_manager.user_loader
@@ -42,6 +51,9 @@ def lobby(lobby_id=None):
     else:
         # join lobby
         the_lobby = lobby_manager.get_lobby(lobby_id)
+        if the_lobby is None:
+            flash(f"The lobby with id {lobby_id} does not exist.")
+            return redirect("/")
         return render_template("lobby.html", lobby=the_lobby, user=the_user)
 
 
@@ -49,7 +61,8 @@ def lobby(lobby_id=None):
 @app.route("/get_lobby/<string:lobby_id>", methods=['POST'])
 def get_lobby(lobby_id=None):
     if lobby_id is None:
-        return {"error": f"lobby with id {lobby_id} does not exist."}, 502
+        flash(f"The lobby with id {lobby_id} does not exist.")
+        return redirect("/")
     user_sending_the_request = user.get_user_from_dict(request.json)
     the_lobby = lobby_manager.get_lobby(lobby_id)
     if the_lobby is not None:
@@ -59,7 +72,8 @@ def get_lobby(lobby_id=None):
         else:  # game started
             return {"game": f"http://127.0.0.1:5009/game/{lobby_id}"}
     else:
-        return {"error": f"lobby with id {lobby_id} does not exist."}, 502
+        flash(f"The lobby with id {lobby_id} does not exist.")
+        return redirect("/")
 
 
 @app.route("/start_game/<string:lobby_id>", methods=['POST'])
@@ -80,9 +94,7 @@ def game(lobby_id):
 def game_move_player(lobby_id):
     the_lobby = lobby_manager.get_lobby(lobby_id)
     the_game = the_lobby.game
-    print(the_game.game_data)
     request_data = request.json
-    print(request_data)
     if request_data["user_id"] != session['user_id']:
         # raise QuoridorOnlineGameError("User can not move another player")
         return {"error": "User can not move another player"}
@@ -101,6 +113,8 @@ def game_place_wall(lobby_id):
 @app.route("/get_game_data/<string:lobby_id>", methods=['POST'])
 def get_game_data(lobby_id):
     the_lobby = lobby_manager.get_lobby(lobby_id)
+    if the_lobby is None:
+        return {"error": f"The lobby with id {lobby_id} does not exist."}, 502
     the_game = the_lobby.game
     return the_game.game_data
 

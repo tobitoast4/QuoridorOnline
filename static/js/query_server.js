@@ -2,6 +2,16 @@ var current_lobby_id = null;
 var this_player_id = null;
 var game_data = null;
 
+var last_error_msg = null;
+
+function throwOnError(json_obj) {
+    // If there is the key "error" in a json_obj, show the value.
+    // E.g.: {"error": "Player can not move here"} should show a notify and return true.
+    // E.g.: {"status": "success"} should return false.
+    if (Object.hasOwn(json_obj, "error")) {
+        throw json_obj["error"];
+    }
+}
 
 async function getGameDataAsync() {
     var data_to_be_returned = null;
@@ -13,9 +23,15 @@ async function getGameDataAsync() {
             }
         });
         data_to_be_returned = await response.json();
-
+        throwOnError(data_to_be_returned);
+        console.log(data_to_be_returned)
     } catch (error) {
-        console.log('Error:', error);
+        error = error.toString();
+        console.log(error);
+        if (last_error_msg != error) {
+            last_error_msg = error;
+            showNotify("error", "", error, 6);
+        }
     }
 
     return data_to_be_returned;
@@ -35,8 +51,9 @@ async function movePlayerAsync(player_id, new_field_col_num, new_field_row_num) 
             })
         });
         data = await response.json();
+        throwOnError(data);
     } catch (error) {
-        console.log('Error:', error);
+        showNotify("error", "", error, 6);
     }
 }
 
