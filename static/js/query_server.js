@@ -27,7 +27,6 @@ async function getGameDataAsync() {
         console.log(data_to_be_returned)
     } catch (error) {
         error = error.toString();
-        console.log(error);
         if (last_error_msg != error) {
             last_error_msg = error;
             showNotify("error", "", error, 6);

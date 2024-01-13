@@ -1,6 +1,21 @@
 {% extends "layout.html" %}
 {% block body %}
-<h1>HOME</h1>
-user.id {{ user.id }} <br/>
-user.name {{ user.name }} <br/>
+<div>
+    <h1>QuoridorOnline</h1>
+    user.id {{ user.id }} <br/>
+    user.name {{ user.name }} <br/>
+    <br/>
+    <br/>
+    <div class="text-box">
+        <a href="/lobby" class="btn btn-white btn-animate">New lobby</a>
+    </div>
+    <br/>
+    <div class="text-box">
+        <a href="#" class="btn btn-white btn-animate">How to play</a>
+    </div>
+    <br/>
+    <div class="text-box">
+        <a href="#" class="btn btn-white btn-animate">About</a>
+    </div>
+</div>
 {% endblock %}
