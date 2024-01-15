@@ -2,8 +2,6 @@
 {% block body %}
 <div>
     <h1>QuoridorOnline</h1>
-    user.id {{ user.id }} <br/>
-    user.name {{ user.name }} <br/>
     <br/>
     <br/>
     <div class="text-box">
@@ -17,5 +15,11 @@
     <div class="text-box">
         <a href="#" class="btn btn-white btn-animate">About</a>
     </div>
+</div>
+
+<!--this is the animated background-->
+<div style="text-align: left; margin: 0; position: fixed; top: 0px; left: 0px; z-index: -1;">
+    <canvas style=""></canvas>
+    <script src="{{ url_for('static', filename='js/background_canvas.js' )}}"></script>
 </div>
 {% endblock %}

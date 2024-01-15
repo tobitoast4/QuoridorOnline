@@ -19,21 +19,25 @@
         padding: 10px 0;
     }
 
+    textarea:focus, input:focus{
+        outline: none;
+    }
+
 </style>
 <div>
     <h1>QuoridorOnline</h1>
     <h2>LOBBY</h2>
-
-    lobby_id
-    {{ lobby.lobby_id }}
-    <hr/>
-    user.id {{ user.id }} <br/>
-    <hr/>
     <br/>
     <br/>
     You
-    <div class="element-box">
-        {{ user.name }}
+    <div class="element-box" style="display: flex">
+        <input value="{{ user.name }}"
+               id="input-players-name"
+               type="text"
+               style="width: 100%; border: none; font-size: 16px; font-weight: 600">
+        <button onclick="" style="display: inline-block;">
+            <i class="fa fa-floppy-o" aria-hidden="true"></i>
+        </button>
     </div>
     <br/>
     <br/>
@@ -43,7 +47,7 @@
             http://127.0.0.1:5009/lobby/{{ lobby.lobby_id }}
         </div>
         <div style="width: 5%"></div>
-        <button onclick="copy_to_clipboard()" style="display:inline-block;">
+        <button onclick="copy_to_clipboard()" style="display: inline-block;">
             <i class="fa fa-files-o" aria-hidden="true"></i>
         </button>
     </div>
