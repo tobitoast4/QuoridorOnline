@@ -47,9 +47,11 @@
     <script src="{{ url_for('static', filename='js/stats.js' )}}"></script>
     <script src="{{ url_for('static', filename='js/notify.js' )}}"></script>
     <script src="{{ url_for('static', filename='js/game_online.js' )}}"></script>
+
     <script src="{{ url_for('static', filename='js/query_server.js' )}}"></script>
 
     <script>
+        server_url = "{{ server_url }}";
         current_lobby_id = "{{ lobby.lobby_id }}";
         this_player_id = "{{ user.id }}";
         players_action_state = STATE_PLACE_PLAYER;

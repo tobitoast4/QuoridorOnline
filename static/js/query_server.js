@@ -1,5 +1,7 @@
+var server_url = null;
 var current_lobby_id = null;
 var this_player_id = null;
+var this_player_name = null;
 var game_data = null;
 
 var last_error_msg = null;
@@ -13,10 +15,15 @@ function throwOnError(json_obj) {
     }
 }
 
+
+// ####################
+// Methods for the game
+// ####################
+
 async function getGameDataAsync() {
     var data_to_be_returned = null;
     try {
-        var response = await fetch("http://127.0.0.1:5009/get_game_data/" + current_lobby_id, {
+        var response = await fetch(server_url + "get_game_data/" + current_lobby_id, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -37,7 +44,7 @@ async function getGameDataAsync() {
 
 async function movePlayerAsync(player_id, new_field_col_num, new_field_row_num) {
     try {
-        var response = await fetch("http://127.0.0.1:5009/game_move_player/" + current_lobby_id, {
+        var response = await fetch(server_url + "game_move_player/" + current_lobby_id, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -57,7 +64,7 @@ async function movePlayerAsync(player_id, new_field_col_num, new_field_row_num) 
 
 async function placeWallAsync(player_id, col_start, row_start, col_end, row_end) {
     try {
-        var response = await fetch("http://127.0.0.1:5009/game_place_wall/" + current_lobby_id, {
+        var response = await fetch(server_url + "game_place_wall/" + current_lobby_id, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -147,6 +154,7 @@ function updatePlayer(player_id, players_field, move_options) {
     for (var p = 0; p < players.length; p++) {
         var the_player = players[p];
         if (the_player.player_id == player_id) {
+            // update position
             let new_field = getFieldByColAndRow(players_field["col_num"], players_field["row_num"]);
             new_field.player = the_player;
             if (the_player.field != null) {
@@ -166,4 +174,85 @@ function updatePlayer(player_id, players_field, move_options) {
     }
 }
 
+
+// ####################
+// Methods for in lobby
+// ####################
+
+async function startGameAsync() {
+    try {
+        var response = await fetch(server_url + "start_game/" + current_lobby_id, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "user_id": this_player_id,
+                "user_name": this_player_name,
+            })
+        });
+        var data = await response.json();
+        throwOnError(data);
+    } catch (error) {
+        showNotify("error", "", error, 6);
+    }
+}
+
+async function getLobbyAsync() {
+    try {
+        var response = await fetch(server_url + "get_lobby/" + current_lobby_id, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "user_id": this_player_id,
+                "user_name": this_player_name,
+            })
+        });
+        var data = await response.json();
+        throwOnError(data);
+        var status = response.status;
+        if (status == 200) {
+            if (data.hasOwnProperty("players")) {
+                var list_of_players = $('#list_of_players');
+                list_of_players.empty();
+                data.players.forEach(player => {
+                    list_of_players.append("<div>" + player.name + "</div>");
+                });
+            } else if (data.hasOwnProperty("game")) {
+                window.location.replace(data.game);
+            }
+        }
+    } catch (error) {
+        error = error.toString();
+        if (last_error_msg != error) {
+            last_error_msg = error;
+            showNotify("error", "", error, 6);
+        }
+    }
+}
+
+async function updatePlayerName() {
+    let new_player_name = $('#input-players-name').val();
+
+    try {
+        var response = await fetch(server_url + "rename_player", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "lobby_id": current_lobby_id,
+                "user_id": this_player_id,
+                "new_user_name": new_player_name
+            })
+        });
+        var data = await response.json();
+        throwOnError(data);
+        showNotify("success", "", data["status"], 6);
+    } catch (error) {
+        showNotify("error", "", error, 6);
+    }
+}
 

@@ -8,6 +8,7 @@ import lobby
 from errors import QuoridorOnlineGameError
 from quoridor.game import Game
 
+SERVER_URL = "http://127.0.0.1:5009/"  # keep an "/" at the end !
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "asdf7878"
@@ -34,14 +35,14 @@ def load_user(user_id):
     return the_user
 
 
-@app.route("/")
+@app.route("/", methods=['GET'])
 def home():
     the_user = log_in_user()
     return render_template("home.html", user=the_user)
 
 
-@app.route("/lobby/")
-@app.route("/lobby/<string:lobby_id>")
+@app.route("/lobby/", methods=['GET'])
+@app.route("/lobby/<string:lobby_id>", methods=['GET'])
 def lobby(lobby_id=None):
     the_user = log_in_user()
     if lobby_id is None:
@@ -54,7 +55,7 @@ def lobby(lobby_id=None):
         if the_lobby is None:
             flash(f"The lobby with id {lobby_id} does not exist.")
             return redirect("/")
-        return render_template("lobby.html", lobby=the_lobby, user=the_user)
+        return render_template("lobby.html", lobby=the_lobby, user=the_user, server_url=SERVER_URL)
 
 
 @app.route("/get_lobby/", methods=['POST'])
@@ -70,7 +71,7 @@ def get_lobby(lobby_id=None):
             lobby_manager.add_player_to_lobby(lobby_id, user_sending_the_request)
             return the_lobby.to_json(), 200
         else:  # game started
-            return {"game": f"http://127.0.0.1:5009/game/{lobby_id}"}
+            return {"game": f"{SERVER_URL}game/{lobby_id}"}
     else:
         flash(f"The lobby with id {lobby_id} does not exist.")
         return redirect("/")
@@ -83,11 +84,11 @@ def start_game(lobby_id):
     return {"status": "game started"}, 200
 
 
-@app.route("/game/<string:lobby_id>")
+@app.route("/game/<string:lobby_id>", methods=['GET'])
 def game(lobby_id):
     the_user = log_in_user()
     the_lobby = lobby_manager.get_lobby(lobby_id)
-    return render_template("game.html", user=the_user, lobby=the_lobby)
+    return render_template("game.html", user=the_user, lobby=the_lobby, server_url=SERVER_URL)
 
 
 @app.route("/game_move_player/<string:lobby_id>", methods=['POST'])

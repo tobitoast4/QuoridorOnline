@@ -43,9 +43,7 @@
     <br/>
     Share this link with your friends
     <div class="element-box" style="display: flex">
-        <div id="link-to-lobby">
-            http://127.0.0.1:5009/lobby/{{ lobby.lobby_id }}
-        </div>
+        <div id="link-to-lobby"></div>
         <div style="width: 5%"></div>
         <button onclick="copy_to_clipboard()" style="display: inline-block;">
             <i class="fa fa-files-o" aria-hidden="true"></i>
@@ -64,107 +62,26 @@
     </div>
 </div>
 
-<script>
-    function copy_to_clipboard() {
-        navigator.clipboard.writeText("http://127.0.0.1:5009/lobby/{{ lobby.lobby_id }}");
-        showNotify("success", "", "Copied to clipboard", 2);
-    }
-</script>
+<script src="{{ url_for('static', filename='js/query_server.js' )}}"></script>
 
 <script>
+    server_url = "{{ server_url }}";
+    current_lobby_id = "{{ lobby.lobby_id }}";
+    this_player_id = "{{ user.id }}";
+    this_player_name = "{{ user.name }}";
+
+    let lobby_link = server_url + "lobby/" + current_lobby_id;
+    console.log(lobby_link);
+    $('#link-to-lobby').html("" + lobby_link);
+
+    function copy_to_clipboard() {
+        navigator.clipboard.writeText(lobby_link);
+        showNotify("success", "", "Copied to clipboard", 2);
+    }
+
     document.getElementById("button_update_player_name").onclick=async() => {
         await updatePlayerName();
     };
-
-    async function updatePlayerName() {
-        let new_player_name = $('#input-players-name').val();
-
-        try {
-            var response = await fetch("http://127.0.0.1:5009/rename_player", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    "lobby_id": "{{ lobby.lobby_id }}",
-                    "user_id": "{{ user.id }}",
-                    "new_user_name": new_player_name
-                })
-            });
-            var data = await response.json();
-            throwOnError(data);
-            showNotify("success", "", data["status"], 6);
-        } catch (error) {
-            showNotify("error", "", error, 6);
-        }
-    }
-</script>
-
-<script>
-    var last_error_msg = null;
-
-    function throwOnError(json_obj) {
-        // If there is the key "error" in a json_obj, show the value.
-        // E.g.: {"error": "Player can not move here"} should show a notify and return true.
-        // E.g.: {"status": "success"} should return false.
-        if (Object.hasOwn(json_obj, "error")) {
-            throw json_obj["error"];
-        }
-    }
-
-    async function startGameAsync() {
-        try {
-            var response = await fetch("http://127.0.0.1:5009/start_game/{{ lobby.lobby_id }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    "user_id": "{{ user.id }}",
-                    "user_name": "{{ user.name }}",
-                })
-            });
-            var data = await response.json();
-            throwOnError(data);
-        } catch (error) {
-            showNotify("error", "", error, 6);
-        }
-    }
-
-    async function getLobbyAsync() {
-        try {
-            var response = await fetch("http://127.0.0.1:5009/get_lobby/{{ lobby.lobby_id }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    "user_id": "{{ user.id }}",
-                    "user_name": "{{ user.name }}",
-                })
-            });
-            var data = await response.json();
-            throwOnError(data);
-            var status = response.status;
-            if (status == 200) {
-                if (data.hasOwnProperty("players")) {
-                    var list_of_players = $('#list_of_players');
-                    list_of_players.empty();
-                    data.players.forEach(player => {
-                        list_of_players.append("<div>" + player.name + "</div>");
-                    });
-                } else if (data.hasOwnProperty("game")) {
-                    window.location.replace(data.game);
-                }
-            }
-        } catch (error) {
-            error = error.toString();
-            if (last_error_msg != error) {
-                last_error_msg = error;
-                showNotify("error", "", error, 6);
-            }
-        }
-    }
 
     getLobbyAsync();
     let intervalID = setInterval(() => { // see https://rapidapi.com/guides/api-requests-intervals
