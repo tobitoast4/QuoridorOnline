@@ -24,7 +24,6 @@ async function getGameDataAsync() {
         });
         data_to_be_returned = await response.json();
         throwOnError(data_to_be_returned);
-        console.log(data_to_be_returned)
     } catch (error) {
         error = error.toString();
         if (last_error_msg != error) {
@@ -47,6 +46,28 @@ async function movePlayerAsync(player_id, new_field_col_num, new_field_row_num) 
                 "user_id": player_id,
                 "new_field_col_num": new_field_col_num,
                 "new_field_row_num": new_field_row_num,
+            })
+        });
+        data = await response.json();
+        throwOnError(data);
+    } catch (error) {
+        showNotify("error", "", error, 6);
+    }
+}
+
+async function placeWallAsync(player_id, col_start, row_start, col_end, row_end) {
+    try {
+        var response = await fetch("http://127.0.0.1:5009/game_place_wall/" + current_lobby_id, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                "user_id": player_id,
+                "col_start" : col_start,
+                "row_start" : row_start,
+                "col_end" : col_end,
+                "row_end" : row_end
             })
         });
         data = await response.json();
@@ -85,19 +106,29 @@ async function createPlayers() {
     refreshPlayerStats();
 }
 
-async function updatePlayers() {
+async function updateGame() {
     let new_game_data = await getGameDataAsync();
     if (JSON.stringify(new_game_data) != JSON.stringify(game_data)) {
         console.log(new_game_data);
         game_data = new_game_data;
         let current_game_round = game_data.game;
-        let players_json = current_game_round.game_board.players;
 
+        // update players
+        let players_json = current_game_round.game_board.players;
         players_json.forEach(player_json => {
             let players_field = player_json["field"];
             if (players_field != null) {
                 this.updatePlayerPosition(player_json["user"]["id"], players_field["col_num"], players_field["row_num"]);
             }
+        });
+
+        // update walls
+        let walls_json = current_game_round.game_board.walls;
+        walls = [];  // remove all existing walls
+        walls_json.forEach(wall_json => {
+            let start = wall_json["start"];
+            let end = wall_json["end"];
+            placeWallByServerCoordinates(start["col"], start["row"], end["col"], end["row"]);
         });
 
         players_action_state = current_game_round["state"];

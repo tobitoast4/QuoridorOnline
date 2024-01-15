@@ -35,7 +35,7 @@
                id="input-players-name"
                type="text"
                style="width: 100%; border: none; font-size: 16px; font-weight: 600">
-        <button onclick="" style="display: inline-block;">
+        <button style="display: inline-block;" id="button_update_player_name">
             <i class="fa fa-floppy-o" aria-hidden="true"></i>
         </button>
     </div>
@@ -68,6 +68,35 @@
     function copy_to_clipboard() {
         navigator.clipboard.writeText("http://127.0.0.1:5009/lobby/{{ lobby.lobby_id }}");
         showNotify("success", "", "Copied to clipboard", 2);
+    }
+</script>
+
+<script>
+    document.getElementById("button_update_player_name").onclick=async() => {
+        await updatePlayerName();
+    };
+
+    async function updatePlayerName() {
+        let new_player_name = $('#input-players-name').val();
+
+        try {
+            var response = await fetch("http://127.0.0.1:5009/rename_player", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "lobby_id": "{{ lobby.lobby_id }}",
+                    "user_id": "{{ user.id }}",
+                    "new_user_name": new_player_name
+                })
+            });
+            var data = await response.json();
+            throwOnError(data);
+            showNotify("success", "", data["status"], 6);
+        } catch (error) {
+            showNotify("error", "", error, 6);
+        }
     }
 </script>
 

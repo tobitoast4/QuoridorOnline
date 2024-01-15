@@ -38,21 +38,20 @@ window.addEventListener("mousemove", function(event) {
 });
 
 window.addEventListener("mouseup", function(event) {
+    current_player = players[its_this_players_turn];
     if (players_action_state == STATE_PLACE_PLAYER) {
         field_clicked = getFieldByCoordinates(event.x + window.scrollX, event.y + window.scrollY);
         if (field_clicked != null) {
-            current_player = players[its_this_players_turn];
             movePlayer(current_player, field_clicked, true);
         }
     } else if (players_action_state == STATE_MOVE) {
         field_clicked = getFieldByCoordinates(event.x + window.scrollX, event.y + window.scrollY);
         if (field_clicked != null) {
-            current_player = players[its_this_players_turn];
             movePlayer(current_player, field_clicked);
         }
     } else if (players_action_state == STATE_PLACE_WALL) {
         if (last_wall.wall_can_be_placed){
-            placeWall();
+            placeWall(current_player);
         }
     }
 });
@@ -405,7 +404,6 @@ function movePlayer(the_player, new_field, is_initial_move=false) {
         distance_x = Math.abs(new_field.col_num - old_field.col_num);  // amount fields in x axis
         distance_y = Math.abs(new_field.row_num - old_field.row_num);  // amount fields in y axis
         total_distance = distance_x + distance_y;
-        console.log(the_player.getMoveOptions());
         if (old_field == new_field){
             showNotify("error", "", "You have to move", 3);
             return;
@@ -433,58 +431,67 @@ function movePlayer(the_player, new_field, is_initial_move=false) {
     the_player.draw();
 }
 
-function placeWall() {
+function placeWall(the_player) {
     if (!isWallOverlappingWithOtherWall(last_wall.wall)) {
         attached_field = last_wall.field_where_wall_is_attached;
-        if (last_wall.wall.is_vertical) {  // removing the connection between the fields
-            attached_field.removeNeighbour(attached_field.getNeighbourField("left"));
-            field_on_botton = attached_field.getNeighbourField("bottom");
-            field_on_botton.removeNeighbour(field_on_botton.getNeighbourField("left"));
+        let col_start = -1;
+        let row_start = -1;
+        let col_end = -1;
+        let row_end = -1;
+        console.log(attached_field);
+        // convert to format (col_start, row_start, col_end, row_end) // TODO: unify this
+        if (last_wall.wall.is_vertical) {
+            col_start = attached_field.col_num - 0.5;
+            col_end = attached_field.col_num - 0.5;
+            row_start = attached_field.row_num;
+            row_end = attached_field.row_num + 1;
         } else {
-            attached_field.removeNeighbour(attached_field.getNeighbourField("top"));
-            field_on_right = attached_field.getNeighbourField("right");
-            field_on_right.removeNeighbour(field_on_right.getNeighbourField("top"));
+            row_start = attached_field.row_num - 0.5;
+            row_end = attached_field.row_num - 0.5;
+            col_start = attached_field.col_num;
+            col_end = attached_field.col_num + 1;
         }
 
-        var can_all_players_win = true;
-        for (var i = 0; i < players.length; i++) {
-            player = players[i];
-            var can_win = checkIfPathToWinExists(player.field, player.win_option_fields);
-            if (can_win == false) {
-                can_all_players_win = false;
-            }
-        }
-
-        if (can_all_players_win) {
-            current_player = players[its_this_players_turn];
-            current_player.amount_walls_left -= 1;
-            last_wall.wall.placed_by = current_player;
-            walls.push(last_wall.wall);
-            
-            refreshPlayerStats();
-            last_wall.wall = new Wall();
-            nextPlayersTurn();  // TODO: should be removed
-        } else {
-            // readding the connection between the fields (because wall could not be placed)
-            if (last_wall.wall.is_vertical) {
-                field_left = attached_field.getNeighbourField("left");
-                field_on_botton = attached_field.getNeighbourField("bottom");
-                field_on_botton_left = attached_field.getNeighbourField("left");
-                attached_field.addNeighbour(field_left);
-                field_on_botton.addNeighbour(field_on_botton_left);
-            } else {
-                field_on_top = attached_field.getNeighbourField("top");
-                field_right = attached_field.getNeighbourField("right");
-                field_on_top_right = attached_field.getNeighbourField("right");
-                attached_field.addNeighbour(field_on_top);
-                field_right.addNeighbour(field_on_top_right);
-
-            }
-            showNotify("error", "Could not place wall", "This wall would block one player from winning", 10);
-        }
+//        current_player = players[its_this_players_turn];
+//        current_player.amount_walls_left -= 1;
+//        last_wall.wall.placed_by = current_player;
+//        walls.push(last_wall.wall);
+//
+//        refreshPlayerStats();
+//        last_wall.wall = new Wall();
+//        console.log(last_wall);
+        placeWallAsync(the_player.player_id, col_start, row_start, col_end, row_end);
     } else {
         showNotify("error", "", "Walls should not overlap", 10);
     }
+}
+
+
+function placeWallByServerCoordinates(col_start, row_start, col_end, row_end) {
+    var width = game_board.wall_width;
+    var length = game_board.wall_length;
+    let wall = new Wall();
+    if (col_start == col_end) {  // wall is vertical
+        let field = getFieldByColAndRow(col_start + 0.5, row_start);
+        var field_x = field.x + game_board.start_x;
+        var field_y = field.y + game_board.start_y;
+        console.log(field);
+        wall.setSizes(field_x - game_board.margin_between_fields * 1.5,
+            field_y - game_board.margin_between_fields * 0.25,
+            width, length);
+
+        console.log(wall);
+    } else {
+        let field = getFieldByColAndRow(col_start, row_start + 0.5);
+        var field_x = field.x + game_board.start_x;
+        var field_y = field.y + game_board.start_y;
+        wall.setSizes(field_x - game_board.margin_between_fields * 0.25,
+            field_y - game_board.margin_between_fields * 1.5,
+            length, width);
+    }
+
+    wall.draw();
+    walls.push(wall);
 }
 
 function removeFromArray(array, value) {

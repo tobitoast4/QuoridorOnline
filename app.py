@@ -107,7 +107,25 @@ def game_move_player(lobby_id):
 
 @app.route("/game_place_wall/<string:lobby_id>", methods=['POST'])
 def game_place_wall(lobby_id):
-    print(request.json)
+    the_lobby = lobby_manager.get_lobby(lobby_id)
+    the_game = the_lobby.game
+    request_data = request.json
+    print(request_data["user_id"], end="   ")
+    print(request_data["col_start"], end="   ")
+    print(request_data["row_start"], end="   ")
+    print(request_data["col_end"], end="   ")
+    print(request_data["row_end"])
+    if request_data["user_id"] != session['user_id']:
+        # raise QuoridorOnlineGameError("User can not move another player")
+        return {"error": "It is not your turn"}
+    else:
+        the_game.place_wall(request_data["user_id"],
+                            request_data["col_start"],
+                            request_data["row_start"],
+                            request_data["col_end"],
+                            request_data["row_end"])
+        the_game.game_board.print_fields()
+    return {"status": "wall placed"}, 200
 
 
 @app.route("/get_game_data/<string:lobby_id>", methods=['POST'])
@@ -117,6 +135,23 @@ def get_game_data(lobby_id):
         return {"error": f"The lobby with id {lobby_id} does not exist."}, 502
     the_game = the_lobby.game
     return the_game.game_data
+
+
+@app.route("/rename_player", methods=['POST'])
+def rename_player():
+    request_json = request.json
+    lobby_id = request_json["lobby_id"]
+    user_id = request_json["user_id"]
+    new_user_name = request_json["new_user_name"]
+    if new_user_name == "":
+        raise ValueError("User name can not be empty")
+    if len(new_user_name) > 64:
+        raise ValueError("User name is too long")
+    session['user_name'] = new_user_name  # update the name
+    # also update the name in the lobby (if the user is currently in one)
+    if lobby_id is not None:
+        lobby_manager.update_player_name_in_lobby(lobby_id, user_id, new_user_name)
+    return {"status": f"Player name successfully changed to {new_user_name}"}
 
 
 def log_in_user():

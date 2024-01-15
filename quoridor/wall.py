@@ -45,6 +45,7 @@ class Wall:
             error_msg = f"This wall can not be placed (col_start={col_start}, row_start={row_start}, " \
                         f"col_end={col_end}, row_end={row_end}) as it is overlapping with another wall"
             raise QuoridorOnlineGameError(error_msg)
+        print(col_start, row_start, col_end, row_end)
         self.remove_links_between_fields()
 
     def remove_links_between_fields(self):

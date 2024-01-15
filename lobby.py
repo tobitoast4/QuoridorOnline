@@ -35,6 +35,14 @@ class LobbyManager:
         the_lobby.players.append(user)
         the_lobby.players_last_seen.append(utils.get_current_time())
 
+    def update_player_name_in_lobby(self, lobby_id, user_id, new_user_name):
+        the_lobby = self.get_lobby(lobby_id)
+        for p in range(len(the_lobby.players)):
+            player = the_lobby.players[p]
+            if player.id == user_id:
+                player.name = new_user_name
+                return
+
     def start_check_players_last_seen_time_task(self):
         thread = Thread(target=self.check_players_last_seen_time)
         thread.start()

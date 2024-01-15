@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/notify.css' )}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/header.css' )}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/stats.css' )}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css' )}}">
 
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <!-- <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> --> <!-- use this for production -->
@@ -14,15 +15,19 @@
 <body>
     <style>
         body {
-            margin: 0;
+            background-color: white
+        }
+
+        .notify-container {
+            width: 25%;
+            position: fixed;
+            bottom: 70px; right: 0px;
+            padding: 0 10px 0 10px;
         }
     </style>
 
-    
     <div class="header-container">
-        <div>{{ user.id }}</div>
-        <div>{{ user.name }}</div>
-        <h3 id="players_turn" style="text-align: center; margin: 10px 0;">INSTUCTION</h3>
+        <h3 id="players_turn" style="text-align: center; margin: 10px 0;"></h3>
     </div>
     
     <canvas></canvas>
@@ -53,7 +58,7 @@
 
         let intervalID = setInterval(() => { // see https://rapidapi.com/guides/api-requests-intervals
             if (players_action_state != 2) {
-                updatePlayers();
+                updateGame();
             }
         }, 500);
     </script>

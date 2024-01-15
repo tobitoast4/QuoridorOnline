@@ -1,7 +1,7 @@
 .notify-container {
     width: 75%;
     position: fixed;
-    bottom: 70px; right: 0px;
+    bottom: 0px; right: 0px;
     padding: 0 10px 0 10px;
 }
 
