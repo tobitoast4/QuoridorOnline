@@ -118,7 +118,7 @@ async function updateGame() {
         players_json.forEach(player_json => {
             let players_field = player_json["field"];
             if (players_field != null) {
-                this.updatePlayerPosition(player_json["user"]["id"], players_field["col_num"], players_field["row_num"]);
+                this.updatePlayer(player_json["user"]["id"], players_field, player_json["move_options"]);
             }
         });
 
@@ -142,17 +142,25 @@ async function updateGame() {
     }
 }
 
-function updatePlayerPosition(player_id, col_num, row_num) {
+function updatePlayer(player_id, players_field, move_options) {
     // get the correct player in the game
     for (var p = 0; p < players.length; p++) {
         var the_player = players[p];
         if (the_player.player_id == player_id) {
-            let new_field = getFieldByColAndRow(col_num, row_num);
+            let new_field = getFieldByColAndRow(players_field["col_num"], players_field["row_num"]);
             new_field.player = the_player;
             if (the_player.field != null) {
                 the_player.field.player = null;
             }
             the_player.field = new_field;
+
+            // update move_options
+            let new_move_options = [];
+            move_options.forEach(move_option => {
+                let field = getFieldByColAndRow(move_option["col_num"], move_option["row_num"]);
+                new_move_options.push(field);
+            });
+            the_player.move_option_fields = new_move_options;
             break;
         }
     }

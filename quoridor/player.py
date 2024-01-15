@@ -34,6 +34,8 @@ class Player:
            Two players can not share the same field and one can not kick another out of their field.
         """
         move_option_fields = []
+        if self.field is None:
+            return []
         for the_field in self.field.neighbour_fields:
             if the_field.player is None:
                 move_option_fields.append(the_field)
@@ -59,4 +61,5 @@ class Player:
             return {
                 "user": self.user.__json__(),
                 "field": field_json,
+                "move_options": [f.__json__() for f in self.getMoveOptions()],
             }

@@ -108,7 +108,6 @@ function Field(x, y, col_num, row_num) {
     this.row_num = row_num;
     this.size = game_board.field_size - game_board.margin_between_fields;
     this.fill_color = "white";
-    this.neighbour_fields = []
     this.player = null;
 
     this.draw = function() {
@@ -134,47 +133,6 @@ function Field(x, y, col_num, row_num) {
 
         this.draw();
     }
-
-    this.addNeighbour = function(field) {
-        this.neighbour_fields.push(field);
-        field.neighbour_fields.push(this);
-    }
-
-    this.removeNeighbour = function(field) {
-        field.neighbour_fields = removeFromArray(field.neighbour_fields, this);
-        this.neighbour_fields = removeFromArray(this.neighbour_fields, field);
-    }
-
-    this.getNeighbourField = function(position) {
-        // Returns the neighbour of the actual field
-        // Position can be "right", "bottom", "left" or "top"
-        if (position == "right") {
-            return getFieldByColAndRow(this.col_num + 1, this.row_num);
-        } else if (position == "bottom") {
-            return getFieldByColAndRow(this.col_num, this.row_num + 1);
-        } else if (position == "left") {
-            return getFieldByColAndRow(this.col_num - 1, this.row_num);
-        } else if (position == "top") {
-            return getFieldByColAndRow(this.col_num, this.row_num - 1);
-        } else {
-            return null;
-        }
-    }
-
-    this.getNeighbourFieldLocation = function(field_to_check) {
-        // The inverse function of getNeighbourField()
-        if (field_to_check == getFieldByColAndRow(this.col_num + 1, this.row_num)) {
-            return "right";
-        } else if (field_to_check == getFieldByColAndRow(this.col_num, this.row_num + 1)) {
-            return "bottom";
-        } else if (field_to_check == getFieldByColAndRow(this.col_num - 1, this.row_num)) {
-            return "left";
-        } else if (field_to_check == getFieldByColAndRow(this.col_num, this.row_num - 1)) {
-            return "top";
-        } else {
-            return null;
-        }
-    }
 }
 
 function Player(player_id, name, color) {
@@ -186,6 +144,7 @@ function Player(player_id, name, color) {
     this.amount_walls_left = 10;  // each player has 10 walls per game by default
     this.start_option_fields = [];  // the fields this player is allowed to start from needs to reach for win
     this.win_option_fields = [];  // the fields this player needs to reach for win
+    this.move_option_fields = [];  // the fields this player can move to in the next round
 
     this.draw = function() {
         if (this.field != null) {  // if player is not placed yet, dont draw it
@@ -203,32 +162,16 @@ function Player(player_id, name, color) {
         }
     }
 
-    this.drawMoveOptions = function() {
-        var move_option_fields = this.getMoveOptions();
+    this.drawMoveOptions = function(initial_options=false) {
+        var move_option_fields = null;
+        if (initial_options) {
+             move_option_fields = this.start_option_fields;
+        } else {
+             move_option_fields = this.move_option_fields;
+        }
         move_option_fields.forEach(field => {
             this.drawMoveOption(field);
         });
-    }
-
-    this.getMoveOptions = function() {
-        if (players_action_state == STATE_PLACE_PLAYER) {
-            // if player is not placed yet, return the fields where he can be placed
-            return this.start_option_fields;
-        }
-
-        var move_option_fields = [];
-        this.field.neighbour_fields.forEach(field => {
-            if (field.player == null) {
-                move_option_fields.push(field);
-            } else {
-                location_of_neighbour_field = this.field.getNeighbourFieldLocation(field);
-                var new_move_option_field = field.getNeighbourField(location_of_neighbour_field);
-                if (new_move_option_field != null && new_move_option_field.player == null){
-                    move_option_fields.push(new_move_option_field);
-                }
-            }
-        });
-        return move_option_fields;
     }
 
     this.drawMoveOption = function(field) {
@@ -334,7 +277,6 @@ function Wall() {
 }
 
 
-
 function getFieldByCoordinates(x, y) {
     var field_to_return = null;
     fields.forEach(field => {
@@ -383,20 +325,6 @@ function getFieldsByColOrRow(col_num, row_num) {
     return fields_to_return;
 }
 
-function isWallOverlappingWithOtherWall(wall_to_ckeck) {
-    // Returns true if two walls are overlapping, otherwise false.
-    // Checking:    RectA.Left < RectB.Right && RectA.Right > RectB.Left &&
-    //              RectA.Top > RectB.Bottom && RectA.Bottom < RectB.Top
-    var is_opverlapping = false;
-    walls.forEach(wall => {
-        if (wall_to_ckeck.x < wall.x + wall.width && wall_to_ckeck.x + wall_to_ckeck.width > wall.x &&
-            wall_to_ckeck.y + wall_to_ckeck.length > wall.y && wall_to_ckeck.y < wall.y + wall.length) {
-                is_opverlapping = true;
-        }
-    });
-    return is_opverlapping;
-}
-
 
 function movePlayer(the_player, new_field, is_initial_move=false) {
     if (!is_initial_move) {
@@ -410,7 +338,7 @@ function movePlayer(the_player, new_field, is_initial_move=false) {
         } else if (!itsLoggedInPlayersTurn()) {
             showNotify("error", "", "It's not your turn", 3);
             return;
-        } else if (!the_player.getMoveOptions().includes(new_field)) {
+        } else if (!the_player.move_option_fields.includes(new_field)) {
             showNotify("error", "", "Illegal move", 3);
             return;
         } else {
@@ -432,38 +360,26 @@ function movePlayer(the_player, new_field, is_initial_move=false) {
 }
 
 function placeWall(the_player) {
-    if (!isWallOverlappingWithOtherWall(last_wall.wall)) {
-        attached_field = last_wall.field_where_wall_is_attached;
-        let col_start = -1;
-        let row_start = -1;
-        let col_end = -1;
-        let row_end = -1;
-        console.log(attached_field);
-        // convert to format (col_start, row_start, col_end, row_end) // TODO: unify this
-        if (last_wall.wall.is_vertical) {
-            col_start = attached_field.col_num - 0.5;
-            col_end = attached_field.col_num - 0.5;
-            row_start = attached_field.row_num;
-            row_end = attached_field.row_num + 1;
-        } else {
-            row_start = attached_field.row_num - 0.5;
-            row_end = attached_field.row_num - 0.5;
-            col_start = attached_field.col_num;
-            col_end = attached_field.col_num + 1;
-        }
-
-//        current_player = players[its_this_players_turn];
-//        current_player.amount_walls_left -= 1;
-//        last_wall.wall.placed_by = current_player;
-//        walls.push(last_wall.wall);
-//
-//        refreshPlayerStats();
-//        last_wall.wall = new Wall();
-//        console.log(last_wall);
-        placeWallAsync(the_player.player_id, col_start, row_start, col_end, row_end);
+    attached_field = last_wall.field_where_wall_is_attached;
+    let col_start = -1;
+    let row_start = -1;
+    let col_end = -1;
+    let row_end = -1;
+    console.log(attached_field);
+    // convert to format (col_start, row_start, col_end, row_end) // TODO: unify this
+    if (last_wall.wall.is_vertical) {
+        col_start = attached_field.col_num - 0.5;
+        col_end = attached_field.col_num - 0.5;
+        row_start = attached_field.row_num;
+        row_end = attached_field.row_num + 1;
     } else {
-        showNotify("error", "", "Walls should not overlap", 10);
+        row_start = attached_field.row_num - 0.5;
+        row_end = attached_field.row_num - 0.5;
+        col_start = attached_field.col_num;
+        col_end = attached_field.col_num + 1;
     }
+
+    placeWallAsync(the_player.player_id, col_start, row_start, col_end, row_end);
 }
 
 
@@ -479,8 +395,6 @@ function placeWallByServerCoordinates(col_start, row_start, col_end, row_end) {
         wall.setSizes(field_x - game_board.margin_between_fields * 1.5,
             field_y - game_board.margin_between_fields * 0.25,
             width, length);
-
-        console.log(wall);
     } else {
         let field = getFieldByColAndRow(col_start, row_start + 0.5);
         var field_x = field.x + game_board.start_x;
@@ -492,30 +406,6 @@ function placeWallByServerCoordinates(col_start, row_start, col_end, row_end) {
 
     wall.draw();
     walls.push(wall);
-}
-
-function removeFromArray(array, value) {
-    var idx = array.indexOf(value);
-    if (idx !== -1) {
-        array.splice(idx, 1);
-    }
-    return array;
-}
-
-function checkIfPathToWinExists(field, fields_to_win) {
-    // Returns true if there is at least one path from field to one of 
-    // the fields in fields_to_win. Otherwise returns false.
-    // TODO: Find fancier way (recursion going through all paths is to much)
-    for (var i = 0; i < 10000; i++) {
-        if (!fields_to_win.includes(field)) {
-            var next_fieldnumber = Math.floor(Math.random() * field.neighbour_fields.length);
-            field = field.neighbour_fields[next_fieldnumber];
-        } else {
-            return true;
-        }
-    }
-    return false;
-    
 }
 
 function itsLoggedInPlayersTurn(field, fields_to_win) {
@@ -545,19 +435,6 @@ function createFields() {
         }
         field_col_num++;
     }
-
-    // Add the neighbour fields as references of each field
-    fields.forEach(field => {
-        field.player = null;
-        field_on_top = getFieldByColAndRow(field.col_num - 1, field.row_num);
-        if (field_on_top != null) field.neighbour_fields.push(field_on_top);
-        field_on_bottom = getFieldByColAndRow(field.col_num + 1, field.row_num);
-        if (field_on_bottom != null) field.neighbour_fields.push(field_on_bottom);
-        field_left = getFieldByColAndRow(field.col_num, field.row_num - 1);
-        if (field_left != null) field.neighbour_fields.push(field_left);
-        field_right = getFieldByColAndRow(field.col_num, field.row_num + 1);
-        if (field_right != null) field.neighbour_fields.push(field_right);
-    });
 }
 
 function animate(){
@@ -584,6 +461,10 @@ function animate(){
     if (players.length >= 1) {
         if (players_action_state == STATE_PLACE_WALL) {
             last_wall.wall.drawOnHover();
+        } else if (players_action_state == STATE_PLACE_PLAYER) {
+            if (itsLoggedInPlayersTurn()) {
+                players[its_this_players_turn].drawMoveOptions(true);
+            }
         } else if (players_action_state != STATE_PLAYER_DID_WIN) {
             if (itsLoggedInPlayersTurn()) {
                 players[its_this_players_turn].drawMoveOptions();
