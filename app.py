@@ -1,17 +1,14 @@
-from flask import Flask, request, render_template, redirect, url_for, session, make_response, session, flash, get_flashed_messages
+from flask import Flask, request, render_template, redirect, url_for, session, make_response, session, flash
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from werkzeug.exceptions import HTTPException
 
 import user
-import utils
 import lobby
-from errors import QuoridorOnlineGameError
-from quoridor.game import Game
 
 SERVER_URL = "http://127.0.0.1:5009/"  # keep an "/" at the end !
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "asdf7878"
+app.config["SECRET_KEY"] = "eb2f3f32-1cd8-49d6-a491-3c61c2326fdb"
 
 login_manager = LoginManager()
 login_manager.init_app(app)

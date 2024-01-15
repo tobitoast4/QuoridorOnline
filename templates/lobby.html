@@ -62,6 +62,12 @@
     </div>
 </div>
 
+<!--this is the animated background-->
+<div style="text-align: left; margin: 0; position: fixed; top: 0px; left: 0px; z-index: -1;">
+    <canvas style=""></canvas>
+    <script src="{{ url_for('static', filename='js/background_canvas.js' )}}"></script>
+</div>
+
 <script src="{{ url_for('static', filename='js/query_server.js' )}}"></script>
 
 <script>
