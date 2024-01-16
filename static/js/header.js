@@ -7,5 +7,5 @@ function updatePlayerWonTheGame(player_name){
     $('#players_turn').html("" + player_name + " won the game!");
 
     $('#back_to_menu_overlay').removeAttr("style");
-    $('#back_to_menu_overlay_text').text("" + player_name + " did win the game!");
+    $('#back_to_menu_overlay_text').text("" + player_name + " won the game!");
 }
