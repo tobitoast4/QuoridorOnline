@@ -5,3 +5,14 @@ body {
     font-weight: bold;
     margin: 0;
 }
+
+.font-moul-white-big {
+    font-family: Moul;
+    color: white;
+    font-size: 48px
+}
+
+.font-moul-white {
+    font-family: Moul;
+    color: white
+}
