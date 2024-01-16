@@ -54,7 +54,7 @@ def lobby(lobby_id=None):
     the_user = log_in_user()
     if lobby_id is None:
         # create new lobby
-        new_lobby = lobby_manager.create_new_lobby()
+        new_lobby = lobby_manager.create_new_lobby(the_user)
         return redirect(f"/lobby/{new_lobby.lobby_id}")
     else:
         # join lobby
@@ -87,6 +87,8 @@ def get_lobby(lobby_id=None):
 @app.route("/start_game/<string:lobby_id>", methods=['POST'])
 def start_game(lobby_id):
     the_lobby = lobby_manager.get_lobby(lobby_id)
+    if session['user_id'] != the_lobby.lobby_owner.id:
+        return {"error": "Only the lobby owner can start the game"}
     the_lobby.start_game()
     return {"status": "game started"}, 200
 

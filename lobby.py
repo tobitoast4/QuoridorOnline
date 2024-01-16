@@ -12,8 +12,8 @@ class LobbyManager:
         self.lobbies = []
         self.start_check_players_last_seen_time_task()
 
-    def create_new_lobby(self,):
-        new_lobby = Lobby()
+    def create_new_lobby(self, lobby_owner):
+        new_lobby = Lobby(lobby_owner)
         self.lobbies.append(new_lobby)
         return new_lobby
 
@@ -49,19 +49,28 @@ class LobbyManager:
 
     def check_players_last_seen_time(self):
         while True:
-            for lobby in self.lobbies:
-                for p in range(len(lobby.players)):
-                    player_last_seen_time = lobby.players_last_seen[p]
-                    if utils.get_current_time() - player_last_seen_time > PLAYER_TIME_OUT_TIME:
-                        del lobby.players[p]
-                        del lobby.players_last_seen[p]
-            time.sleep(0.6)
+            try:
+                for lobby in self.lobbies:
+                    for p in range(len(lobby.players)):
+                        player_last_seen_time = lobby.players_last_seen[p]
+                        if utils.get_current_time() - player_last_seen_time > PLAYER_TIME_OUT_TIME:
+                            user_to_be_deleted_id = lobby.players[p].id
+                            del lobby.players[p]
+                            del lobby.players_last_seen[p]
+                            if user_to_be_deleted_id == lobby.lobby_owner.id:
+                                # if the user that left is the lobby owner, determine a new owner
+                                if len(lobby.players) > 0:
+                                    lobby.lobby_owner = lobby.players[0]
+                time.sleep(2)
+            except Exception as e:
+                print(e)  # usually index out of range exception (can be ignored if only appears once)
 
 
 class Lobby:
-    def __init__(self):
+    def __init__(self, lobby_owner):
         self.lobby_id = utils.get_new_uuid()
         self.time_created = utils.get_current_time()
+        self.lobby_owner = lobby_owner
         self.players = []
         self.players_last_seen = []  # this list contains the timestamp when the player was seen at last
                                      # the order corresponds to the order of self.players
