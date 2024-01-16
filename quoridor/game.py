@@ -41,8 +41,12 @@ class Game:
         """Can be used to place a wall."""
         if self._get_current_player().user.id != user_id:  # TODO: make this a decorator?
             raise QuoridorOnlineGameError("It's not your turn currently")
+        if self._get_current_player().amount_walls_left <= 0:
+            raise QuoridorOnlineGameError("You do not have any more walls left")
         new_wall = wall.Wall(col_start, row_start, col_end, row_end, self.game_board)
         self.game_board.walls.append(new_wall)
+        # if creating a wall did not throw an exception, decrease the amount of walls the player has
+        self._get_current_player().amount_walls_left -= 1
         self._next_players_turn()
 
     def get_current_game_data(self):

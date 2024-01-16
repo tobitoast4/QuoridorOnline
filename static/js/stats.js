@@ -1,4 +1,4 @@
-function refreshPlayerStats(){
+function refreshPlayerStats() {
     $('#stats_grid').empty();
     players.forEach(player => {
         var player_stats = $('<div class="two-col-grid"></div>');

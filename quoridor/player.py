@@ -7,6 +7,7 @@ class Player:
     def __init__(self, the_user: user.User):
         self.user = the_user
         self.field = None
+        self.amount_walls_left = 10
         self.start_option_fields = []
         self.win_option_fields = []
 
@@ -51,6 +52,7 @@ class Player:
         if initial:
             return {
                 "user": self.user.__json__(),
+                "amount_walls_left": self.amount_walls_left,
                 "start_option_fields": [f.__json__() for f in self.start_option_fields],
                 "win_option_fields": [f.__json__() for f in self.win_option_fields]
             }
@@ -61,5 +63,6 @@ class Player:
             return {
                 "user": self.user.__json__(),
                 "field": field_json,
+                "amount_walls_left": self.amount_walls_left,
                 "move_options": [f.__json__() for f in self.getMoveOptions()],
             }

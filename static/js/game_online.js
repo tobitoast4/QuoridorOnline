@@ -135,13 +135,13 @@ function Field(x, y, col_num, row_num) {
     }
 }
 
-function Player(player_id, name, color) {
+function Player(player_id, name, amount_walls_left, color) {
     this.player_id = player_id;
     this.name = name;
     this.color = color;
     this.field = null;  // this is the field where the player is at
     this.size = 24;
-    this.amount_walls_left = 10;  // each player has 10 walls per game by default
+    this.amount_walls_left = amount_walls_left;  // each player has 10 walls per game by default
     this.start_option_fields = [];  // the fields this player is allowed to start from needs to reach for win
     this.win_option_fields = [];  // the fields this player needs to reach for win
     this.move_option_fields = [];  // the fields this player can move to in the next round

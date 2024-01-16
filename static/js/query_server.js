@@ -91,7 +91,10 @@ async function createPlayers() {
     var colors = ["red", "blue", "green", "black"];
     for (var p = 0; p < players_json.length; p++) {
         var player_json = players_json[p];
-        var player = new Player(player_json["user"]["id"], player_json["user"]["name"], colors[p]);
+        var player = new Player(player_json["user"]["id"],
+                                player_json["user"]["name"],
+                                player_json["amount_walls_left"],
+                                colors[p]);
 
         // Add start_ and win_option_fields
         for (var i = 0; i < player_json["start_option_fields"].length; i++) {
@@ -125,7 +128,10 @@ async function updateGame() {
         players_json.forEach(player_json => {
             let players_field = player_json["field"];
             if (players_field != null) {
-                this.updatePlayer(player_json["user"]["id"], players_field, player_json["move_options"]);
+                this.updatePlayer(player_json["user"]["id"],
+                                  players_field,
+                                  player_json["amount_walls_left"],
+                                  player_json["move_options"]);
             }
         });
 
@@ -139,21 +145,30 @@ async function updateGame() {
         });
 
         players_action_state = current_game_round["state"];
+        its_this_players_turn = current_game_round["its_this_players_turn"];
         if (players_action_state == 2) {
-            updatePlayerWonTheGame(player.name);
+            let last_players_turn = its_this_players_turn - 1;
+            if (last_players_turn < 0) {
+                last_players_turn = players.length - 1;
+            }
+            last_player = players[last_players_turn];
+            updatePlayerWonTheGame(last_player.name);
         } else {
-            its_this_players_turn = current_game_round["its_this_players_turn"];
             player = players[its_this_players_turn];
             updatePlayersTurnInstuction(player.name);
         }
     }
 }
 
-function updatePlayer(player_id, players_field, move_options) {
+function updatePlayer(player_id, players_field, amount_walls_left, move_options) {
     // get the correct player in the game
     for (var p = 0; p < players.length; p++) {
         var the_player = players[p];
         if (the_player.player_id == player_id) {
+            // update amount_walls_left
+            the_player.amount_walls_left = amount_walls_left;
+            refreshPlayerStats();
+
             // update position
             let new_field = getFieldByColAndRow(players_field["col_num"], players_field["row_num"]);
             new_field.player = the_player;
@@ -211,14 +226,22 @@ async function getLobbyAsync() {
             })
         });
         var data = await response.json();
+        console.log(data);
         throwOnError(data);
         var status = response.status;
         if (status == 200) {
-            if (data.hasOwnProperty("players")) {
+            if (data.hasOwnProperty("players") && data.hasOwnProperty("lobby_owner")) {
+                var lobby_owner_id = data["lobby_owner"]["id"];
                 var list_of_players = $('#list_of_players');
                 list_of_players.empty();
                 data.players.forEach(player => {
-                    list_of_players.append("<div>" + player.name + "</div>");
+                    if (player.id == lobby_owner_id) {
+                        list_of_players.append("<div style='display: inline-block;'>" + player.name +
+                                               "<i class='fa fa-user-circle-o' aria-hidden='true' style='margin-left: 12px'></i>" +
+                                               "</div>");
+                    } else {
+                        list_of_players.append("<div>" + player.name + "</div>");
+                    }
                 });
             } else if (data.hasOwnProperty("game")) {
                 window.location.replace(data.game);
