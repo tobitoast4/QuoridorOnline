@@ -2,4 +2,6 @@
 - calculate if player is blocked from winning completely
 - responsiveness for smaller screens (for home and lobby page)
 - make game playable on mobile devices (playing walls)
-- add page "play on this pc"
+- improve page "play on this pc" (let the server still compute the errors,
+                                  make screen for amount player selection before game starts
+                                  (also for changing names))
