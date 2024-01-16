@@ -108,11 +108,6 @@ def game_place_wall(lobby_id):
     the_lobby = lobby_manager.get_lobby(lobby_id)
     the_game = the_lobby.game
     request_data = request.json
-    print(request_data["user_id"], end="   ")
-    print(request_data["col_start"], end="   ")
-    print(request_data["row_start"], end="   ")
-    print(request_data["col_end"], end="   ")
-    print(request_data["row_end"])
     if request_data["user_id"] != session['user_id']:
         # raise QuoridorOnlineGameError("User can not move another player")
         return {"error": "It is not your turn"}
