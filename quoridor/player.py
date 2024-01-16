@@ -43,8 +43,10 @@ class Player:
             else:
                 location_of_neighbour_field = self.field.getNeighbourFieldLocation(the_field)
                 new_move_option_field = the_field.getNeighbourField(location_of_neighbour_field)
-                if new_move_option_field is not None and new_move_option_field.player is None:
-                    move_option_fields.append(new_move_option_field)
+                if new_move_option_field in the_field.neighbour_fields:
+                    # only append if there is a connection (no wall in between)
+                    if new_move_option_field is not None and new_move_option_field.player is None:
+                        move_option_fields.append(new_move_option_field)
         return move_option_fields
 
 
