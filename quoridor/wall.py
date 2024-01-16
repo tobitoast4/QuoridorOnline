@@ -76,8 +76,13 @@ class Wall:
         if other_wall._is_wall_at_coordinates(self.col_end, self.row_end):
             return True
         # cases for different alignment
+        # new wall is placed horizontally
         if (other_wall.col_start + other_wall.col_end) / 2 == self.col_start and \
                 other_wall.row_start == (self.row_start + self.row_end) / 2:
+            return True
+        # new wall is placed vertically
+        if (other_wall.row_start + other_wall.row_end) / 2 == self.row_start and \
+                other_wall.col_start == (self.col_start + self.col_end) / 2:
             return True
 
     def _is_wall_at_coordinates(self, col, row):
