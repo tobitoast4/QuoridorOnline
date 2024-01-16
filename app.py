@@ -38,6 +38,12 @@ def home():
     return render_template("home.html", user=the_user)
 
 
+@app.route("/local", methods=['GET'])
+def local():
+    amount_players = request.args.get('amount_players', default=2, type=int)
+    return render_template("game_local.html", amount_players=amount_players)
+
+
 @app.route("/how-to-play", methods=['GET'])
 def how_to_play():
     return render_template("how_to_play.html")
