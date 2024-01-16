@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block body %}
+<div>
+    <h1 class="font-effect-outline" style="font-family: Moul; font-size: 48px; color: white">QuoridorOnline</h1>
+    <br/>
+    <br/>
+    <p>
+        This website is a meant to offer an online version of the game Quoridor. <br/>
+        The game can be played on one PC as well as online (up to 4 players) without any registration needed. <br/>
+        <br/>
+        <br/>
+        For issues feel free to contact: <a href="mailto:tobi83301@gmail.com">tobi83301@gmail.com</a><br/>
+        <br/>
+        <br/>
+        Source code: <a href="https://github.com/tobitoast4/QuoridorOnline">GitHub</a>
+
+    </p>
+</div>
+
+<!--this is the animated background-->
+<div style="text-align: left; margin: 0; position: fixed; top: 0px; left: 0px; z-index: -1;">
+    <canvas style=""></canvas>
+    <script src="{{ url_for('static', filename='js/background_canvas.js' )}}"></script>
+</div>
+{% endblock %}

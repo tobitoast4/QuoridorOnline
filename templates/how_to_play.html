@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% block body %}
+<div>
+    <h1 class="font-effect-outline" style="font-family: Moul; font-size: 48px; color: white">QuoridorOnline</h1>
+    <br/>
+    <p>
+        <h3>Board</h3>
+        Quoridor is played on a game board of 81 square cells (9x9). Each player starts with 10 walls. <br/>
+        In theory, the game could be also played in different board sizes and with a different number of starting walls. <br/>
+        This feature might be added in the future.
+
+        <h3>Game setup</h3>
+        Each player is represented by a pawn of their color. The starting position can be chosen, but has to be on one of the baselines. <br/>
+        There can be between 2, 3 or 4 players in one game.
+
+        <h3>Gameplay</h3>
+        The player on top starts first, then players alternate turn. <br/>
+        Each player in turn, chooses to move his pawn or to put up one of his walls. <br/>
+        When a player is out of walls, they must move his pawn.
+
+        <h3>Pawn moves</h3>
+        The pawns are moved one square at a time, horizontally or vertically, forwards or backwards. <br/>
+        The pawns must get around the walls. When two pawns face each other on neighboring squares which are not separated by a fence, <br/>
+        the player whose turn it is can jump the opponent's pawn (and place himself behind him), thus advancing an extra square. <br/>
+        If there is another player behind (three players in a row) the outer players can not jump over anymore.
+
+        <h3>Positioning of the walls</h3>
+        Walls are flat two-cell-wide pieces which can be placed between 2 sets of 2 squares. <br/>
+        The walls can be used to to impede an other player's progress, <br/>
+        however, an access to the goal line must always be left open.
+
+        <h3>End of the game</h3>
+        The first player who reaches any of the squares opposite his baseline is the winner.
+
+    </p>
+</div>
+
+<!--this is the animated background-->
+<div style="text-align: left; margin: 0; position: fixed; top: 0px; left: 0px; z-index: -1;">
+    <canvas style=""></canvas>
+    <script src="{{ url_for('static', filename='js/background_canvas.js' )}}"></script>
+</div>
+{% endblock %}

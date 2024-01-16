@@ -38,6 +38,16 @@ def home():
     return render_template("home.html", user=the_user)
 
 
+@app.route("/how-to-play", methods=['GET'])
+def how_to_play():
+    return render_template("how_to_play.html")
+
+
+@app.route("/about", methods=['GET'])
+def about():
+    return render_template("about.html")
+
+
 @app.route("/lobby/", methods=['GET'])
 @app.route("/lobby/<string:lobby_id>", methods=['GET'])
 def lobby(lobby_id=None):
