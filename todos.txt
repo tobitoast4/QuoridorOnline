@@ -5,3 +5,7 @@
 - improve page "play on this pc" (let the server still compute the errors,
                                   make screen for amount player selection before game starts
                                   (also for changing names))
+- Button for place walls on mobile devices
+- Zoom in out
+- Get back and forward with arrows (+ buttons for mobile)
+- Sound

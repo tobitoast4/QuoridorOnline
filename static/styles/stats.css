@@ -1,8 +1,7 @@
 .stats-container {
     position: fixed; 
     width: 100%; 
-    bottom: 0rem; 
-    background-color: #bbf7d0;
+    bottom: 0rem;
 }
 
 .stats-grid {    
