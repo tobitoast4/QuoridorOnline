@@ -7,6 +7,10 @@ class Field:
         self.neighbour_fields = []
         self.player = None
 
+    def add_connection(self, other_field: 'Field'):
+        other_field.neighbour_fields.append(self)
+        self.neighbour_fields.append(other_field)
+
     def remove_connection(self, other_field: 'Field'):
         other_field.neighbour_fields.remove(self)
         self.neighbour_fields.remove(other_field)

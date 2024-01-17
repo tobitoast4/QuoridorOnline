@@ -49,22 +49,22 @@ class Wall:
 
     def remove_links_between_fields(self):
         if self.col_start == self.col_end:  # wall is vertical
-            field_col_left = math.ceil(self.col_start)
-            field_col_right = math.floor(self.col_start)
-            field_top_left = self.game_board.getFieldByColAndRow(field_col_left, self.row_start)
-            field_top_right = self.game_board.getFieldByColAndRow(field_col_right, self.row_start)
+            col_left = math.ceil(self.col_start)
+            col_right = math.floor(self.col_start)
+            field_top_left = self.game_board.getFieldByColAndRow(col_left, self.row_start)
+            field_top_right = self.game_board.getFieldByColAndRow(col_right, self.row_start)
             field_top_left.remove_connection(field_top_right)
-            field_bottom_left = self.game_board.getFieldByColAndRow(field_col_left, self.row_end)
-            field_bottom_right = self.game_board.getFieldByColAndRow(field_col_right, self.row_end)
+            field_bottom_left = self.game_board.getFieldByColAndRow(col_left, self.row_end)
+            field_bottom_right = self.game_board.getFieldByColAndRow(col_right, self.row_end)
             field_bottom_left.remove_connection(field_bottom_right)
         elif self.row_start == self.row_end:
-            field_row_top = math.floor(self.row_start)
-            field_row_bottom = math.ceil(self.row_start)
-            field_top_left = self.game_board.getFieldByColAndRow(self.col_start, field_row_top)
-            field_bottom_left = self.game_board.getFieldByColAndRow(self.col_start, field_row_bottom)
+            row_top = math.floor(self.row_start)
+            row_bottom = math.ceil(self.row_start)
+            field_top_left = self.game_board.getFieldByColAndRow(self.col_start, row_top)
+            field_bottom_left = self.game_board.getFieldByColAndRow(self.col_start, row_bottom)
             field_top_left.remove_connection(field_bottom_left)
-            field_top_right = self.game_board.getFieldByColAndRow(self.col_end, field_row_top)
-            field_bottom_right = self.game_board.getFieldByColAndRow(self.col_end, field_row_bottom)
+            field_top_right = self.game_board.getFieldByColAndRow(self.col_end, row_top)
+            field_bottom_right = self.game_board.getFieldByColAndRow(self.col_end, row_bottom)
             field_top_right.remove_connection(field_bottom_right)
         else:
             raise QuoridorOnlineGameError("Either col_start == col_end or col_start == col_end must be true")
@@ -84,6 +84,27 @@ class Wall:
         if (other_wall.row_start + other_wall.row_end) / 2 == self.row_start and \
                 other_wall.col_start == (self.col_start + self.col_end) / 2:
             return True
+
+    def remove_wall_from_field(self):
+        if self.col_start == self.col_end:  # wall is vertical
+            col_left = math.floor(self.col_start)
+            col_right = math.ceil(self.col_start)
+            field_top_left = self.game_board.getFieldByColAndRow(col_left, self.row_start)
+            field_top_right = self.game_board.getFieldByColAndRow(col_right, self.row_start)
+            field_bottom_left = self.game_board.getFieldByColAndRow(col_left, self.row_end)
+            field_bottom_right = self.game_board.getFieldByColAndRow(col_right, self.row_end)
+            field_top_left.add_connection(field_top_right)
+            field_bottom_left.add_connection(field_bottom_right)
+        elif self.row_start == self.row_end:
+            row_top = math.floor(self.row_start)
+            row_bottom = math.ceil(self.row_start)
+            field_top_left = self.game_board.getFieldByColAndRow(self.col_start, row_top)
+            field_top_right = self.game_board.getFieldByColAndRow(self.col_end, row_top)
+            field_bottom_left = self.game_board.getFieldByColAndRow(self.col_start, row_bottom)
+            field_bottom_right = self.game_board.getFieldByColAndRow(self.col_end, row_bottom)
+            field_top_left.add_connection(field_bottom_left)
+            field_top_right.add_connection(field_bottom_right)
+        self.game_board.walls.remove(self)
 
     def _is_wall_at_coordinates(self, col, row):
         """Checks if wall is at coordinates.:

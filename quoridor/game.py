@@ -45,6 +45,10 @@ class Game:
             raise QuoridorOnlineGameError("You do not have any more walls left")
         new_wall = wall.Wall(col_start, row_start, col_end, row_end, self.game_board)
         self.game_board.walls.append(new_wall)
+        path_checker = PathChecker()
+        if not path_checker.check_if_path_to_win_exists_for_all_players(self.game_board.players):
+            new_wall.remove_wall_from_field()
+            raise QuoridorOnlineGameError("Wall could not be placed as it would block a player from winning")
         # if creating a wall did not throw an exception, decrease the amount of walls the player has
         self._get_current_player().amount_walls_left -= 1
         self._next_players_turn()
@@ -73,3 +77,42 @@ class Game:
             "time": utils.get_current_time(),
             "game_board": self.game_board.__json__(),
         })
+
+
+class PathChecker:
+    """Class that checks that a wall does not block any player
+       completely off from winning.
+
+       # TODO: PROBLEM THAT COULD OCCUR:
+       A problem that could currently happen, is that there is a path,
+       but check_if_path_to_win_exists_for_all_players() returns False.
+       This could happen, if a field that need a way to win would contains
+       is already visited by another recursion loop.
+    """
+    def __init__(self):
+        self.path_found = None
+        self.fields_visited = None
+
+    def check_if_path_to_win_exists_for_all_players(self, players):
+        for player in players:
+            self.path_found = False
+            self.fields_visited = []
+            self.check_if_path_to_win_exists(player.field, player.win_option_fields)
+            if self.path_found == False:  # after check_if_path_to_win_exists() this should be set
+                return False              # to true if there is a path
+        return True
+
+    def check_if_path_to_win_exists(self, field, fields_to_win):
+        # Returns true if there is at least one path from field to one of
+        # the fields in fields_to_win. Otherwise returns false.
+        if field in self.fields_visited:
+            return
+        if field in fields_to_win:
+            self.path_found = True
+            return
+        if self.path_found:
+            return
+        self.fields_visited.append(field)
+        neighbour_fields = field.neighbour_fields
+        for neighbour_field in neighbour_fields:
+            self.check_if_path_to_win_exists(neighbour_field, fields_to_win)
