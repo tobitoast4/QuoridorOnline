@@ -440,10 +440,12 @@ function movePlayer(the_player, new_field, is_initial_move=false) {
             the_player.field.player = null; 
             the_player.field = new_field;
             nextPlayersTurn();
+            playAudio();
         }
     } else {
         new_field.player = the_player;
         the_player.field = new_field;
+        playAudio();
     }
     if (the_player.win_option_fields.includes(the_player.field)) {
         updatePlayerWonTheGame(the_player.name);
@@ -483,6 +485,7 @@ function placeWall() {
             refreshPlayerStats();
             last_wall.wall = new Wall();
             nextPlayersTurn();
+            playAudio();
         } else {
             // readding the connection between the fields (because wall could not be placed)
             if (last_wall.wall.is_vertical) {

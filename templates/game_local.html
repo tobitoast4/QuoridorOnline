@@ -4,6 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=0.5">
         <title>QuoridorOnline</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="{{ url_for('static', filename='styles/notify.css' )}}">
         <link rel="stylesheet" href="{{ url_for('static', filename='styles/header.css' )}}">
         <link rel="stylesheet" href="{{ url_for('static', filename='styles/stats.css' )}}">
@@ -25,7 +26,10 @@
         <canvas></canvas>
 
         <div class="stats-container">
-            <div style="width: 100%; text-align: left">
+            <div style="width: 100%; text-align: left; display: flex;">
+                <div style="margin: 16px">
+                    <button id="button-sound-mute" onclick="toggleAudio()" class="control-button"></button>
+                </div>
                 <div style="margin: 16px">
                     <button id="button-place-walls" onclick="changePlayState()" class="control-button">
                         Place<br/>wall
@@ -49,6 +53,7 @@
         <script src="{{ url_for('static', filename='js/stats.js' )}}"></script>
         <script src="{{ url_for('static', filename='js/notify.js' )}}"></script>
         <script src="{{ url_for('static', filename='js/game_local.js' )}}"></script>
+        <script src="{{ url_for('static', filename='js/audio.js' )}}"></script>
 
         <script>
             var amount_players = {{ amount_players }};

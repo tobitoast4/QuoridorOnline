@@ -38,6 +38,9 @@
         <div class="stats-container">
             <div style="width: 100%; text-align: left; display: flex;">
                 <div style="margin: 16px">
+                    <button id="button-sound-mute" onclick="toggleAudio()" class="control-button"></button>
+                </div>
+                <div style="margin: 16px">
                     <button id="button-inspect-previous-round" onclick="viewPreviousOrNextGameRound(1)" class="control-button">
                         <i class="fa fa-angle-left" style="font-size: 32px" aria-hidden="true"></i>
                     </button>
@@ -77,6 +80,7 @@
         <script src="{{ url_for('static', filename='js/stats.js' )}}"></script>
         <script src="{{ url_for('static', filename='js/notify.js' )}}"></script>
         <script src="{{ url_for('static', filename='js/game_online.js' )}}"></script>
+        <script src="{{ url_for('static', filename='js/audio.js' )}}"></script>
 
         <script src="{{ url_for('static', filename='js/query_server.js' )}}"></script>
 
@@ -92,7 +96,7 @@
                 if (players_action_state != 2) {
                     updateGame();
                 }
-            }, 500);
+            }, 300);
         </script>
 
         <div id="back_to_menu_overlay" style="display: none">

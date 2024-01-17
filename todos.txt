@@ -7,5 +7,3 @@
                                   (also for changing names))
 - Button for place walls on mobile devices
 - Zoom in out
-- Get back and forward with arrows (+ buttons for mobile)
-- Sound

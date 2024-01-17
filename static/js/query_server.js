@@ -127,6 +127,7 @@ async function updateGame(round_diff=0) {
         current_round_diff = 0;  // defined in game_online.js
     }
     if (fetched_game_data_is_new || round_diff != 0) {
+        playAudio();
         complete_game_data = new_complete_game_data;
         game_data = complete_game_data["game"];
 
