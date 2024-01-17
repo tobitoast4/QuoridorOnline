@@ -38,9 +38,18 @@
         </div>
 
         <div class="stats-container">
-            <div class="stats-padding">
-                <div id="stats_grid" class="stats-grid">
-                    <!-- the stats of the players will be placed here (e.g. the remaining walls) (see /js/stats.js) -->
+            <div style="width: 100%; text-align: right">
+                <div style="margin: 16px">
+                    <button id="button-place-walls" onclick="changePlayState()" class="control-button">
+                        Place<br/>wall
+                    </button>
+                </div>
+            </div>
+            <div style="background-color: #bbf7d0;">
+                <div class="stats-padding">
+                    <div id="stats_grid" class="stats-grid">
+                        <!-- the stats of the players will be placed here (e.g. the remaining walls) (see /js/stats.js) -->
+                    </div>
                 </div>
             </div>
         </div>

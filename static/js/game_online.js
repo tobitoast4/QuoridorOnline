@@ -61,13 +61,22 @@ document.addEventListener('keyup', function(event) {
         field_clicked = getFieldByCoordinates(mouse.x + window.scrollX, mouse.y + window.scrollY);
         console.log(field_clicked);
     } else if (event.key) {
-        if (players_action_state == STATE_MOVE) {
-            players_action_state = STATE_PLACE_WALL;
-        } else if (players_action_state == STATE_PLACE_WALL) {
-            players_action_state = STATE_MOVE;
-        }
+        changePlayState();
     }
 });
+
+function changePlayState() {
+    // switches between STATE_MOVE and STATE_PLACE_WALL
+    if (players_action_state == STATE_MOVE) {
+        players_action_state = STATE_PLACE_WALL;
+        // adapt button style
+        $('#button-place-walls').toggleClass("control-button-active");
+    } else if (players_action_state == STATE_PLACE_WALL) {
+        players_action_state = STATE_MOVE;
+        // adapt button style
+        $('#button-place-walls').toggleClass("control-button-active");
+    }
+}
 
 window.addEventListener("resize", function(event) {
     canvas.width = window.innerWidth;

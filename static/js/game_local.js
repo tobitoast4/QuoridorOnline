@@ -82,7 +82,6 @@ function changePlayState() {
         // adapt button style
         $('#button-place-walls').toggleClass("control-button-active");
     }
-
 }
 
 window.addEventListener("resize", function(event) {
