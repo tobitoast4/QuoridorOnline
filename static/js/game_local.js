@@ -32,6 +32,27 @@ function clear(){
     ctx.clearRect(0, 0, innerWidth, innerHeight)
 }
 
+// ##########################
+// this is for mobile devices
+let last_touch_X = -1;
+let last_touch_Y = -1;
+document.addEventListener('touchend', e => {
+    last_touch_X = -1;
+    last_touch_Y = -1;
+})
+
+document.addEventListener("touchmove", function clicked(e) {
+    if (last_touch_X >= 0) {
+        let touch_distance_X = e.touches[0].screenX - last_touch_X;
+        let touch_distance_Y = e.touches[0].screenY - last_touch_Y;
+        mouse.x = mouse.x + touch_distance_X;
+        mouse.y = mouse.y + touch_distance_Y;
+    }
+    last_touch_X = e.touches[0].screenX;
+    last_touch_Y = e.touches[0].screenY;
+});
+// ##########################
+
 window.addEventListener("mousemove", function(event) {
     mouse.x = event.x + window.scrollX;  // scrollXY corrects mouse position 
     mouse.y = event.y + window.scrollY;  // when window is scrolled

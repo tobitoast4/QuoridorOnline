@@ -103,7 +103,7 @@ def start_game(lobby_id):
 def game(lobby_id):
     the_user = log_in_user()
     the_lobby = lobby_manager.get_lobby(lobby_id)
-    return render_template("game.html", user=the_user, lobby=the_lobby, server_url=SERVER_URL)
+    return render_template("game_online.html", user=the_user, lobby=the_lobby, server_url=SERVER_URL)
 
 
 @app.route("/game_move_player/<string:lobby_id>", methods=['POST'])
