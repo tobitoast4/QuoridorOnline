@@ -10,6 +10,7 @@ canvas.height = window.innerHeight;
 var ctx = canvas.getContext("2d");
 
 var game_board;
+var current_round_diff = 0;
 var fields = [];
 var players = [];
 var walls = [];
@@ -42,12 +43,12 @@ window.addEventListener("mouseup", function(event) {
     if (players_action_state == STATE_PLACE_PLAYER) {
         field_clicked = getFieldByCoordinates(event.x + window.scrollX, event.y + window.scrollY);
         if (field_clicked != null) {
-            movePlayer(current_player, field_clicked, true);
+            movePlayerAsync(current_player.player_id, field_clicked.col_num, field_clicked.row_num);
         }
     } else if (players_action_state == STATE_MOVE) {
         field_clicked = getFieldByCoordinates(event.x + window.scrollX, event.y + window.scrollY);
         if (field_clicked != null) {
-            movePlayer(current_player, field_clicked);
+            movePlayerAsync(current_player.player_id, field_clicked.col_num, field_clicked.row_num);
         }
     } else if (players_action_state == STATE_PLACE_WALL) {
         if (last_wall.wall_can_be_placed){
@@ -117,7 +118,6 @@ function Field(x, y, col_num, row_num) {
     this.row_num = row_num;
     this.size = game_board.field_size - game_board.margin_between_fields;
     this.fill_color = "white";
-    this.player = null;
 
     this.draw = function() {
         ctx.beginPath();
@@ -312,62 +312,6 @@ function getFieldByColAndRow(col_num, row_num) {
     return field_to_return;
 }
 
-function getFieldsByColOrRow(col_num, row_num) {
-    // Returns all fields in the specified column / row.
-    // Inputs can be col_num=k, row_num=null or col_num=null, row_num=k . 
-    // Other inputs will return null.
-    if (col_num < 0 || row_num < 0 || col_num > game_board.amount_fields-1 || row_num > game_board.amount_fields-1){
-        return null;
-    }
-    var fields_to_return = [];
-    if (col_num == null) {
-        for (var i = 0; i < game_board.amount_fields; i++) {
-            fields_to_return.push(getFieldByColAndRow(i, row_num));
-        }
-    } else if (row_num == null) {
-        for (var i = 0; i < game_board.amount_fields; i++) {
-            fields_to_return.push(getFieldByColAndRow(col_num, i));
-        }
-    } else {
-        return null;
-    }
-    return fields_to_return;
-}
-
-
-function movePlayer(the_player, new_field, is_initial_move=false) {
-    if (!is_initial_move) {
-        old_field = the_player.field;
-        distance_x = Math.abs(new_field.col_num - old_field.col_num);  // amount fields in x axis
-        distance_y = Math.abs(new_field.row_num - old_field.row_num);  // amount fields in y axis
-        total_distance = distance_x + distance_y;
-        if (old_field == new_field){
-            showNotify("error", "", "You have to move", 3);
-            return;
-        } else if (!itsLoggedInPlayersTurn()) {
-            showNotify("error", "", "It's not your turn", 3);
-            return;
-        } else if (!the_player.move_option_fields.includes(new_field)) {
-            showNotify("error", "", "Illegal move", 3);
-            return;
-        } else {
-            new_field.player = the_player;
-            the_player.field.player = null;
-            the_player.field = new_field;
-            movePlayerAsync(the_player.player_id, new_field.col_num, new_field.row_num);
-        }
-    } else {
-        new_field.player = the_player;
-        the_player.field = new_field;
-        movePlayerAsync(the_player.player_id, new_field.col_num, new_field.row_num);
-    }
-    if (the_player.win_option_fields.includes(the_player.field)) {
-        updatePlayerWonTheGame(the_player.name);
-        players_action_state = STATE_PLAYER_DID_WIN;
-    }
-    the_player.draw();
-}
-
 function placeWall(the_player) {
     attached_field = last_wall.field_where_wall_is_attached;
     let col_start = -1;
@@ -390,7 +334,6 @@ function placeWall(the_player) {
 
     placeWallAsync(the_player.player_id, col_start, row_start, col_end, row_end);
 }
-
 
 function placeWallByServerCoordinates(col_start, row_start, col_end, row_end) {
     var width = game_board.wall_width;
@@ -415,6 +358,20 @@ function placeWallByServerCoordinates(col_start, row_start, col_end, row_end) {
 
     wall.draw();
     walls.push(wall);
+}
+
+
+function viewPreviousOrNextGameRound(round_diff) {
+    current_round_diff = current_round_diff + round_diff;
+    if (current_round_diff <= 0) {
+        current_round_diff = 0;
+    }
+    let game_data = complete_game_data["game"];  // complete_game_data is defined in query_server.js
+    if (current_round_diff > game_data.length - players.length) {
+        current_round_diff = game_data.length - players.length;
+    }
+
+    updateGame(current_round_diff+1);
 }
 
 function itsLoggedInPlayersTurn(field, fields_to_win) {
@@ -471,11 +428,11 @@ function animate(){
         if (players_action_state == STATE_PLACE_WALL) {
             last_wall.wall.drawOnHover();
         } else if (players_action_state == STATE_PLACE_PLAYER) {
-            if (itsLoggedInPlayersTurn()) {
+            if (itsLoggedInPlayersTurn() && current_round_diff == 0) {
                 players[its_this_players_turn].drawMoveOptions(true);
             }
         } else if (players_action_state != STATE_PLAYER_DID_WIN) {
-            if (itsLoggedInPlayersTurn()) {
+            if (itsLoggedInPlayersTurn() && current_round_diff == 0) {
                 players[its_this_players_turn].drawMoveOptions();
             }
         }

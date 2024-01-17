@@ -17,7 +17,7 @@ class Game:
         self.turn = 0
         self.game_data = {
             "initial_setup": self.game_board.__json__(initial=True),
-            "game": dict()
+            "game": []
         }
         self._append_game_data()
 
@@ -49,10 +49,6 @@ class Game:
         self._get_current_player().amount_walls_left -= 1
         self._next_players_turn()
 
-    def get_current_game_data(self):
-        """Can be used to query the current status of the game."""
-        return self.game_data
-
     def _next_players_turn(self):
         self.its_this_players_turn += 1
         if self.its_this_players_turn >= len(self.game_board.players):
@@ -70,10 +66,10 @@ class Game:
         return self.game_board.players[self.its_this_players_turn]
 
     def _append_game_data(self):
-        self.game_data["game"] = {
+        self.game_data["game"].append({
             "state": self.state,
             "its_this_players_turn": self.its_this_players_turn,
             "turn": self.turn,
             "time": utils.get_current_time(),
             "game_board": self.game_board.__json__(),
-        }
+        })

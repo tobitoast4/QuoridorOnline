@@ -113,7 +113,7 @@ def game_move_player(lobby_id):
     request_data = request.json
     if request_data["user_id"] != session['user_id']:
         # raise QuoridorOnlineGameError("User can not move another player")
-        return {"error": "User can not move another player"}
+        return {"error": "It's not your turn"}
     else:
         the_game.move_player(request_data["user_id"],
                              request_data["new_field_col_num"],

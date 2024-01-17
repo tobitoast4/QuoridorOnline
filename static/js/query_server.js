@@ -2,7 +2,7 @@ var server_url = null;
 var current_lobby_id = null;
 var this_player_id = null;
 var this_player_name = null;
-var game_data = null;
+var complete_game_data = null;
 
 var last_error_msg = null;
 
@@ -59,6 +59,7 @@ async function movePlayerAsync(player_id, new_field_col_num, new_field_row_num) 
         throwOnError(data);
     } catch (error) {
         showNotify("error", "", error, 6);
+        updateGame(round_diff=1);  // when user views previous rounds and fails to move
     }
 }
 
@@ -81,6 +82,8 @@ async function placeWallAsync(player_id, col_start, row_start, col_end, row_end)
         throwOnError(data);
     } catch (error) {
         showNotify("error", "", error, 6);
+        console.log("error");
+        updateGame(round_diff=1);  // when user views previous rounds and fails to place a wall
     }
 }
 
@@ -116,15 +119,28 @@ async function createPlayers() {
     refreshPlayerStats();
 }
 
-async function updateGame() {
-    let new_game_data = await getGameDataAsync();
-    if (JSON.stringify(new_game_data) != JSON.stringify(game_data)) {
-        console.log(new_game_data);
-        game_data = new_game_data;
-        let current_game_round = game_data.game;
+async function updateGame(round_diff=0) {
+    let new_complete_game_data = await getGameDataAsync();
+    let fetched_game_data_is_new = JSON.stringify(new_complete_game_data) != JSON.stringify(complete_game_data);
+
+    if (fetched_game_data_is_new) {
+        current_round_diff = 0;  // defined in game_online.js
+    }
+    if (fetched_game_data_is_new || round_diff != 0) {
+        complete_game_data = new_complete_game_data;
+        game_data = complete_game_data["game"];
+
+        if (round_diff <= 1) {
+            round_diff = 1;
+        }
+        if (round_diff > game_data.length) {
+            round_diff = game_data.length;
+        }
+
+        let current_game_data = game_data[game_data.length - round_diff];
 
         // update players
-        let players_json = current_game_round.game_board.players;
+        let players_json = current_game_data.game_board.players;
         players_json.forEach(player_json => {
             let players_field = player_json["field"];
             if (players_field != null) {
@@ -136,7 +152,7 @@ async function updateGame() {
         });
 
         // update walls
-        let walls_json = current_game_round.game_board.walls;
+        let walls_json = current_game_data.game_board.walls;
         walls = [];  // remove all existing walls
         walls_json.forEach(wall_json => {
             let start = wall_json["start"];
@@ -144,18 +160,23 @@ async function updateGame() {
             placeWallByServerCoordinates(start["col"], start["row"], end["col"], end["row"]);
         });
 
-        players_action_state = current_game_round["state"];
-        its_this_players_turn = current_game_round["its_this_players_turn"];
-        if (players_action_state == 2) {
-            let last_players_turn = its_this_players_turn - 1;
-            if (last_players_turn < 0) {
-                last_players_turn = players.length - 1;
+        if (round_diff <= 1) {
+            players_action_state = current_game_data["state"];
+            its_this_players_turn = current_game_data["its_this_players_turn"];
+            if (players_action_state == 2) {
+                let last_players_turn = its_this_players_turn - 1;
+                if (last_players_turn < 0) {
+                    last_players_turn = players.length - 1;
+                }
+                last_player = players[last_players_turn];
+                updatePlayerWonTheGame(last_player.name);
+            } else {
+                player = players[its_this_players_turn];
+                updatePlayersTurnInstuction(player.name);
             }
-            last_player = players[last_players_turn];
-            updatePlayerWonTheGame(last_player.name);
-        } else {
-            player = players[its_this_players_turn];
-            updatePlayersTurnInstuction(player.name);
+        }
+        if (players_action_state == STATE_PLACE_WALL) {
+            changePlayState();
         }
     }
 }

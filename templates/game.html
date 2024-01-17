@@ -4,6 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=0.5">
         <title>QuoridorOnline</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Moul&effect=outline">
         <link rel="stylesheet" href="{{ url_for('static', filename='styles/notify.css' )}}">
         <link rel="stylesheet" href="{{ url_for('static', filename='styles/header.css' )}}">
@@ -33,14 +34,28 @@
         </div>
 
         <canvas></canvas>
-        <div style="width: 100%;">
-            <div id="notify-holder" class="notify-container"></div>
-        </div>
 
         <div class="stats-container">
-            <div style="width: 100%; text-align: right">
+            <div style="width: 100%; text-align: left; display: flex;">
                 <div style="margin: 16px">
-                    <button id="button-place-walls" onclick="changePlayState()" class="control-button">
+                    <button id="button-inspect-previous-round" onclick="viewPreviousOrNextGameRound(1)" class="control-button">
+                        <i class="fa fa-angle-left" style="font-size: 32px" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div style="margin: 16px">
+                    <button id="button-inspect-next-round" onclick="viewPreviousOrNextGameRound(-1)" class="control-button">
+                        <i class="fa fa-angle-right" style="font-size: 32px" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div style="margin: 16px">
+                    <button id="button-inspect-current-round" class="control-button"
+                            onclick="current_round_diff=0;updateGame(round_diff=1)">
+                        <i class="fa fa-angle-double-right" style="font-size: 32px" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div style="margin: 16px; margin-left: 48px">
+                    <button id="button-place-walls" onclick="changePlayState()"
+                            class="control-button" style="padding: 20px 18px 16px 18px;">
                         Place<br/>wall
                     </button>
                 </div>
@@ -52,6 +67,10 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div style="width: 100%;">
+            <div id="notify-holder" class="notify-container"></div>
         </div>
 
         <script src="{{ url_for('static', filename='js/header.js' )}}"></script>

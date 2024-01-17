@@ -19,16 +19,13 @@
         </style>
 
         <div class="header-container">
-            <h3 id="players_turn" style="text-align: center; margin: 10px 0;">INSTUCTION</h3>
+            <h3 id="players_turn" style="text-align: center; margin: 10px 0;">Place the first player</h3>
         </div>
 
         <canvas></canvas>
-        <div style="width: 100%;">
-            <div id="notify-holder" class="notify-container"></div>
-        </div>
 
         <div class="stats-container">
-            <div style="width: 100%; text-align: right">
+            <div style="width: 100%; text-align: left">
                 <div style="margin: 16px">
                     <button id="button-place-walls" onclick="changePlayState()" class="control-button">
                         Place<br/>wall
@@ -42,6 +39,10 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div style="width: 100%;">
+            <div id="notify-holder" class="notify-container"></div>
         </div>
 
         <script src="{{ url_for('static', filename='js/header.js' )}}"></script>
