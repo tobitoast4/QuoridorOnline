@@ -1,74 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Moul&effect=outline">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/notify.css' )}}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/header.css' )}}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/stats.css' )}}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css' )}}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/buttons.css' )}}">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>QuoridorOnline</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Moul&effect=outline">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/notify.css' )}}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/header.css' )}}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/stats.css' )}}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css' )}}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/buttons.css' )}}">
 
-    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-    <!-- <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> --> <!-- use this for production -->
-</head>
-<body>
-    <style>
-        body {
-            background-color: white
-        }
+        <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+        <!-- <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> --> <!-- use this for production -->
+    </head>
+    <body>
+        <style>
+            body {
+                background-color: white
+            }
 
-        .notify-container {
-            width: 25%;
-            position: fixed;
-            bottom: 70px; right: 0px;
-            padding: 0 10px 0 10px;
-        }
-    </style>
+            .notify-container {
+                width: 25%;
+                position: fixed;
+                bottom: 70px; right: 0px;
+                padding: 0 10px 0 10px;
+            }
+        </style>
 
-    <div class="header-container">
-        <h3 id="players_turn" style="text-align: center; margin: 10px 0;"></h3>
-    </div>
-    
-    <canvas></canvas>
-    <div style="width: 100%;">
-        <div id="notify-holder" class="notify-container"></div>
-    </div>
-    
-    <div class="stats-container">
-        <div class="stats-padding">
-            <div id="stats_grid" class="stats-grid">
-                <!-- the stats of the players will be placed here (e.g. the remaining walls) (see /js/stats.js) -->
+        <div class="header-container">
+            <h3 id="players_turn" style="text-align: center; margin: 10px 0;"></h3>
+        </div>
+
+        <canvas></canvas>
+        <div style="width: 100%;">
+            <div id="notify-holder" class="notify-container"></div>
+        </div>
+
+        <div class="stats-container">
+            <div class="stats-padding">
+                <div id="stats_grid" class="stats-grid">
+                    <!-- the stats of the players will be placed here (e.g. the remaining walls) (see /js/stats.js) -->
+                </div>
             </div>
         </div>
-    </div>
 
-    <script src="{{ url_for('static', filename='js/header.js' )}}"></script>
-    <script src="{{ url_for('static', filename='js/stats.js' )}}"></script>
-    <script src="{{ url_for('static', filename='js/notify.js' )}}"></script>
-    <script src="{{ url_for('static', filename='js/game_online.js' )}}"></script>
+        <script src="{{ url_for('static', filename='js/header.js' )}}"></script>
+        <script src="{{ url_for('static', filename='js/stats.js' )}}"></script>
+        <script src="{{ url_for('static', filename='js/notify.js' )}}"></script>
+        <script src="{{ url_for('static', filename='js/game_online.js' )}}"></script>
 
-    <script src="{{ url_for('static', filename='js/query_server.js' )}}"></script>
+        <script src="{{ url_for('static', filename='js/query_server.js' )}}"></script>
 
-    <script>
-        server_url = "{{ server_url }}";
-        current_lobby_id = "{{ lobby.lobby_id }}";
-        this_player_id = "{{ user.id }}";
-        players_action_state = STATE_PLACE_PLAYER;
-        createPlayers();
+        <script>
+            server_url = "{{ server_url }}";
+            current_lobby_id = "{{ lobby.lobby_id }}";
+            this_player_id = "{{ user.id }}";
+            players_action_state = STATE_PLACE_PLAYER;
+            createPlayers();
 
 
-        let intervalID = setInterval(() => { // see https://rapidapi.com/guides/api-requests-intervals
-            if (players_action_state != 2) {
-                updateGame();
-            }
-        }, 500);
-    </script>
+            let intervalID = setInterval(() => { // see https://rapidapi.com/guides/api-requests-intervals
+                if (players_action_state != 2) {
+                    updateGame();
+                }
+            }, 500);
+        </script>
 
-    <div id="back_to_menu_overlay" style="display: none">
-        {% include 'back_to_menu.html' %}
-    </div>
-</body>
+        <div id="back_to_menu_overlay" style="display: none">
+            {% include 'back_to_menu.html' %}
+        </div>
+    </body>
 </html>
