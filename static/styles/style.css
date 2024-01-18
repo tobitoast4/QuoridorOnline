@@ -6,13 +6,25 @@ body {
     margin: 0;
 }
 
-.font-moul-white-big {
-    font-family: Moul;
-    color: white;
-    font-size: 48px
-}
-
 .font-moul-white {
     font-family: Moul;
     color: white
+}
+
+.font-moul-white-big {
+    font-family: Moul;
+    color: white;
+    font-size: 28px
+}
+
+@media screen and (min-width: 366px) {
+    .font-moul-white-big {
+        font-size: 36px
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .font-moul-white-big {
+        font-size: 48px
+    }
 }

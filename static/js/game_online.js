@@ -6,7 +6,7 @@ const STATE_PLAYER_DID_WIN = 2;
 var canvas = document.querySelector("canvas");
 
 canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.height = 850;
 var ctx = canvas.getContext("2d");
 
 var game_board;
@@ -407,7 +407,7 @@ function itsLoggedInPlayersTurn(field, fields_to_win) {
 
 
 function drawBoard() {
-    game_board = new GameBoard(650); 
+    game_board = new GameBoard(canvas.height - 200);
     game_board.draw();
 }
 
