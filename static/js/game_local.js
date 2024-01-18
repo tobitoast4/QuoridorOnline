@@ -5,8 +5,10 @@ const STATE_PLAYER_DID_WIN = 2;
 
 var canvas = document.querySelector("canvas");
 
+var header_height = document.getElementById('game-header').clientHeight;
+var stats_height = document.getElementById('game-stats').clientHeight;
 canvas.width = window.innerWidth;
-canvas.height = 850;
+canvas.height = window.innerHeight - header_height - stats_height;
 var ctx = canvas.getContext("2d");
 
 var game_board;
@@ -558,7 +560,7 @@ function checkIfPathToWinExists(field, fields_to_win) {
 
 
 function drawBoard() {
-    game_board = new GameBoard(canvas.height - 200);
+    game_board = new GameBoard(650);
     game_board.draw();
 }
 
