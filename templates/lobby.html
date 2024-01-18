@@ -1,29 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<style>
-    .element-box {
-        background-color: white;
-        width: 30%;
-        margin-left: 35%;
-        text-align: left;
-        border-radius: 30px;
-        padding: 25px
-    }
-
-    .element-box div {
-        list-style: none;
-    }
-
-    .element-box div div {
-        padding: 10px 0;
-    }
-
-    textarea:focus, input:focus{
-        outline: none;
-    }
-
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/lobby.css' )}}">
 <div>
     <h1 class="font-effect-outline font-moul-white-big">QuoridorOnline</h1>
     <h2>LOBBY</h2>
@@ -51,10 +29,12 @@
     </div>
     <br/>
     <br/>
-
     List of players in lobby
     <div class="element-box">
-        <div id="list_of_players"></div>
+        <div id="list_of_players">
+            <!-- display loading until players are loaded-->
+            <div style="margin: auto;" class="loader"></div>
+        </div>
     </div>
     <br/>
     <div class="text-box" onclick="startGameAsync()">

@@ -258,11 +258,11 @@ async function getLobbyAsync() {
                 list_of_players.empty();
                 data.players.forEach(player => {
                     if (player.id == lobby_owner_id) {
-                        list_of_players.append("<div style='display: inline-block;'>" + player.name +
+                        list_of_players.append("<div style='display: inline-block; padding: 10px 0;'>" + player.name +
                                                "<i class='fa fa-user-circle-o' aria-hidden='true' style='margin-left: 12px'></i>" +
                                                "</div>");
                     } else {
-                        list_of_players.append("<div>" + player.name + "</div>");
+                        list_of_players.append("<div style='padding: 10px 0;'>" + player.name + "</div>");
                     }
                 });
             } else if (data.hasOwnProperty("game")) {
