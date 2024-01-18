@@ -4,6 +4,3 @@
                                   (also for changing names))
 - Button for place walls on mobile devices
 - Zoom in out
-
-Bugs:
-- some times game starts when user joins a lobby

@@ -1,5 +1,5 @@
 from quoridor.game import Game
-import time
+import random
 import utils
 import json
 
@@ -70,6 +70,7 @@ class Lobby:
         self.game = None
 
     def start_game(self):
+        random.shuffle(self.players)
         self.game = Game(self.players)
 
     def to_json(self):
