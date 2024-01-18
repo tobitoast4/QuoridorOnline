@@ -1,16 +1,14 @@
-from threading import Thread
 from quoridor.game import Game
 import time
 import utils
 import json
 
-PLAYER_TIME_OUT_TIME = 0.5  # how long (in sec) is the player allowed to not poll until removed from the lobby
+PLAYER_TIME_OUT_TIME = 1  # how long (in sec) is the player allowed to not poll until removed from the lobby
 
 
 class LobbyManager:
     def __init__(self):
         self.lobbies = []
-        self.start_check_players_last_seen_time_task()
 
     def create_new_lobby(self, lobby_owner):
         new_lobby = Lobby(lobby_owner)
@@ -43,27 +41,23 @@ class LobbyManager:
                 player.name = new_user_name
                 return
 
-    def start_check_players_last_seen_time_task(self):
-        thread = Thread(target=self.check_players_last_seen_time)
-        thread.start()
-
     def check_players_last_seen_time(self):
-        while True:
-            try:
-                for lobby in self.lobbies:
-                    for p in range(len(lobby.players)):
-                        player_last_seen_time = lobby.players_last_seen[p]
-                        if utils.get_current_time() - player_last_seen_time > PLAYER_TIME_OUT_TIME:
-                            user_to_be_deleted_id = lobby.players[p].id
-                            del lobby.players[p]
-                            del lobby.players_last_seen[p]
-                            if user_to_be_deleted_id == lobby.lobby_owner.id:
-                                # if the user that left is the lobby owner, determine a new owner
-                                if len(lobby.players) > 0:
-                                    lobby.lobby_owner = lobby.players[0]
-                time.sleep(2)
-            except Exception as e:
-                print(e)  # usually index out of range exception (can be ignored if only appears once)
+        try:
+            for lobby in self.lobbies:
+                is_lobby_owner_still_in_lobby = False
+                for p in reversed(range(len(lobby.players))):
+                    if lobby.lobby_owner.id == lobby.players[p].id:
+                        is_lobby_owner_still_in_lobby = True
+                    player_last_seen_time = lobby.players_last_seen[p]
+                    if utils.get_current_time() - player_last_seen_time > PLAYER_TIME_OUT_TIME:
+                        del lobby.players[p]
+                        del lobby.players_last_seen[p]
+                if not is_lobby_owner_still_in_lobby:
+                    if len(lobby.players) > 0:
+                        lobby.lobby_owner = lobby.players[0]
+            time.sleep(2)
+        except Exception as e:
+            print(e)  # usually index out of range exception (can be ignored if only appears once)
 
 
 class Lobby:

@@ -74,6 +74,7 @@ def lobby(lobby_id=None):
 @app.route("/get_lobby/", methods=['POST'])
 @app.route("/get_lobby/<string:lobby_id>", methods=['POST'])
 def get_lobby(lobby_id=None):
+    lobby_manager.check_players_last_seen_time()
     if lobby_id is None:
         flash(f"The lobby with id {lobby_id} does not exist.")
         return redirect("/")
@@ -135,7 +136,6 @@ def game_place_wall(lobby_id):
                             request_data["row_start"],
                             request_data["col_end"],
                             request_data["row_end"])
-        the_game.game_board.print_fields()
     return {"status": "wall placed"}, 200
 
 
@@ -182,4 +182,4 @@ def log_in_user():
 
 if __name__ == '__main__':
     # app.run(host="0.0.0.0") # use me for prod
-    app.run(host="127.0.0.1", port=5009, debug=True)
+    app.run(host="127.0.0.1", port=5009, debug=False)
