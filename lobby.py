@@ -55,7 +55,6 @@ class LobbyManager:
                 if not is_lobby_owner_still_in_lobby:
                     if len(lobby.players) > 0:
                         lobby.lobby_owner = lobby.players[0]
-            time.sleep(2)
         except Exception as e:
             print(e)  # usually index out of range exception (can be ignored if only appears once)
 

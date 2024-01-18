@@ -1,7 +1,4 @@
 - getGameDataAsync auch gleichzeitig als heartbeat nutzen (??) (-> wenn spieler lange nicht mehr darauf queried, ist dieser vmtl offline)
-
-- responsiveness for smaller screens (for home and lobby page)
-- make game playable on mobile devices (playing walls)
 - improve page "play on this pc" (let the server still compute the errors,
                                   make screen for amount player selection before game starts
                                   (also for changing names))
@@ -10,4 +7,3 @@
 
 Bugs:
 - some times game starts when user joins a lobby
-- users do not get removed from lobby if they closed their browser window
