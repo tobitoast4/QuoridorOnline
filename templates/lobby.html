@@ -12,7 +12,7 @@
         <input value="{{ user.name }}"
                id="input-players-name"
                type="text"
-               style="width: 100%; border: none; font-size: 16px; font-weight: 600">
+               style="width: 100%; border: none; font-size: 16px; font-weight: 600; word-wrap: anywhere;">
         <button style="display: inline-block;" id="button_update_player_name">
             <i class="fa fa-floppy-o" aria-hidden="true"></i>
         </button>
@@ -21,7 +21,7 @@
     <br/>
     Share this link with your friends
     <div class="element-box" style="display: flex">
-        <div id="link-to-lobby" style="width: 100%;"></div>
+        <div id="link-to-lobby" style="width: 100%; word-wrap: anywhere;"></div>
         <button onclick="copy_to_clipboard()" style="display: inline-block;">
             <i class="fa fa-files-o" aria-hidden="true"></i>
         </button>
@@ -38,6 +38,17 @@
     <br/>
     <div class="text-box">
         <a href="#" onclick="startGameAsync()" class="btn btn-white btn-animate">Start game</a>
+    </div>
+    <br/>
+    <br/>
+    <div class="text-box">
+        <a id="change-lobby-visibility-button" href="#" onclick="changeVisibility()" class="btn btn-white btn-animate">
+            {% if lobby.is_private %}
+                <i class="fa fa-lock" aria-hidden="true"></i>
+            {% else %}
+                <i class="fa fa-globe" aria-hidden="true"></i>
+            {% endif %}
+        </a>
     </div>
 </div>
 
@@ -56,7 +67,6 @@
     this_player_name = "{{ user.name }}";
 
     let lobby_link = server_url + "lobby/" + current_lobby_id;
-    console.log(lobby_link);
     $('#link-to-lobby').html("" + lobby_link);
 
     function copy_to_clipboard() {

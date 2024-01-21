@@ -84,8 +84,12 @@ document.addEventListener('keyup', function(event) {
     if (event.key == '.') {
         field_clicked = getFieldByCoordinates(mouse.x + window.scrollX, mouse.y + window.scrollY);
         console.log(field_clicked);
+    } else if (event.key == "ArrowLeft") {
+        viewPreviousOrNextGameRound(1);
+    } else if (event.key == "ArrowRight") {
+        viewPreviousOrNextGameRound(-1);
     } else if (event.key) {
-        changePlayState();
+        changePlayState();  // place walls
     }
 });
 

@@ -1,3 +1,4 @@
+from errors import QuoridorOnlineGameError
 from quoridor.game import Game
 import random
 import utils
@@ -20,6 +21,14 @@ class LobbyManager:
             if current_lobby.lobby_id == lobby_id:
                 return current_lobby
         return None
+
+    def get_random_public_lobby(self):
+        lobby_list_copy = self.lobbies.copy()
+        lobby_list_copy = [lobby for lobby in lobby_list_copy if not lobby.is_private and lobby.game is None]
+        if len(lobby_list_copy) <= 0:
+            raise QuoridorOnlineGameError("Could not find any public lobby :(<br/>Try again later")
+        else:
+            return lobby_list_copy[random.randint(0, len(lobby_list_copy)-1)]
 
     def add_player_to_lobby(self, lobby_id, user):
         the_lobby = self.get_lobby(lobby_id)
@@ -56,12 +65,13 @@ class LobbyManager:
                     if len(lobby.players) > 0:
                         lobby.lobby_owner = lobby.players[0]
         except Exception as e:
-            print(e)  # usually index out of range exception (can be ignored if only appears once)
+            print(e)
 
 
 class Lobby:
     def __init__(self, lobby_owner):
         self.lobby_id = utils.get_new_uuid()
+        self.is_private = True
         self.time_created = utils.get_current_time()
         self.lobby_owner = lobby_owner
         self.players = []
@@ -72,6 +82,12 @@ class Lobby:
     def start_game(self):
         random.shuffle(self.players)
         self.game = Game(self.players)
+
+    def change_visibility(self):
+        if self.is_private:
+            self.is_private = False
+        else:
+            self.is_private = True
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__)

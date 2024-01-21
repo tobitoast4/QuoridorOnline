@@ -1,5 +1,9 @@
 {% extends "layout.html" %}
 {% block body %}
+<script src="{{ url_for('static', filename='js/query_server.js' )}}"></script>
+<script>
+    server_url = "{{ server_url }}";
+</script>
 <div>
     <br/>
     <br/>
@@ -9,8 +13,13 @@
     <br/>
     <br/>
     <div class="text-box">
-        <a href="/lobby" class="btn btn-white btn-animate">New lobby</a>
+        <a href="/lobby" class="btn btn-white btn-animate">new lobby</a>
     </div>
+    <br/>
+    <div class="text-box">
+        <a href="#" onclick="getRandomPublicLobby()" class="btn btn-white btn-animate">Join random</a>
+    </div>
+    <br/>
     <br/>
     <div class="text-box">
         <a href="/local?amount_players=2" class="btn btn-white btn-animate">Play on this PC</a>

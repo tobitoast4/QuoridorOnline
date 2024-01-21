@@ -20,6 +20,9 @@ lobby_manager = lobby.LobbyManager()
 def handle_exception(e):
     # pass through HTTP errors
     if isinstance(e, HTTPException):
+        if "404" in str(e):
+            flash(str(e))
+            return redirect("/")
         return e
     return {"error": str(e)}, 500
 
@@ -35,7 +38,7 @@ def load_user(user_id):
 @app.route("/", methods=['GET'])
 def home():
     the_user = log_in_user()
-    return render_template("home.html", user=the_user)
+    return render_template("home.html", user=the_user, server_url=SERVER_URL)
 
 
 @app.route("/local", methods=['GET'])
@@ -98,6 +101,24 @@ def start_game(lobby_id):
         return {"error": "Only the lobby owner can start the game"}
     the_lobby.start_game()
     return {"status": "game started"}, 200
+
+
+@app.route("/change_lobby_visibility/<string:lobby_id>", methods=['POST'])
+def change_lobby_visibility(lobby_id):
+    the_lobby = lobby_manager.get_lobby(lobby_id)
+    if session['user_id'] != the_lobby.lobby_owner.id:
+        return {"error": "Only the lobby owner can change the visibility"}
+    the_lobby.change_visibility()
+    if the_lobby.is_private:
+        return {"status": "Lobby visibility successfully changed to: private"}, 200
+    else:
+        return {"status": "Lobby visibility successfully changed to: public"}, 200
+
+
+@app.route("/get_random_lobby", methods=['GET'])
+def get_random_lobby():
+    the_lobby = lobby_manager.get_random_public_lobby()
+    return {"lobby_url": f"{SERVER_URL}lobby/{the_lobby.lobby_id}"}, 200
 
 
 @app.route("/game/<string:lobby_id>", methods=['GET'])

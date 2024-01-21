@@ -82,7 +82,6 @@ async function placeWallAsync(player_id, col_start, row_start, col_end, row_end)
         throwOnError(data);
     } catch (error) {
         showNotify("error", "", error, 6);
-        console.log("error");
         updateGame(round_diff=1);  // when user views previous rounds and fails to place a wall
     }
 }
@@ -235,6 +234,43 @@ async function startGameAsync() {
     }
 }
 
+async function changeVisibility() {
+    try {
+        var response = await fetch(server_url + "change_lobby_visibility/" + current_lobby_id, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        var data = await response.json();
+        throwOnError(data);
+        if (data.hasOwnProperty("status")) {
+            showNotify("success", "", data["status"], 6);
+        }
+    } catch (error) {
+        showNotify("error", "", error, 6);
+    }
+}
+
+async function getRandomPublicLobby() {
+    try {
+    console.log(server_url + "get_random_lobby");
+        var response = await fetch(server_url + "get_random_lobby", {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        var data = await response.json();
+        throwOnError(data);
+        if (data.hasOwnProperty("lobby_url")) {
+            window.location.replace(data["lobby_url"]);
+        }
+    } catch (error) {
+        showNotify("error", "", error, 6);
+    }
+}
+
 async function getLobbyAsync() {
     try {
         var response = await fetch(server_url + "get_lobby/" + current_lobby_id, {
@@ -248,23 +284,28 @@ async function getLobbyAsync() {
             })
         });
         var data = await response.json();
-        console.log(data);
         throwOnError(data);
         var status = response.status;
         if (status == 200) {
-            if (data.hasOwnProperty("players") && data.hasOwnProperty("lobby_owner")) {
+            if (data.hasOwnProperty("players") && data.hasOwnProperty("lobby_owner") && data.hasOwnProperty("is_private")) {
                 var lobby_owner_id = data["lobby_owner"]["id"];
                 var list_of_players = $('#list_of_players');
                 list_of_players.empty();
                 data.players.forEach(player => {
                     if (player.id == lobby_owner_id) {
-                        list_of_players.append("<div style='display: inline-block; padding: 10px 0;'>" + player.name +
+                        list_of_players.append("<div style='display: inline-block; padding: 10px 0; word-wrap: anywhere;'>" + player.name +
                                                "<i class='fa fa-user-circle-o' aria-hidden='true' style='margin-left: 12px'></i>" +
                                                "</div>");
                     } else {
-                        list_of_players.append("<div style='padding: 10px 0;'>" + player.name + "</div>");
+                        list_of_players.append("<div style='padding: 10px 0; word-wrap: anywhere;'>" + player.name + "</div>");
                     }
                 });
+
+                if (data["is_private"]) {
+                    $("#change-lobby-visibility-button").html('<i class="fa fa-lock" aria-hidden="true"></i>');
+                } else {
+                    $("#change-lobby-visibility-button").html('<i class="fa fa-globe" aria-hidden="true"></i>');
+                }
             } else if (data.hasOwnProperty("game")) {
                 window.location.replace(data.game);
             }
