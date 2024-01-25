@@ -55,12 +55,12 @@ document.addEventListener("touchmove", function clicked(e) {
 });
 // ##########################
 
-window.addEventListener("mousemove", function(event) {
+document.addEventListener("mousemove", function(event) {
     mouse.x = event.x + window.scrollX;  // scrollXY corrects mouse position 
     mouse.y = event.y + window.scrollY;  // when window is scrolled
 });
 
-window.addEventListener("mouseup", function(event) {
+document.addEventListener("mouseup", function(event) {
     if (players_action_state == STATE_PLACE_PLAYER) {
         field_clicked = getFieldByCoordinates(event.x + window.scrollX, event.y + window.scrollY);
         if (field_clicked != null) {

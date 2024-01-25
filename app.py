@@ -1,11 +1,12 @@
 from flask import Flask, request, render_template, redirect, url_for, session, make_response, session, flash
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from werkzeug.exceptions import HTTPException
+import os
 
 import user
 import lobby
 
-SERVER_URL = "http://127.0.0.1:5009/"  # keep an "/" at the end !
+SERVER_URL = os.getenv("QUORIDOR_ONLINE_SERVER_URL")  # keep an "/" at the end !
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "eb2f3f32-1cd8-49d6-a491-3c61c2326fdb"
@@ -20,9 +21,9 @@ lobby_manager = lobby.LobbyManager()
 def handle_exception(e):
     # pass through HTTP errors
     if isinstance(e, HTTPException):
-        if "404" in str(e):
-            flash(str(e))
-            return redirect("/")
+        # if "404" in str(e):
+        #     flash(str(e))
+        #     return redirect("/")
         return e
     return {"error": str(e)}, 500
 
