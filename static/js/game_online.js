@@ -219,6 +219,14 @@ function Player(player_id, name, amount_walls_left, color) {
         ctx.fillStyle = this.color;
         ctx.fill();
     }
+
+    this.drawStartPosition = function(x, y) {
+        radius = 8;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+    }
 }
 
 function Wall() {
@@ -430,6 +438,21 @@ function createFields() {
     }
 }
 
+function drawPlayersStartingPosition() {
+    for (var i = 0; i < players.length; i++) {
+        let player = players[i];
+        if (i == 0) {
+            player.drawStartPosition(game_board.start_x + game_board.size/2, game_board.start_y - 30);
+        } else if (i == 1) {
+            player.drawStartPosition(game_board.start_x + game_board.size/2, game_board.start_y + game_board.size + 30);
+        } else if (i == 2) {
+            player.drawStartPosition(game_board.start_x - 30, game_board.start_y + game_board.size/2);
+        } else if (i == 3) {
+            player.drawStartPosition(game_board.start_x + game_board.size + 30, game_board.start_y + game_board.size/2);
+        }
+    }
+}
+
 function animate(){
     requestAnimationFrame(animate);
     clear();
@@ -444,6 +467,7 @@ function animate(){
     players.forEach(player => {
         player.draw();
     });
+    drawPlayersStartingPosition();
     
     // drawing the walls
     walls.forEach(wall => {
