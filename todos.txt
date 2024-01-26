@@ -4,3 +4,7 @@
                                   (also for changing names))
 - Button for place walls on mobile devices
 - Zoom in out
+
+- Save in files what is stored in memory LobbyManager (current idea: save each game in one json file)
+  -> this makes multiple workers more easy
+- Use web sockets

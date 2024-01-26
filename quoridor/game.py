@@ -10,8 +10,8 @@ STATE_PLAYER_DID_WIN = 2
 
 
 class Game:
-    def __init__(self, users: [user.User]):
-        self.game_board = game_board.GameBoard(users)
+    def __init__(self, users: [user.User], amount_walls: int):
+        self.game_board = game_board.GameBoard(users, amount_walls)
         self.state = STATE_PLACING_PLAYERS
         self.its_this_players_turn = 0
         self.turn = 0

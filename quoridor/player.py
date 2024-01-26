@@ -4,10 +4,10 @@ import user
 
 
 class Player:
-    def __init__(self, the_user: user.User):
+    def __init__(self, the_user: user.User, amount_walls: int):
         self.user = the_user
         self.field = None
-        self.amount_walls_left = 10
+        self.amount_walls_left = amount_walls
         self.start_option_fields = []
         self.win_option_fields = []
 

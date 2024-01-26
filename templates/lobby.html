@@ -50,6 +50,23 @@
             {% endif %}
         </a>
     </div>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    Amount of walls per player
+    <div style="text-align: center">
+        <div style="display:inline-block;">
+            <a id="change-lobby--" href="#" onclick="changeAmountOfWalls(-1)" class="btn btn-white btn-animate">
+                <i class="fa fa-minus" aria-hidden="true"></i>
+            </a>
+            <a id="current-amount-of-walls-per-player" style="padding: 10px">10</a>
+            <a id="change-lobby-visibility-" href="#" onclick="changeAmountOfWalls(1)" class="btn btn-white btn-animate">
+                <i class="fa fa-plus" aria-hidden="true"></i>
+            </a>
+        </div>
+    </div>
+    <br/>
 </div>
 
 <!--this is the animated background-->
@@ -82,5 +99,12 @@
     let intervalID = setInterval(() => { // see https://rapidapi.com/guides/api-requests-intervals
         getLobbyAsync();
     }, 500);
+</script>
+<script>
+    function changeAmountOfWalls(diff) {
+        let current_amount_of_walls_per_player = $('#current-amount-of-walls-per-player').html();
+        current_amount_of_walls_per_player = parseInt(current_amount_of_walls_per_player);
+        changeAmountOfWallsPerPlayer(current_amount_of_walls_per_player+diff);
+    }
 </script>
 {% endblock %}

@@ -93,6 +93,7 @@ async function createPlayers() {
     var colors = ["red", "blue", "green", "black"];
     for (var p = 0; p < players_json.length; p++) {
         var player_json = players_json[p];
+        console.log(player_json["amount_walls_left"]);
         var player = new Player(player_json["user"]["id"],
                                 player_json["user"]["name"],
                                 player_json["amount_walls_left"],
@@ -252,6 +253,25 @@ async function changeVisibility() {
     }
 }
 
+async function changeAmountOfWallsPerPlayer(new_amount) {
+    console.log(current_lobby_id);
+    try {
+        var response = await fetch(server_url + "change_amount_of_walls_per_player/" + current_lobby_id, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "new_amount": new_amount,
+            })
+        });
+        var data = await response.json();
+        throwOnError(data);
+    } catch (error) {
+        showNotify("error", "", error, 6);
+    }
+}
+
 async function getRandomPublicLobby() {
     try {
     console.log(server_url + "get_random_lobby");
@@ -285,9 +305,11 @@ async function getLobbyAsync() {
         });
         var data = await response.json();
         throwOnError(data);
+        console.log(data);
         var status = response.status;
         if (status == 200) {
-            if (data.hasOwnProperty("players") && data.hasOwnProperty("lobby_owner") && data.hasOwnProperty("is_private")) {
+            if (data.hasOwnProperty("players") && data.hasOwnProperty("lobby_owner")
+            && data.hasOwnProperty("is_private") && data.hasOwnProperty("amount_of_walls_per_player")) {
                 var lobby_owner_id = data["lobby_owner"]["id"];
                 var list_of_players = $('#list_of_players');
                 list_of_players.empty();
@@ -306,6 +328,9 @@ async function getLobbyAsync() {
                 } else {
                     $("#change-lobby-visibility-button").html('<i class="fa fa-globe" aria-hidden="true"></i>');
                 }
+
+                // update amount_of_walls_per_player
+                $('#current-amount-of-walls-per-player').html(data["amount_of_walls_per_player"]);
             } else if (data.hasOwnProperty("game")) {
                 window.location.replace(data.game);
             }

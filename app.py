@@ -116,6 +116,18 @@ def change_lobby_visibility(lobby_id):
         return {"status": "Lobby visibility successfully changed to: public"}, 200
 
 
+@app.route("/change_amount_of_walls_per_player/<string:lobby_id>", methods=['POST'])
+def change_amount_of_walls_per_player(lobby_id):
+    the_lobby = lobby_manager.get_lobby(lobby_id)
+    if session['user_id'] != the_lobby.lobby_owner.id:
+        return {"error": "Only the lobby owner can change the amount of walls per player"}
+    if the_lobby.game is not None:
+        return {"error": "You can not change the amount of walls per player when the game is already running"}
+    new_amount = request.json["new_amount"]
+    the_lobby.change_amount_of_walls_of_players(new_amount)
+    return {"amount_of_walls_per_player": new_amount}, 200  # if all was successful
+
+
 @app.route("/get_random_lobby", methods=['GET'])
 def get_random_lobby():
     the_lobby = lobby_manager.get_random_public_lobby()
@@ -203,5 +215,5 @@ def log_in_user():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=80, debug=False)  # use me for prod
-    # app.run(host="127.0.0.1", port=5009, debug=False)
+    # app.run(host="0.0.0.0", port=80, debug=False)  # use me for prod
+    app.run(host="127.0.0.1", port=5009, debug=False)

@@ -26,7 +26,8 @@ class LobbyManager:
         lobby_list_copy = self.lobbies.copy()
         lobby_list_copy = [lobby for lobby in lobby_list_copy if not lobby.is_private and lobby.game is None]
         if len(lobby_list_copy) <= 0:
-            raise QuoridorOnlineGameError("Could not find any public lobby :(<br/>Try again later")
+            raise QuoridorOnlineGameError("Could not find any public lobby :(<br/>"
+                                          "Try again later or create your own one")
         else:
             return lobby_list_copy[random.randint(0, len(lobby_list_copy)-1)]
 
@@ -74,6 +75,7 @@ class Lobby:
         self.is_private = True
         self.time_created = utils.get_current_time()
         self.lobby_owner = lobby_owner
+        self.amount_of_walls_per_player = 10
         self.players = []
         self.players_last_seen = []  # this list contains the timestamp when the player was seen at last
                                      # the order corresponds to the order of self.players
@@ -81,13 +83,22 @@ class Lobby:
 
     def start_game(self):
         random.shuffle(self.players)
-        self.game = Game(self.players)
+        self.game = Game(self.players, self.amount_of_walls_per_player)
 
     def change_visibility(self):
         if self.is_private:
             self.is_private = False
         else:
             self.is_private = True
+
+    def change_amount_of_walls_of_players(self, new_amount: int):
+        if new_amount <= 0:
+            raise QuoridorOnlineGameError("The amount of walls per player can not be lower than 1")
+        elif new_amount > 99:
+            raise QuoridorOnlineGameError("The amount of walls per player can not be higher than 99")
+        else:
+            self.amount_of_walls_per_player = new_amount
+
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__)
