@@ -90,7 +90,7 @@ async function createPlayers() {
     var game_data = await getGameDataAsync();
     var initial_setup_json = game_data["initial_setup"]; //TODO: Use the amount fields property??
     var players_json = initial_setup_json["players"];
-    var colors = ["red", "blue", "green", "black"];
+    var colors = ["red", "blue", "green", "purple"];
     for (var p = 0; p < players_json.length; p++) {
         var player_json = players_json[p];
         console.log(player_json["amount_walls_left"]);
