@@ -1,6 +1,7 @@
 import user
 from errors import QuoridorOnlineGameError
 from quoridor.game import Game
+from quoridor import deserialize
 import random
 import utils
 import json
@@ -109,3 +110,17 @@ class Lobby:
                 "game_data": self.game.game_data
             }
         return self_as_dict
+
+
+def create_lobby_from_json(lobby_as_dict):
+    game, users = deserialize.create_game_from_json(lobby_as_dict["game"]["game_data"])
+    new_lobby = Lobby(None)
+    for key in lobby_as_dict:
+        if key == "lobby_owner":
+            new_lobby.__setattr__(key, deserialize.create_user_from_dict(lobby_as_dict[key]))
+        elif key == "players":
+            new_lobby.__setattr__(key, users)
+        elif key == "game":
+            new_lobby.__setattr__(key, game)
+        else:
+            new_lobby.__setattr__(key, lobby_as_dict[key])
