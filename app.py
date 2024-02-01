@@ -6,7 +6,7 @@ import os
 import user
 import lobby
 
-SERVER_URL = os.getenv("QUORIDOR_ONLINE_SERVER_URL")  # keep an "/" at the end !
+SERVER_URL = os.getenv("QUORIDOR_ONLINE_SERVER_URL")  # keep an "/" at the end of the value of this env var
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "eb2f3f32-1cd8-49d6-a491-3c61c2326fdb"
@@ -147,7 +147,6 @@ def game_move_player(lobby_id):
     the_game = the_lobby.game
     request_data = request.json
     if request_data["user_id"] != session['user_id']:
-        # raise QuoridorOnlineGameError("User can not move another player")
         return {"error": "It's not your turn"}
     else:
         the_game.move_player(request_data["user_id"],

@@ -1,3 +1,4 @@
+import user
 from errors import QuoridorOnlineGameError
 from quoridor.game import Game
 import random
@@ -31,16 +32,16 @@ class LobbyManager:
         else:
             return lobby_list_copy[random.randint(0, len(lobby_list_copy)-1)]
 
-    def add_player_to_lobby(self, lobby_id, user):
+    def add_player_to_lobby(self, lobby_id, the_user):
         the_lobby = self.get_lobby(lobby_id)
         for p in range(len(the_lobby.players)):
             player = the_lobby.players[p]
-            if player.id == user.id:
+            if player.id == the_user.id:
                 # user is already in lobby, we only need to update the last_seen status
                 the_lobby.players_last_seen[p] = utils.get_current_time()
                 return
         # if user is not in lobby, add them
-        the_lobby.players.append(user)
+        the_lobby.players.append(the_user)
         the_lobby.players_last_seen.append(utils.get_current_time())
 
     def update_player_name_in_lobby(self, lobby_id, user_id, new_user_name):
@@ -76,7 +77,7 @@ class Lobby:
         self.time_created = utils.get_current_time()
         self.lobby_owner = lobby_owner
         self.amount_of_walls_per_player = 10
-        self.players = []
+        self.players = []  # this is of type [user.User]
         self.players_last_seen = []  # this list contains the timestamp when the player was seen at last
                                      # the order corresponds to the order of self.players
         self.game = None
@@ -99,8 +100,12 @@ class Lobby:
         else:
             self.amount_of_walls_per_player = new_amount
 
-
     def to_json(self):
-        return json.dumps(self, default=lambda o: o.__dict__)
-
-
+        self_as_dict = vars(self).copy()
+        self_as_dict["lobby_owner"] = self.lobby_owner.__json__()
+        self_as_dict["players"] = [u.__json__() for u in self.players]
+        if self.game is not None:
+            self_as_dict["game"] = {
+                "game_data": self.game.game_data
+            }
+        return self_as_dict

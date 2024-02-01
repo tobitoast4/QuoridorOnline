@@ -10,8 +10,8 @@ STATE_PLAYER_DID_WIN = 2
 
 
 class Game:
-    def __init__(self, users: [user.User], amount_walls: int):
-        self.game_board = game_board.GameBoard(users, amount_walls)
+    def __init__(self, users: [user.User], amount_walls: int, skip_user_check=False):
+        self.game_board = game_board.GameBoard(users, amount_walls, skip_user_check)
         self.state = STATE_PLACING_PLAYERS
         self.its_this_players_turn = 0
         self.turn = 0
@@ -23,7 +23,7 @@ class Game:
 
     def move_player(self, user_id, new_field_col, new_field_row):
         """Can be used to move a player."""
-        if self._get_current_player().user.id != user_id:  # TODO: make this a decorator?
+        if self._get_current_player().user.id != user_id:
             raise QuoridorOnlineGameError("It's not your turn currently")
         player = self._get_player_of_user(user_id)
         new_field = self.game_board.getFieldByColAndRow(new_field_col, new_field_row)
@@ -37,12 +37,13 @@ class Game:
                 self.state = STATE_PLAYER_DID_WIN
         self._next_players_turn()
 
-    def place_wall(self, user_id, col_start, row_start, col_end, row_end):
+    def place_wall(self, user_id, col_start, row_start, col_end, row_end, skip_user_check=False):
         """Can be used to place a wall."""
-        if self._get_current_player().user.id != user_id:  # TODO: make this a decorator?
-            raise QuoridorOnlineGameError("It's not your turn currently")
-        if self._get_current_player().amount_walls_left <= 0:
-            raise QuoridorOnlineGameError("You do not have any more walls left")
+        if not skip_user_check:
+            if self._get_current_player().user.id != user_id:
+                raise QuoridorOnlineGameError("It's not your turn currently")
+            if self._get_current_player().amount_walls_left <= 0:
+                raise QuoridorOnlineGameError("You do not have any more walls left")
         new_wall = wall.Wall(col_start, row_start, col_end, row_end, self.game_board)
         self.game_board.walls.append(new_wall)
         path_checker = PathChecker()
@@ -50,8 +51,9 @@ class Game:
             new_wall.remove_wall_from_field()
             raise QuoridorOnlineGameError("Wall could not be placed as it would block a player from winning")
         # if creating a wall did not throw an exception, decrease the amount of walls the player has
-        self._get_current_player().amount_walls_left -= 1
-        self._next_players_turn()
+        if not skip_user_check:
+            self._get_current_player().amount_walls_left -= 1
+            self._next_players_turn()
 
     def _next_players_turn(self):
         self.its_this_players_turn += 1
