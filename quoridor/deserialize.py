@@ -17,29 +17,28 @@ def create_game_from_json(json_dict):
 
     game_data_last_round_players = game_data_last_round["game_board"]["players"]
     new_players = []
-    new_users = []
     for player_dict in game_data_last_round_players:
         new_user = create_user_from_dict(player_dict["user"])
         amount_walls_left = player_dict["amount_walls_left"]
         new_player = player.Player(new_user, amount_walls_left)
         # get field and set player to field and field to player
-        new_player.field = new_game.game_board.getFieldByColAndRow(player_dict["field"]["col_num"],
-                                                                   player_dict["field"]["row_num"])
-        new_player.field.player = new_player
+        if player_dict["field"] is not None:
+            new_player.field = new_game.game_board.getFieldByColAndRow(player_dict["field"]["col_num"],
+                                                                       player_dict["field"]["row_num"])
+            new_player.field.player = new_player
         # set start_option_fields and win_option_fields
         start_and_win_option_fields = get_start_and_win_option_fields_of_player(initial_setup, new_user,
                                                                                 new_game.game_board)
         new_player.start_option_fields = start_and_win_option_fields["start_option_fields"]
         new_player.win_option_fields = start_and_win_option_fields["win_option_fields"]
         new_players.append(new_player)
-        new_users.append(new_user)
     new_game.game_board.players = new_players
 
     game_data_last_round_walls = game_data_last_round["game_board"]["walls"]
     for wall_dict in game_data_last_round_walls:
         new_game.place_wall(None, wall_dict["start"]["col"], wall_dict["start"]["row"],
                             wall_dict["end"]["col"], wall_dict["end"]["row"], skip_user_check=True)
-    return new_game, new_users
+    return new_game
 
 
 def get_start_and_win_option_fields_of_player(initial_setup, new_user, game_board):

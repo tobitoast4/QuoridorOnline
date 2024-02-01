@@ -42,7 +42,7 @@
     <br/>
     <br/>
     <div class="text-box">
-        <a id="change-lobby-visibility-button" href="#" onclick="changeVisibility()" class="btn btn-white btn-animate">
+        <a id="change-lobby-visibility-button" href="javascript:void(0);" onclick="changeVisibility()" class="btn btn-white btn-animate">
             {% if lobby.is_private %}
                 <i class="fa fa-lock" aria-hidden="true"></i>
             {% else %}
@@ -57,11 +57,11 @@
     Amount of walls per player
     <div style="text-align: center">
         <div style="display:inline-block;">
-            <a id="change-lobby--" href="#" onclick="changeAmountOfWalls(-1)" class="btn btn-white btn-animate">
+            <a id="decrease-amount-walls-button" href="javascript:void(0);" onclick="changeAmountOfWalls(-1)" class="btn btn-white btn-animate">
                 <i class="fa fa-minus" aria-hidden="true"></i>
             </a>
             <a id="current-amount-of-walls-per-player" style="padding: 10px">10</a>
-            <a id="change-lobby-visibility-" href="#" onclick="changeAmountOfWalls(1)" class="btn btn-white btn-animate">
+            <a id="increase-amount-walls-button" href="javascript:void(0);" onclick="changeAmountOfWalls(1)" class="btn btn-white btn-animate">
                 <i class="fa fa-plus" aria-hidden="true"></i>
             </a>
         </div>

@@ -1,10 +1,12 @@
 from flask import Flask, request, render_template, redirect, url_for, session, make_response, session, flash
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from werkzeug.exceptions import HTTPException
+import datetime
 import os
 
 import user
-import lobby
+import lobby as lobby_manager
+
 
 SERVER_URL = os.getenv("QUORIDOR_ONLINE_SERVER_URL")  # keep an "/" at the end of the value of this env var
 
@@ -13,8 +15,6 @@ app.config["SECRET_KEY"] = "eb2f3f32-1cd8-49d6-a491-3c61c2326fdb"
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-lobby_manager = lobby.LobbyManager()
 
 
 @app.errorhandler(Exception)
@@ -78,13 +78,16 @@ def lobby(lobby_id=None):
 @app.route("/get_lobby/", methods=['POST'])
 @app.route("/get_lobby/<string:lobby_id>", methods=['POST'])
 def get_lobby(lobby_id=None):
-    lobby_manager.check_players_last_seen_time()
     if lobby_id is None:
         flash(f"The lobby with id {lobby_id} does not exist.")
         return redirect("/")
+    lobby_manager.check_players_last_seen_time(lobby_id)
     user_sending_the_request = user.get_user_from_dict(request.json)
     the_lobby = lobby_manager.get_lobby(lobby_id)
     if the_lobby is not None:
+        if len(the_lobby.players) >= 4:
+            flash(f"The lobby with id {lobby_id} is already full.")
+            return redirect("/")
         if the_lobby.game is None:  # game not started yet
             lobby_manager.add_player_to_lobby(lobby_id, user_sending_the_request)
             return the_lobby.to_json(), 200
@@ -101,6 +104,7 @@ def start_game(lobby_id):
     if session['user_id'] != the_lobby.lobby_owner.id:
         return {"error": "Only the lobby owner can start the game"}
     the_lobby.start_game()
+    the_lobby.write_lobby()
     return {"status": "game started"}, 200
 
 
@@ -110,6 +114,7 @@ def change_lobby_visibility(lobby_id):
     if session['user_id'] != the_lobby.lobby_owner.id:
         return {"error": "Only the lobby owner can change the visibility"}
     the_lobby.change_visibility()
+    the_lobby.write_lobby()
     if the_lobby.is_private:
         return {"status": "Lobby visibility successfully changed to: private"}, 200
     else:
@@ -125,6 +130,7 @@ def change_amount_of_walls_per_player(lobby_id):
         return {"error": "You can not change the amount of walls per player when the game is already running"}
     new_amount = request.json["new_amount"]
     the_lobby.change_amount_of_walls_of_players(new_amount)
+    the_lobby.write_lobby()
     return {"amount_of_walls_per_player": new_amount}, 200  # if all was successful
 
 
@@ -152,6 +158,7 @@ def game_move_player(lobby_id):
         the_game.move_player(request_data["user_id"],
                              request_data["new_field_col_num"],
                              request_data["new_field_row_num"])
+    the_lobby.write_lobby()
     return {"status": "player moved"}, 200
 
 
@@ -169,6 +176,7 @@ def game_place_wall(lobby_id):
                             request_data["row_start"],
                             request_data["col_end"],
                             request_data["row_end"])
+    the_lobby.write_lobby()
     return {"status": "wall placed"}, 200
 
 
