@@ -1,5 +1,6 @@
 var server_url = null;
 var current_lobby_id = null;
+var next_lobby_id = null;
 var this_player_id = null;
 var this_player_name = null;
 var complete_game_data = null;
@@ -93,7 +94,6 @@ async function createPlayers() {
     var colors = ["red", "blue", "green", "purple"];
     for (var p = 0; p < players_json.length; p++) {
         var player_json = players_json[p];
-        console.log(player_json["amount_walls_left"]);
         var player = new Player(player_json["user"]["id"],
                                 player_json["user"]["name"],
                                 player_json["amount_walls_left"],
@@ -123,6 +123,9 @@ async function updateGame(round_diff=0) {
     let new_complete_game_data = await getGameDataAsync();
     let fetched_game_data_is_new = JSON.stringify(new_complete_game_data) != JSON.stringify(complete_game_data);
 
+    if (next_lobby_id == null){
+        next_lobby_id = new_complete_game_data["next_lobby_id"];
+    }
     if (fetched_game_data_is_new) {
         current_round_diff = 0;  // defined in game_online.js
     }
@@ -254,7 +257,6 @@ async function changeVisibility() {
 }
 
 async function changeAmountOfWallsPerPlayer(new_amount) {
-    console.log(current_lobby_id);
     try {
         var response = await fetch(server_url + "change_amount_of_walls_per_player/" + current_lobby_id, {
             method: 'POST',
@@ -274,7 +276,6 @@ async function changeAmountOfWallsPerPlayer(new_amount) {
 
 async function getRandomPublicLobby() {
     try {
-    console.log(server_url + "get_random_lobby");
         var response = await fetch(server_url + "get_random_lobby", {
             method: 'GET',
             headers: {
@@ -305,7 +306,6 @@ async function getLobbyAsync() {
         });
         var data = await response.json();
         throwOnError(data);
-        console.log(data);
         var status = response.status;
         if (status == 200) {
             if (data.hasOwnProperty("players") && data.hasOwnProperty("lobby_owner")

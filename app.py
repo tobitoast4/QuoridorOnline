@@ -1,12 +1,10 @@
 from flask import Flask, request, render_template, redirect, url_for, session, make_response, session, flash
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from werkzeug.exceptions import HTTPException
-import datetime
 import os
 
 import user
 import lobby as lobby_manager
-
 
 SERVER_URL = os.getenv("QUORIDOR_ONLINE_SERVER_URL")  # keep an "/" at the end of the value of this env var
 
@@ -85,9 +83,6 @@ def get_lobby(lobby_id=None):
     user_sending_the_request = user.get_user_from_dict(request.json)
     the_lobby = lobby_manager.get_lobby(lobby_id)
     if the_lobby is not None:
-        if len(the_lobby.players) >= 4:
-            flash(f"The lobby with id {lobby_id} is already full.")
-            return redirect("/")
         if the_lobby.game is None:  # game not started yet
             lobby_manager.add_player_to_lobby(lobby_id, user_sending_the_request)
             return the_lobby.to_json(), 200

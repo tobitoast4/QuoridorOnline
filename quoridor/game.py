@@ -10,12 +10,13 @@ STATE_PLAYER_DID_WIN = 2
 
 
 class Game:
-    def __init__(self, users: [user.User], amount_walls: int, skip_user_check=False):
+    def __init__(self, users: [user.User], amount_walls: int, next_lobby_id: str, skip_user_check=False):
         self.game_board = game_board.GameBoard(users, amount_walls, skip_user_check)
         self.state = STATE_PLACING_PLAYERS
         self.its_this_players_turn = 0
         self.turn = 0
         self.game_data = {
+            "next_lobby_id": next_lobby_id,
             "initial_setup": self.game_board.__json__(initial=True),
             "game": []
         }

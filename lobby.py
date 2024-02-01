@@ -17,16 +17,6 @@ PLAYER_TIME_OUT_TIME = 2  # how long (in sec) is the player allowed to not poll 
 os.makedirs(DATA_DIR, exist_ok=True)
 
 
-# def read_lobby(lobby_id):
-#     file_name = f"{lobby_id}.json"
-#     for file in os.listdir(DATA_DIR):
-#         file_location = os.path.join(DATA_DIR, file)
-#         if os.path.isfile(file_location) and file == file_name:
-#             with open(file_location) as f:
-#                 lobby_as_dict = json.load(f)
-#                 return create_lobby_from_json(lobby_as_dict)
-
-
 def create_new_lobby(lobby_owner):
     new_lobby = Lobby(lobby_owner)
     new_lobby.write_lobby()
@@ -43,13 +33,16 @@ def get_lobby(lobby_id):
 
 
 def get_random_public_lobby():
-    lobby_list_copy = self.lobbies.copy()
-    lobby_list_copy = [lobby for lobby in lobby_list_copy if not lobby.is_private and lobby.game is None]
-    if len(lobby_list_copy) <= 0:
-        raise QuoridorOnlineGameError("Could not find any public lobby :(<br/>"
-                                      "Try again later or create your own one")
-    else:
-        return lobby_list_copy[random.randint(0, len(lobby_list_copy)-1)]
+    """Actually gets the first in the list"""
+    for file in os.listdir(DATA_DIR):
+        file_location = os.path.join(DATA_DIR, file)
+        if os.path.isfile(file_location):
+            with open(file_location) as f:
+                lobby_as_dict = json.load(f)
+                if lobby_as_dict["is_private"] == False:
+                    return create_lobby_from_json(lobby_as_dict)
+    raise QuoridorOnlineGameError("Could not find any public lobby :(<br/>"
+                                  "Try again later or create your own one")
 
 
 def add_player_to_lobby(lobby_id, the_user):
@@ -131,7 +124,9 @@ class Lobby:
 
     def start_game(self):
         random.shuffle(self.players)
-        self.game = Game(self.players, self.amount_of_walls_per_player)
+        next_lobby = create_new_lobby(self.lobby_owner)  # creates a new lobby which will be used if players
+                                                         # click 'Play again' after the current game
+        self.game = Game(self.players, self.amount_of_walls_per_player, next_lobby.lobby_id)
 
     def change_visibility(self):
         if self.is_private:
