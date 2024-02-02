@@ -38,7 +38,10 @@ def get_random_public_lobby():
         file_location = os.path.join(DATA_DIR, file)
         if os.path.isfile(file_location):
             with open(file_location) as f:
-                lobby_as_dict = json.load(f)
+                try:
+                    lobby_as_dict = json.load(f)
+                except:
+                    continue
                 if lobby_as_dict["is_private"] == False:
                     return create_lobby_from_json(lobby_as_dict)
     raise QuoridorOnlineGameError("Could not find any public lobby :(<br/>"
