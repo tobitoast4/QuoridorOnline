@@ -17,9 +17,6 @@ login_manager.init_app(app)
 def handle_exception(e):
     # pass through HTTP errors
     if isinstance(e, HTTPException):
-        # if "404" in str(e):
-        #     flash(str(e))
-        #     return redirect("/")
         return e
     return {"error": str(e)}, 500
 
