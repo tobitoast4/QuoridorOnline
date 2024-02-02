@@ -6,8 +6,8 @@ import user
 class Player:
     def __init__(self, the_user: user.User, amount_walls: int):
         self.user = the_user
-        self.field = None
         self.amount_walls_left = amount_walls
+        self.field = None
         self.start_option_fields = []
         self.win_option_fields = []
 
@@ -48,7 +48,6 @@ class Player:
                     if new_move_option_field is not None and new_move_option_field.player is None:
                         move_option_fields.append(new_move_option_field)
         return move_option_fields
-
 
     def __json__(self, initial=False):
         if initial:

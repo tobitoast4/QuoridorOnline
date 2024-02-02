@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+<!--        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />-->
         <title>QuoridorOnline</title>
 
         <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
@@ -31,12 +31,14 @@
         <div>
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
-                    {% set error_id = 0 %}
-                    {% for error in messages %}
+                    {% set printed_messages = [] %}
+                    {% for message in messages %}
+                        {% if message not in printed_messages %}
                             <script>
-                                showNotify("error", "", "{{ error }}", 6);
+                                showNotify("error", "", "{{ message }}", 6);
                             </script>
-                        {% set error_id = error_id + 1 %}
+                            {% set _ = printed_messages.append(message) %}
+                        {% endif %}
                     {% endfor %}
                 {% endif %}
             {% endwith %}

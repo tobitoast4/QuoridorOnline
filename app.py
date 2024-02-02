@@ -4,9 +4,7 @@ from werkzeug.exceptions import HTTPException
 import os
 
 import user
-import lobby
-
-SERVER_URL = os.getenv("QUORIDOR_ONLINE_SERVER_URL")  # keep an "/" at the end !
+import lobby as lobby_manager
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "eb2f3f32-1cd8-49d6-a491-3c61c2326fdb"
@@ -14,16 +12,11 @@ app.config["SECRET_KEY"] = "eb2f3f32-1cd8-49d6-a491-3c61c2326fdb"
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-lobby_manager = lobby.LobbyManager()
-
 
 @app.errorhandler(Exception)
 def handle_exception(e):
     # pass through HTTP errors
     if isinstance(e, HTTPException):
-        # if "404" in str(e):
-        #     flash(str(e))
-        #     return redirect("/")
         return e
     return {"error": str(e)}, 500
 
@@ -36,10 +29,18 @@ def load_user(user_id):
     return the_user
 
 
+@app.after_request
+def handle_options(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Requested-With"
+    return response
+
+
 @app.route("/", methods=['GET'])
 def home():
     the_user = log_in_user()
-    return render_template("home.html", user=the_user, server_url=SERVER_URL)
+    return render_template("home.html", user=the_user, server_url=request.url_root)
 
 
 @app.route("/local", methods=['GET'])
@@ -72,16 +73,16 @@ def lobby(lobby_id=None):
         if the_lobby is None:
             flash(f"The lobby with id {lobby_id} does not exist.")
             return redirect("/")
-        return render_template("lobby.html", lobby=the_lobby, user=the_user, server_url=SERVER_URL)
+        return render_template("lobby.html", lobby=the_lobby, user=the_user, server_url=request.url_root)
 
 
 @app.route("/get_lobby/", methods=['POST'])
 @app.route("/get_lobby/<string:lobby_id>", methods=['POST'])
 def get_lobby(lobby_id=None):
-    lobby_manager.check_players_last_seen_time()
     if lobby_id is None:
         flash(f"The lobby with id {lobby_id} does not exist.")
         return redirect("/")
+    lobby_manager.check_players_last_seen_time(lobby_id)
     user_sending_the_request = user.get_user_from_dict(request.json)
     the_lobby = lobby_manager.get_lobby(lobby_id)
     if the_lobby is not None:
@@ -89,7 +90,7 @@ def get_lobby(lobby_id=None):
             lobby_manager.add_player_to_lobby(lobby_id, user_sending_the_request)
             return the_lobby.to_json(), 200
         else:  # game started
-            return {"game": f"{SERVER_URL}game/{lobby_id}"}
+            return {"game": f"{request.url_root}game/{lobby_id}"}
     else:
         flash(f"The lobby with id {lobby_id} does not exist.")
         return redirect("/")
@@ -101,6 +102,7 @@ def start_game(lobby_id):
     if session['user_id'] != the_lobby.lobby_owner.id:
         return {"error": "Only the lobby owner can start the game"}
     the_lobby.start_game()
+    the_lobby.write_lobby()
     return {"status": "game started"}, 200
 
 
@@ -110,6 +112,7 @@ def change_lobby_visibility(lobby_id):
     if session['user_id'] != the_lobby.lobby_owner.id:
         return {"error": "Only the lobby owner can change the visibility"}
     the_lobby.change_visibility()
+    the_lobby.write_lobby()
     if the_lobby.is_private:
         return {"status": "Lobby visibility successfully changed to: private"}, 200
     else:
@@ -125,20 +128,21 @@ def change_amount_of_walls_per_player(lobby_id):
         return {"error": "You can not change the amount of walls per player when the game is already running"}
     new_amount = request.json["new_amount"]
     the_lobby.change_amount_of_walls_of_players(new_amount)
+    the_lobby.write_lobby()
     return {"amount_of_walls_per_player": new_amount}, 200  # if all was successful
 
 
 @app.route("/get_random_lobby", methods=['GET'])
 def get_random_lobby():
     the_lobby = lobby_manager.get_random_public_lobby()
-    return {"lobby_url": f"{SERVER_URL}lobby/{the_lobby.lobby_id}"}, 200
+    return {"lobby_url": f"{request.url_root}lobby/{the_lobby.lobby_id}"}, 200
 
 
 @app.route("/game/<string:lobby_id>", methods=['GET'])
 def game(lobby_id):
     the_user = log_in_user()
     the_lobby = lobby_manager.get_lobby(lobby_id)
-    return render_template("game_online.html", user=the_user, lobby=the_lobby, server_url=SERVER_URL)
+    return render_template("game_online.html", user=the_user, lobby=the_lobby, server_url=request.url_root)
 
 
 @app.route("/game_move_player/<string:lobby_id>", methods=['POST'])
@@ -147,12 +151,12 @@ def game_move_player(lobby_id):
     the_game = the_lobby.game
     request_data = request.json
     if request_data["user_id"] != session['user_id']:
-        # raise QuoridorOnlineGameError("User can not move another player")
         return {"error": "It's not your turn"}
     else:
         the_game.move_player(request_data["user_id"],
                              request_data["new_field_col_num"],
                              request_data["new_field_row_num"])
+    the_lobby.write_lobby()
     return {"status": "player moved"}, 200
 
 
@@ -170,6 +174,7 @@ def game_place_wall(lobby_id):
                             request_data["row_start"],
                             request_data["col_end"],
                             request_data["row_end"])
+    the_lobby.write_lobby()
     return {"status": "wall placed"}, 200
 
 
