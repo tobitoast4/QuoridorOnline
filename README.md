@@ -11,3 +11,7 @@ See [website](https://quoridoronline.pythonanywhere.com/).
 
 1. Install the requirements `pip install -r requirements.txt`
 2. Run `/app.py`
+
+## Run with gunicorn
+
+`gunicorn -w 4 'app:app' -b 0.0.0.0:443 --certfile=/root/certs/ssl_cert.cer --keyfile=/root/certs/private_key.key --ca-certs=/etc/ssl/certs/ca-certificates.crt` 
