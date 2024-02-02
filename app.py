@@ -34,6 +34,14 @@ def load_user(user_id):
     return the_user
 
 
+@app.after_request
+def handle_options(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Requested-With"
+    return response
+
+
 @app.route("/", methods=['GET'])
 def home():
     the_user = log_in_user()
