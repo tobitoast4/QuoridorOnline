@@ -1,12 +1,9 @@
 from flask import Flask, request, render_template, redirect, url_for, session, make_response, session, flash
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from werkzeug.exceptions import HTTPException
-import os
 
 import user
 import lobby as lobby_manager
-
-SERVER_URL = os.getenv("QUORIDOR_ONLINE_SERVER_URL")  # keep an "/" at the end of the value of this env var
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "eb2f3f32-1cd8-49d6-a491-3c61c2326fdb"
@@ -45,7 +42,7 @@ def handle_options(response):
 @app.route("/", methods=['GET'])
 def home():
     the_user = log_in_user()
-    return render_template("home.html", user=the_user, server_url=SERVER_URL)
+    return render_template("home.html", user=the_user, server_url=request.base_url)
 
 
 @app.route("/local", methods=['GET'])
@@ -78,7 +75,7 @@ def lobby(lobby_id=None):
         if the_lobby is None:
             flash(f"The lobby with id {lobby_id} does not exist.")
             return redirect("/")
-        return render_template("lobby.html", lobby=the_lobby, user=the_user, server_url=SERVER_URL)
+        return render_template("lobby.html", lobby=the_lobby, user=the_user, server_url=request.base_url)
 
 
 @app.route("/get_lobby/", methods=['POST'])
@@ -95,7 +92,7 @@ def get_lobby(lobby_id=None):
             lobby_manager.add_player_to_lobby(lobby_id, user_sending_the_request)
             return the_lobby.to_json(), 200
         else:  # game started
-            return {"game": f"{SERVER_URL}game/{lobby_id}"}
+            return {"game": f"{request.base_url}game/{lobby_id}"}
     else:
         flash(f"The lobby with id {lobby_id} does not exist.")
         return redirect("/")
@@ -140,14 +137,14 @@ def change_amount_of_walls_per_player(lobby_id):
 @app.route("/get_random_lobby", methods=['GET'])
 def get_random_lobby():
     the_lobby = lobby_manager.get_random_public_lobby()
-    return {"lobby_url": f"{SERVER_URL}lobby/{the_lobby.lobby_id}"}, 200
+    return {"lobby_url": f"{request.base_url}lobby/{the_lobby.lobby_id}"}, 200
 
 
 @app.route("/game/<string:lobby_id>", methods=['GET'])
 def game(lobby_id):
     the_user = log_in_user()
     the_lobby = lobby_manager.get_lobby(lobby_id)
-    return render_template("game_online.html", user=the_user, lobby=the_lobby, server_url=SERVER_URL)
+    return render_template("game_online.html", user=the_user, lobby=the_lobby, server_url=request.base_url)
 
 
 @app.route("/game_move_player/<string:lobby_id>", methods=['POST'])
