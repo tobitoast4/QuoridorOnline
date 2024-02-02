@@ -42,7 +42,7 @@ def get_random_public_lobby():
                     lobby_as_dict = json.load(f)
                 except:
                     continue
-                if lobby_as_dict["is_private"] == False:
+                if lobby_as_dict["is_private"] == False and lobby_as_dict["game"] is None:
                     return create_lobby_from_json(lobby_as_dict)
     raise QuoridorOnlineGameError("Could not find any public lobby :(<br/>"
                                   "Try again later or create your own one")
