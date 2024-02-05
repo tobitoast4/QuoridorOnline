@@ -2,15 +2,9 @@
 - improve page "play on this pc" (let the server still compute the errors,
                                   make screen for amount player selection before game starts
                                   (also for changing names))
-- Button for place walls on mobile devices
 - Zoom in out
 
-- Save in files what is stored in memory LobbyManager (current idea: save each game in one json file)
-  -> this makes multiple workers more easy
 - Use web sockets
 - Fix bug of overlapping players when players are placed initially (for >= 3 players,
   two players can place their pawn on the same field)
 - Add player can jump diagonal if field behind other player is blocked
-- enhance Game Over overlay -> add X button + add play again button
-  (think of how to do the play again (lobby owner can start game again? players should vote to start a new game?
-  -> probably implement the web sockets first))

@@ -17,6 +17,8 @@ class Player:
            Returns the player if move was a win. Else None.
         """
         if is_initial_move:
+            if new_field.player is not None:
+                raise QuoridorOnlineGameError("Field is already blocked.")
             if new_field not in self.start_option_fields:
                 raise QuoridorOnlineGameError("Field not allowed for this player as initial move.")
         else:
@@ -49,8 +51,9 @@ class Player:
                     # only append if there is a connection (no wall in between) and field is emtpy
                     move_option_fields.append(new_move_option_field)
                 else:
-                    move_option_fields = move_option_fields + the_field.neighbour_fields
-                    move_option_fields.remove(self.field)
+                    for neighbour_field in the_field.neighbour_fields:
+                        if neighbour_field.player is None:
+                            move_option_fields.append(neighbour_field)
         return move_option_fields
 
     def __json__(self, initial=False):
