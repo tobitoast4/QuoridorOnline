@@ -179,9 +179,7 @@ async function updateGame(round_diff=0) {
                 updatePlayersTurnInstuction(player.name);
             }
         }
-        if (players_action_state == STATE_PLACE_WALL) {
-            changePlayState();
-        }
+        changePlayState(reset=true);
     }
 }
 

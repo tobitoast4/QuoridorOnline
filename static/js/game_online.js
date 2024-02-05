@@ -93,16 +93,22 @@ document.addEventListener('keyup', function(event) {
     }
 });
 
-function changePlayState() {
-    // switches between STATE_MOVE and STATE_PLACE_WALL
-    if (players_action_state == STATE_MOVE) {
-        players_action_state = STATE_PLACE_WALL;
-        // adapt button style
-        $('#button-place-walls').toggleClass("control-button-active");
-    } else if (players_action_state == STATE_PLACE_WALL) {
+function changePlayState(reset=false) {
+    if (reset) {
         players_action_state = STATE_MOVE;
         // adapt button style
-        $('#button-place-walls').toggleClass("control-button-active");
+        $('#button-place-walls').removeClass("control-button-active");
+    } else {
+        // switches between STATE_MOVE and STATE_PLACE_WALL
+        if (players_action_state == STATE_MOVE) {
+            players_action_state = STATE_PLACE_WALL;
+            // adapt button style
+            $('#button-place-walls').toggleClass("control-button-active");
+        } else if (players_action_state == STATE_PLACE_WALL) {
+            players_action_state = STATE_MOVE;
+            // adapt button style
+            $('#button-place-walls').toggleClass("control-button-active");
+        }
     }
 }
 
@@ -132,9 +138,12 @@ function GameBoard(size) {
         ctx.beginPath();
         ctx.roundRect(this.start_x - this.margin_between_fields*2, this.start_y - this.margin_between_fields*2, 
             this.size + this.margin_between_fields*4, this.size + this.margin_between_fields*4, 24);
-        
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 3;
+        ctx.stroke();
         ctx.fillStyle = "#bbf7d0";
         ctx.fill();
+        ctx.lineWidth = 1;
     }
 }
 

@@ -448,9 +448,7 @@ function nextPlayersTurn(next_players_action_state=STATE_MOVE){
     if (its_this_players_turn >= players.length) {
         its_this_players_turn = 0;
     }
-    if (players_action_state == STATE_PLACE_WALL) {
-        changePlayState();
-    }
+    changePlayState(reset=true);
     player = players[its_this_players_turn];
     updatePlayersTurnInstuction(player.name);
     players_action_state = next_players_action_state;
