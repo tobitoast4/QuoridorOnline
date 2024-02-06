@@ -159,7 +159,7 @@ function Field(x, y, col_num, row_num) {
         ctx.beginPath();
         size = this.size - game_board.margin_between_fields;
         ctx.roundRect(this.x + game_board.start_x, this.y + game_board.start_y, size, size, 15);
-        ctx.strokeStyle = "black";
+        ctx.strokeStyle = "grey";
         ctx.fillStyle = this.fill_color;
         ctx.stroke();
         ctx.fill();

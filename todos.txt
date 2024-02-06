@@ -5,6 +5,3 @@
 - Zoom in out
 
 - Use web sockets
-- Fix bug of overlapping players when players are placed initially (for >= 3 players,
-  two players can place their pawn on the same field)
-- Add player can jump diagonal if field behind other player is blocked
