@@ -34,6 +34,7 @@ var mouse = {
 window.addEventListener("resize", function(event) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight - header_height - stats_height;
+    updateGame(round_diff=1); //
 })
 
 // ##########################
@@ -165,8 +166,6 @@ function Field(x, y, col_num, row_num) {
         if (mouse.x > this.x + game_board.start_x && mouse.x < this.x + game_board.start_x + this.size - game_board.margin_between_fields 
            && mouse.y > this.y + game_board.start_y && mouse.y < this.y + game_board.start_y + this.size - game_board.margin_between_fields){
             this.fill_color = "#e0e0e0";
-            // console.log("Col: " + this.col_num + " Row: " + this.row_num);
-            // console.log(this);
         } else {
             this.fill_color = "white";
         }
@@ -217,8 +216,6 @@ function Player(player_id, name, amount_walls_left, color) {
     this.drawMoveOption = function(field) {
         radius = 3;
         ctx.beginPath();
-        console.log(field.x + game_board.start_x + game_board.field_size/2 - game_board.margin_between_fields);
-        console.log(field.y + game_board.start_y + game_board.field_size/2 - game_board.margin_between_fields);
         ctx.arc(field.x + game_board.start_x + game_board.field_size/2 - game_board.margin_between_fields,
                 field.y + game_board.start_y + game_board.field_size/2 - game_board.margin_between_fields, 
                 radius, 0, 2 * Math.PI);
@@ -401,6 +398,7 @@ function placeWallByServerCoordinates(col_start, row_start, col_end, row_end) {
 
 
 function viewPreviousOrNextGameRound(round_diff) {
+    // use round_diff=-1 to view the previous round, round_diff=1 to view the next round
     current_round_diff = current_round_diff + round_diff;
     if (current_round_diff <= 0) {
         current_round_diff = 0;
@@ -426,10 +424,15 @@ function itsLoggedInPlayersTurn(field, fields_to_win) {
 
 function drawBoard() {
     let smaller_length = canvas.height;
-    smaller_length = smaller_length * 0.75;
+    let scale_factor = 0.75;
+    smaller_length = smaller_length * scale_factor;
     if (canvas.width < canvas.height) {
         smaller_length = canvas.width;
-        smaller_length = smaller_length * 0.9;
+        scale_factor = 0.75 + (0.5 * ((canvas.height - canvas.width) / canvas.height))
+        if (scale_factor > 0.92) {
+            scale_factor = 0.92;
+        }
+        smaller_length = smaller_length * scale_factor;
     }
 
 
