@@ -31,6 +31,12 @@ var mouse = {
     y: undefined
 }
 
+window.addEventListener("resize", function(event) {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight - header_height - stats_height;
+    updateGame(round_diff=1, play_audio=false); //
+})
+
 // ##########################
 // this is for mobile devices
 let last_touch_X = -1;
@@ -112,17 +118,6 @@ function changePlayState(reset=false) {
     }
 }
 
-window.addEventListener("resize", function(event) {
-    canvas.width = window.innerWidth;
-    if (canvas.width < game_board.size) {
-        canvas.width = game_board.size;
-    }
-    canvas.height = window.innerHeight;
-    if (canvas.height < game_board.size) {
-        canvas.height = game_board.size;
-    }
-})
-
 
 function GameBoard(size) {
     this.size = size;
@@ -130,7 +125,7 @@ function GameBoard(size) {
     this.start_y = 100;
     this.amount_fields = 9;
     this.field_size = this.size / this.amount_fields; // this is the field size INCLUDING the GAP
-    this.margin_between_fields = 8;
+    this.margin_between_fields = this.size / ((this.amount_fields - 1) * 10);
     this.wall_width = this.margin_between_fields;
     this.wall_length = this.field_size * 2 - this.margin_between_fields * 1.5;
 
@@ -153,12 +148,13 @@ function Field(x, y, col_num, row_num) {
     this.col_num = col_num;
     this.row_num = row_num;
     this.size = game_board.field_size - game_board.margin_between_fields;
+    this.corner_radius = this.size * 0.28;
     this.fill_color = "white";
 
     this.draw = function() {
         ctx.beginPath();
         size = this.size - game_board.margin_between_fields;
-        ctx.roundRect(this.x + game_board.start_x, this.y + game_board.start_y, size, size, 15);
+        ctx.roundRect(this.x + game_board.start_x, this.y + game_board.start_y, size, size, this.corner_radius);
         ctx.strokeStyle = "grey";
         ctx.fillStyle = this.fill_color;
         ctx.stroke();
@@ -170,8 +166,6 @@ function Field(x, y, col_num, row_num) {
         if (mouse.x > this.x + game_board.start_x && mouse.x < this.x + game_board.start_x + this.size - game_board.margin_between_fields 
            && mouse.y > this.y + game_board.start_y && mouse.y < this.y + game_board.start_y + this.size - game_board.margin_between_fields){
             this.fill_color = "#e0e0e0";
-            // console.log("Col: " + this.col_num + " Row: " + this.row_num);
-            // console.log(this);
         } else {
             this.fill_color = "white";
         }
@@ -185,7 +179,7 @@ function Player(player_id, name, amount_walls_left, color) {
     this.name = name;
     this.color = color;
     this.field = null;  // this is the field where the player is at
-    this.size = 24;
+    this.size = game_board.field_size * 0.35;
     this.amount_walls_left = amount_walls_left;  // each player has 10 walls per game by default
     this.start_option_fields = [];  // the fields this player is allowed to start from needs to reach for win
     this.win_option_fields = [];  // the fields this player needs to reach for win
@@ -222,7 +216,7 @@ function Player(player_id, name, amount_walls_left, color) {
     this.drawMoveOption = function(field) {
         radius = 3;
         ctx.beginPath();
-        ctx.arc(field.x + game_board.start_x + game_board.field_size/2 - game_board.margin_between_fields, 
+        ctx.arc(field.x + game_board.start_x + game_board.field_size/2 - game_board.margin_between_fields,
                 field.y + game_board.start_y + game_board.field_size/2 - game_board.margin_between_fields, 
                 radius, 0, 2 * Math.PI);
         ctx.fillStyle = this.color;
@@ -362,7 +356,6 @@ function placeWall(the_player) {
     let row_start = -1;
     let col_end = -1;
     let row_end = -1;
-    console.log(attached_field);
     // convert to format (col_start, row_start, col_end, row_end) // TODO: unify this
     if (last_wall.wall.is_vertical) {
         col_start = attached_field.col_num - 0.5;
@@ -387,7 +380,6 @@ function placeWallByServerCoordinates(col_start, row_start, col_end, row_end) {
         let field = getFieldByColAndRow(col_start + 0.5, row_start);
         var field_x = field.x + game_board.start_x;
         var field_y = field.y + game_board.start_y;
-        console.log(field);
         wall.setSizes(field_x - game_board.margin_between_fields * 1.5,
             field_y - game_board.margin_between_fields * 0.25,
             width, length);
@@ -406,6 +398,7 @@ function placeWallByServerCoordinates(col_start, row_start, col_end, row_end) {
 
 
 function viewPreviousOrNextGameRound(round_diff) {
+    // use round_diff=-1 to view the previous round, round_diff=1 to view the next round
     current_round_diff = current_round_diff + round_diff;
     if (current_round_diff <= 0) {
         current_round_diff = 0;
@@ -430,11 +423,26 @@ function itsLoggedInPlayersTurn(field, fields_to_win) {
 
 
 function drawBoard() {
-    game_board = new GameBoard(650);
+    let smaller_length = canvas.height;
+    let scale_factor = 0.75;
+    smaller_length = smaller_length * scale_factor;
+    if (canvas.width < canvas.height) {
+        smaller_length = canvas.width;
+        scale_factor = 0.75 + (0.5 * ((canvas.height - canvas.width) / canvas.height))
+        if (scale_factor > 0.92) {
+            scale_factor = 0.92;
+        }
+        smaller_length = smaller_length * scale_factor;
+    }
+    let user_zoom = getSliderValue("zoom") / 100;
+    smaller_length = smaller_length * user_zoom;
+
+    game_board = new GameBoard(smaller_length);
     game_board.draw();
 }
 
 function createFields() {
+    fields = [];
     var field_col_num = 0;
     for (var x = game_board.start_x; x < game_board.start_x + game_board.size - 1; x += game_board.field_size) {
         var field_row_num = 0;
@@ -466,6 +474,7 @@ function animate(){
     requestAnimationFrame(animate);
     clear();
     drawBoard();
+    createFields();
 
     // drawing the fields (and updating on hover)
     fields.forEach(field => {

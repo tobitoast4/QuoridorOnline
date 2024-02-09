@@ -119,7 +119,12 @@ async function createPlayers() {
     refreshPlayerStats();
 }
 
-async function updateGame(round_diff=0) {
+async function updateGame(round_diff=0, play_audio=true) {
+    // use round_diff=0 to not update the game if game_data did not change (this is usually called by the polling loop)
+    // use round_diff=1 to actively load the current round
+    // use round_diff=2 to actively load the last round
+    // use round_diff=3 to actively load the round before last round
+    // ......
     let new_complete_game_data = await getGameDataAsync();
     let fetched_game_data_is_new = JSON.stringify(new_complete_game_data) != JSON.stringify(complete_game_data);
 
@@ -131,7 +136,9 @@ async function updateGame(round_diff=0) {
     }
     if (fetched_game_data_is_new || round_diff != 0) {
         changePlayState(reset=true);
-        playAudio();
+        if (play_audio) {
+            playAudio();
+        }
         complete_game_data = new_complete_game_data;
         game_data = complete_game_data["game"];
 

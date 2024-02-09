@@ -427,18 +427,18 @@ function getFieldsByColOrRow(col_num, row_num) {
     return fields_to_return;
 }
 
-function isWallOverlappingWithOtherWall(wall_to_ckeck) {
+function isWallOverlappingWithOtherWall(wall_to_check) {
     // Returns true if two walls are overlapping, otherwise false.
     // Checking:    RectA.Left < RectB.Right && RectA.Right > RectB.Left &&
     //              RectA.Top > RectB.Bottom && RectA.Bottom < RectB.Top
-    var is_opverlapping = false;
+    var is_overlapping = false;
     walls.forEach(wall => {
-        if (wall_to_ckeck.x < wall.x + wall.width && wall_to_ckeck.x + wall_to_ckeck.width > wall.x &&
-            wall_to_ckeck.y + wall_to_ckeck.length > wall.y && wall_to_ckeck.y < wall.y + wall.length) {
-                is_opverlapping = true;
+        if (wall_to_check.x < wall.x + wall.width && wall_to_check.x + wall_to_check.width > wall.x &&
+            wall_to_check.y + wall_to_check.length > wall.y && wall_to_check.y < wall.y + wall.length) {
+                is_overlapping = true;
         }
     });
-    return is_opverlapping;
+    return is_overlapping;
 }
 
 
