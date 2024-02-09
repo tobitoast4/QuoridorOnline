@@ -1,9 +1,12 @@
 var cookie_name_audio_file = "audio_file";
-var cookie_name_play_audio = "play_audio";
 
 // initially set button size
 let button_size_value = getSliderValue("buttonsize");
 setButtonSizes(button_size_value);
+
+// initially set audio file
+setCookie(cookie_name_audio_file, "normal_clack.wav");
+
 
 function setCookie(cookie_name, value) {
     document.cookie = "" + cookie_name + "=" + value + "; path=/";
@@ -95,15 +98,10 @@ function toggleAudio() {
         playAudio();
     }
 }
-// TODO: Remove
+
 function playAudio() {
-    if (getCookie(cookie_name_play_audio, "") == "") {
-        // set cookie initially if not exists
-        setCookie(cookie_name_play_audio, "true");
-        setCookie(cookie_name_audio_file, "normal_clack.wav");
-    }
-    if (getCookie(cookie_name_play_audio, "false") == "true") {
-        var audio = new Audio('/static/res/' + getCookie(cookie_name_audio_file, ""));
-        audio.play();
-    }
+    let audio_level = getSliderValue("audio");
+    var audio = new Audio('/static/res/' + getCookie(cookie_name_audio_file, ""));
+    audio.volume = (audio_level / 100);
+    audio.play();
 }
