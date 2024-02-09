@@ -34,7 +34,7 @@ var mouse = {
 window.addEventListener("resize", function(event) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight - header_height - stats_height;
-    updateGame(round_diff=1); //
+    updateGame(round_diff=1, play_audio=false); //
 })
 
 // ##########################

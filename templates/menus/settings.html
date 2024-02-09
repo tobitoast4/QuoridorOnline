@@ -49,12 +49,14 @@
                 $('#slider-buttonsize-value').html(`${slider_value} %`);
                 setSliderValue("buttonsize", slider_value);
                 setButtonSizes(slider_value);
+                updateGame(round_diff=1, play_audio=false);
             };
 
             document.getElementById("slider-zoom").oninput = function() {
                 let slider_value = document.getElementById("slider-zoom").value;
                 $('#slider-zoom-value').html(`${slider_value} %`);
                 setSliderValue("zoom", slider_value);
+                updateGame(round_diff=1, play_audio=false);
             };
 
         </script>
