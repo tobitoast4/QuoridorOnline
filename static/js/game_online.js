@@ -434,7 +434,8 @@ function drawBoard() {
         }
         smaller_length = smaller_length * scale_factor;
     }
-
+    let user_zoom = getSliderValue("zoom") / 100;
+    smaller_length = smaller_length * user_zoom;
 
     game_board = new GameBoard(smaller_length);
     game_board.draw();

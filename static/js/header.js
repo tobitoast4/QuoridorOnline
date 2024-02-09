@@ -6,12 +6,12 @@ function updatePlayersTurnInstuction(player_name){
 function updatePlayerWonTheGame(player_name){
     $('#players_turn').html("" + player_name + " won the game!");
 
-    $('#back_to_menu_overlay').removeAttr("style");
-    $('#back_to_menu_overlay_text').text("" + player_name + " won the game!");
+    $('#game_over_overlay').removeAttr("style");
+    $('#game_over_overlay_text').text("" + player_name + " won the game!");
 }
 
 function closeGameOverScreen(){
-    $('#back_to_menu_overlay').attr("style", "display:none");
+    $('#game_over_overlay').attr("style", "display:none");
 }
 
 function playAgain(){

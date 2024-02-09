@@ -1,0 +1,62 @@
+<div class="transparent-bg">
+    <div class="game-over-card">
+        <span class="close-button" onclick="closeSettingsMenu()">&times;</span>
+        <h1 class="font-effect-outline font-moul-white">
+            Settings
+        </h1>
+        <div style="padding: 0 10% 5% 10%">
+            <div style="display: grid; gap: 8px">
+                <!-- Row 1-->
+                <div style="grid-column: 1; text-align: left">Audio</div>
+                <div style="grid-column: 2;">
+                    <div class="slide-container">
+                        <input type="range" min="0" max="100" value="100" step="5" class="slider" id="slider-audio">
+                    </div>
+                </div>
+                <div id="slider-audio-value" style="grid-column: 3; text-align: right">NaN</div>
+                <!-- Row 2-->
+                <div style="grid-column: 1; text-align: left">Button size</div>
+                <div style="grid-column: 2;">
+                    <div class="slide-container">
+                        <input type="range" min="25" max="200" value="100" class="slider" id="slider-buttonsize">
+                    </div>
+                </div>
+                <div id="slider-buttonsize-value" style="grid-column: 3; text-align: right">NaN</div>
+                <!-- Row 3-->
+                <div style="grid-column: 1; text-align: left">Zoom</div>
+                <div style="grid-column: 2;">
+                    <div class="slide-container">
+                        <input type="range" min="25" max="150" value="100" class="slider" id="slider-zoom">
+                    </div>
+                </div>
+                <div id="slider-zoom-value" style="grid-column: 3; text-align: right">NaN</div>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById("slider-audio").oninput = function() {
+                let slider_value = document.getElementById("slider-audio").value;
+                if (slider_value == 0) {
+                    $('#slider-audio-value').html("off");
+                } else {
+                    $('#slider-audio-value').html(`${slider_value} %`);
+                }
+                setSliderValue("audio", slider_value);
+            };
+
+            document.getElementById("slider-buttonsize").oninput = function() {
+                let slider_value = document.getElementById("slider-buttonsize").value;
+                $('#slider-buttonsize-value').html(`${slider_value} %`);
+                setSliderValue("buttonsize", slider_value);
+                setButtonSizes(slider_value);
+            };
+
+            document.getElementById("slider-zoom").oninput = function() {
+                let slider_value = document.getElementById("slider-zoom").value;
+                $('#slider-zoom-value').html(`${slider_value} %`);
+                setSliderValue("zoom", slider_value);
+            };
+
+        </script>
+    </div>
+</div>

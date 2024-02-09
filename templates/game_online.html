@@ -23,31 +23,37 @@
 <canvas></canvas>
 
 <div class="stats-container">
-    <div style="width: 100%; text-align: left; display: flex;">
-        <div style="margin: 16px">
-            <button id="button-sound-mute" onclick="toggleAudio()" class="control-button"></button>
+    <div style="display: flex;">
+        <div style="width: 100%; text-align: left; display: flex;">
+            <div style="margin: 16px">
+                <button id="button-inspect-previous-round" onclick="viewPreviousOrNextGameRound(1)" class="control-button">
+                    <i id="button-inspect-previous-round-icon" class="fa fa-angle-left" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div style="margin: 16px">
+                <button id="button-inspect-next-round" onclick="viewPreviousOrNextGameRound(-1)" class="control-button">
+                    <i id="button-inspect-next-round-icon" class="fa fa-angle-right" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div style="margin: 16px">
+                <button id="button-inspect-current-round" class="control-button"
+                        onclick="current_round_diff=0;updateGame(round_diff=1)">
+                    <i id="button-inspect-current-round-icon" class="fa fa-angle-double-right" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div style="margin: 16px; margin-left: 48px">
+                <button id="button-place-walls" onclick="changePlayState()"
+                        class="control-button" style="padding: 20px 18px 16px 18px;">
+                    Place<br/>wall
+                </button>
+            </div>
         </div>
-        <div style="margin: 16px">
-            <button id="button-inspect-previous-round" onclick="viewPreviousOrNextGameRound(1)" class="control-button">
-                <i class="fa fa-angle-left" style="font-size: 32px" aria-hidden="true"></i>
-            </button>
-        </div>
-        <div style="margin: 16px">
-            <button id="button-inspect-next-round" onclick="viewPreviousOrNextGameRound(-1)" class="control-button">
-                <i class="fa fa-angle-right" style="font-size: 32px" aria-hidden="true"></i>
-            </button>
-        </div>
-        <div style="margin: 16px">
-            <button id="button-inspect-current-round" class="control-button"
-                    onclick="current_round_diff=0;updateGame(round_diff=1)">
-                <i class="fa fa-angle-double-right" style="font-size: 32px" aria-hidden="true"></i>
-            </button>
-        </div>
-        <div style="margin: 16px; margin-left: 48px">
-            <button id="button-place-walls" onclick="changePlayState()"
-                    class="control-button" style="padding: 20px 18px 16px 18px;">
-                Place<br/>wall
-            </button>
+        <div>
+            <div style="margin: 16px">
+                <button id="button-settings" onclick="openSettingsMenu()" class="control-button">
+                    <i id="button-settings-icon" class="fa fa-cog" aria-hidden="true"></i>
+                </button>
+            </div>
         </div>
     </div>
     <div id="game-stats" style="background-color: #bbf7d0; border-top: 1px solid #fff;">
@@ -67,8 +73,8 @@
 <script src="{{ url_for('static', filename='js/header.js' )}}"></script>
 <script src="{{ url_for('static', filename='js/stats.js' )}}"></script>
 <script src="{{ url_for('static', filename='js/notify.js' )}}"></script>
+<script src="{{ url_for('static', filename='js/settings.js' )}}"></script>
 <script src="{{ url_for('static', filename='js/game_online.js' )}}"></script>
-<script src="{{ url_for('static', filename='js/audio.js' )}}"></script>
 
 <script src="{{ url_for('static', filename='js/query_server.js' )}}"></script>
 
@@ -87,7 +93,11 @@
     }, 300);
 </script>
 
-<div id="back_to_menu_overlay" style="display: none">
-    {% include 'back_to_menu.html' %}
+<div id="game_over_overlay" style="display: none">
+    {% include 'menus/game_over.html' %}
+</div>
+
+<div id="settings_overlay" style="display: none">
+    {% include 'menus/settings.html' %}
 </div>
 {% endblock %}
