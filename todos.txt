@@ -34,3 +34,4 @@ Other important!! things:
 (- Add an AI player)
 - Thread to remove empty lobby (lobbies where no game was started) files
 - Server should not delete game data files, when redeploying (maybe use a path outside of the project directory's folder)
+- Put secret app key in env variable
