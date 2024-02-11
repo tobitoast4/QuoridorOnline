@@ -6,10 +6,10 @@ Play on this pc
 - implement the settings, the new style (green bg, ...) and the logic (e.g. diagonal jumps etc.)
 
 User login
+- Show history of games (this does not require user login actually)
 - Login functionality
 - Scoreboards with ranking (modes should be 2v2 and 4v4 (no 3v3!); maybe also different modes based on the time)
-- Show history of games
-- Implement stats (win rate, most common opponent)
+- Implement stats (win rate, most common opponent, ...)
 
 Web sockets
 - Use web sockets
@@ -33,3 +33,4 @@ Other important!! things:
 - When viewing previous rounds in the game, it is currently unclear whose turn it was
 (- Add an AI player)
 - Thread to remove empty lobby (lobbies where no game was started) files
+- Server should not delete game data files, when redeploying (maybe use a path outside of the project directory's folder)
