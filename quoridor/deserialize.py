@@ -9,7 +9,7 @@ def create_game_from_json(json_dict):
     game_data_last_round = game_data[len(game_data)-1]
 
     new_game = game.Game([], 0, "", skip_user_check=True)  # we don't need to set users: [user.User],
-                            # amount_walls: int here, as they will be overridden anyway afterwards
+                            # amount_walls: 0 here, as they will be overridden anyway afterwards
     new_game.state = game_data_last_round["state"]
     new_game.its_this_players_turn = game_data_last_round["its_this_players_turn"]
     new_game.turn = game_data_last_round["turn"]
