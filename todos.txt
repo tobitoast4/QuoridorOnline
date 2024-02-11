@@ -1,7 +1,35 @@
 - getGameDataAsync auch gleichzeitig als heartbeat nutzen (??) (-> wenn spieler lange nicht mehr darauf queried, ist dieser vmtl offline)
-- improve page "play on this pc" (let the server still compute the errors,
-                                  make screen for amount player selection before game starts
-                                  (also for changing names))
-- Zoom in out
 
+Play on this pc
+- let the server compute the errors ??? -> to save resources: no,
+- make screen for amount player selection before game starts
+- implement the settings, the new style (green bg, ...) and the logic (e.g. diagonal jumps etc.)
+
+User login
+- Login functionality
+- Scoreboards with ranking (modes should be 2v2 and 4v4 (no 3v3!); maybe also different modes based on the time)
+- Show history of games
+- Implement stats (win rate, most common opponent)
+
+Web sockets
 - Use web sockets
+- Time limit for players turn
+- Implement something to show if player disconnected
+- Add chat functionality
+
+Error messages
+- Fix bug with message 'lobby_as_dict .....' (or hide it; it has no bad influence on the game)
+- Reduce error message 'its not your turn'
+- change error message 'This wall can not be placed (col_start=4.5, row_start=4, col_end=4.5, row_end=5) as it is overlapping with another wall'
+
+Colors
+- Make color (of player) changeable
+- Save color of user in session (and reuse it in other games)
+- Show color of user in lobby (to avoid same colors); maybe find algorithm to determine 'color distance' so that the color of to players can not be almost the same
+- Walls should have the color of the player who placed it
+- Think of donation (before adding advertisement
+
+Other important!! things:
+- When viewing previous rounds in the game, it is currently unclear whose turn it was
+(- Add an AI player)
+- Thread to remove empty lobby (lobbies where no game was started) files
