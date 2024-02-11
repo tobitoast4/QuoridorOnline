@@ -5,10 +5,9 @@ const STATE_PLAYER_DID_WIN = 2;
 
 var canvas = document.querySelector("canvas");
 
-var header_height = document.getElementById('game-header').clientHeight;
 var stats_height = document.getElementById('game-stats').clientHeight;
 canvas.width = window.innerWidth;
-canvas.height = window.innerHeight - header_height - stats_height;
+canvas.height = window.innerHeight - stats_height;
 var ctx = canvas.getContext("2d");
 
 var game_board;
@@ -33,7 +32,7 @@ var mouse = {
 
 window.addEventListener("resize", function(event) {
     canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight - header_height - stats_height;
+    canvas.height = window.innerHeight - stats_height;
     updateGame(round_diff=1, play_audio=false); //
 })
 
@@ -423,12 +422,12 @@ function itsLoggedInPlayersTurn(field, fields_to_win) {
 
 
 function drawBoard() {
+    let base_factor = 0.4 + (0.4 * canvas.height / 850);
     let smaller_length = canvas.height;
-    let scale_factor = 0.75;
-    smaller_length = smaller_length * scale_factor;
+    smaller_length = base_factor * smaller_length;
     if (canvas.width < canvas.height) {
         smaller_length = canvas.width;
-        scale_factor = 0.75 + (0.5 * ((canvas.height - canvas.width) / canvas.height))
+        scale_factor = base_factor + (0.5 * ((canvas.height - canvas.width) / canvas.height))
         if (scale_factor > 0.92) {
             scale_factor = 0.92;
         }
