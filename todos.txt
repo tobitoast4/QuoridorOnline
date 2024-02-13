@@ -19,6 +19,7 @@ Web sockets
 
 Error messages
 - Fix bug with message 'lobby_as_dict .....' (or hide it; it has no bad influence on the game)
+  'cannot access local variable 'lobby_as_dict' where it is not associated with a value'
 - Reduce error message 'its not your turn'
 - change error message 'This wall can not be placed (col_start=4.5, row_start=4, col_end=4.5, row_end=5) as it is overlapping with another wall'
 
