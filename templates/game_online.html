@@ -26,17 +26,17 @@
     <div style="display: flex;">
         <div style="width: 100%; text-align: left; display: flex;">
             <div style="margin: 16px">
-                <button id="button-inspect-previous-round" onclick="viewPreviousOrNextGameRound(1)" class="control-button">
+                <button data-title="View previous round" id="button-inspect-previous-round" onclick="viewPreviousOrNextGameRound(1)" class="control-button">
                     <i id="button-inspect-previous-round-icon" class="fa fa-angle-left" aria-hidden="true"></i>
                 </button>
             </div>
             <div style="margin: 16px">
-                <button id="button-inspect-next-round" onclick="viewPreviousOrNextGameRound(-1)" class="control-button">
+                <button data-title="View next round" id="button-inspect-next-round" onclick="viewPreviousOrNextGameRound(-1)" class="control-button">
                     <i id="button-inspect-next-round-icon" class="fa fa-angle-right" aria-hidden="true"></i>
                 </button>
             </div>
             <div style="margin: 16px">
-                <button id="button-inspect-current-round" class="control-button"
+                <button data-title="View latest round" id="button-inspect-current-round" class="control-button"
                         onclick="current_round_diff=0;updateGame(round_diff=1)">
                     <i id="button-inspect-current-round-icon" class="fa fa-angle-double-right" aria-hidden="true"></i>
                 </button>
