@@ -5,6 +5,7 @@ var this_player_id = null;
 var this_player_name = null;
 var complete_game_data = null;
 
+var clear_last_error_msg_started = false;
 var last_error_msg = null;
 
 function throwOnError(json_obj) {
@@ -13,6 +14,23 @@ function throwOnError(json_obj) {
     // E.g.: {"status": "success"} should return false.
     if (Object.hasOwn(json_obj, "error")) {
         throw json_obj["error"];
+    }
+}
+
+function showNewError(error) {
+    // shows an error if it is not the same as last_error_msg
+    // also sets an interval to reset last_error_msg back to null
+    error = error.toString();
+    if (last_error_msg != error) {
+        last_error_msg = error;
+        showNotify("error", "", error, 6);
+    }
+    if (!clear_last_error_msg_started) {  // ensures to only start one of these threads
+        clear_last_error_msg_started = true;
+        setTimeout(() => {
+            last_error_msg = null;
+            clear_last_error_msg_started = false;
+        }, 5000);
     }
 }
 
@@ -33,11 +51,7 @@ async function getGameDataAsync() {
         data_to_be_returned = await response.json();
         throwOnError(data_to_be_returned);
     } catch (error) {
-        error = error.toString();
-        if (last_error_msg != error) {
-            last_error_msg = error;
-            showNotify("error", "", error, 6);
-        }
+        showNewError(error);
     }
 
     return data_to_be_returned;
@@ -59,7 +73,7 @@ async function movePlayerAsync(player_id, new_field_col_num, new_field_row_num) 
         data = await response.json();
         throwOnError(data);
     } catch (error) {
-        showNotify("error", "", error, 6);
+        showNewError(error);
         updateGame(round_diff=1);  // when user views previous rounds and fails to move
     }
 }
@@ -82,7 +96,7 @@ async function placeWallAsync(player_id, col_start, row_start, col_end, row_end)
         data = await response.json();
         throwOnError(data);
     } catch (error) {
-        showNotify("error", "", error, 6);
+        showNewError(error);
         updateGame(round_diff=1);  // when user views previous rounds and fails to place a wall
     }
 }
@@ -135,6 +149,7 @@ async function updateGame(round_diff=0, play_audio=true) {
         current_round_diff = 0;  // defined in game_online.js
     }
     if (fetched_game_data_is_new || round_diff != 0) {
+        console.log(new_complete_game_data);
         changePlayState(reset=true);
         if (play_audio) {
             playAudio();
@@ -239,7 +254,7 @@ async function startGameAsync() {
         var data = await response.json();
         throwOnError(data);
     } catch (error) {
-        showNotify("error", "", error, 6);
+        showNewError(error);
     }
 }
 
@@ -257,7 +272,7 @@ async function changeVisibility() {
             showNotify("success", "", data["status"], 6);
         }
     } catch (error) {
-        showNotify("error", "", error, 6);
+        showNewError(error);
     }
 }
 
@@ -275,7 +290,7 @@ async function changeAmountOfWallsPerPlayer(new_amount) {
         var data = await response.json();
         throwOnError(data);
     } catch (error) {
-        showNotify("error", "", error, 6);
+        showNewError(error);
     }
 }
 
@@ -293,7 +308,7 @@ async function getRandomPublicLobby() {
             window.location.replace(data["lobby_url"]);
         }
     } catch (error) {
-        showNotify("error", "", error, 6);
+        showNewError(error);
     }
 }
 
@@ -341,11 +356,7 @@ async function getLobbyAsync() {
             }
         }
     } catch (error) {
-        error = error.toString();
-        if (last_error_msg != error) {
-            last_error_msg = error;
-            showNotify("error", "", error, 6);
-        }
+        showNewError(error);
     }
 }
 
@@ -368,7 +379,7 @@ async function updatePlayerName() {
         throwOnError(data);
         showNotify("success", "", data["status"], 6);
     } catch (error) {
-        showNotify("error", "", error, 6);
+        showNewError(error);
     }
 }
 
