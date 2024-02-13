@@ -249,7 +249,7 @@ function Wall(player) {
     this.draw = function() {
         ctx.beginPath();
         ctx.roundRect(this.x + game_board.start_x, this.y + game_board.start_y, this.width, this.length, 9);
-        if (this.player == null) {
+        if (this.player == null || getCookie("wall_color_as_player_color", "true") == "false") {
             ctx.fillStyle = "brown";
         } else {
             ctx.fillStyle = this.player.color;

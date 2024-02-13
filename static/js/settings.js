@@ -56,7 +56,7 @@ function setButtonSizes(value) {
     // set button sizes initially
     // value should be something between 0 and 150
     ["button-inspect-previous-round", "button-inspect-next-round", "button-inspect-current-round",
-    "button-place-walls", "button-settings"].forEach(button_id => {
+    "button-place-walls", "button-settings", "button-toggle-wall-color"].forEach(button_id => {
         const initial_button_size = 81;
         const initial_font_size = 16;
         const initial_icon_size = 32;
@@ -86,8 +86,16 @@ function getSliderValue(slider_name) {
         return 100;
     }
     return cookie_value;
-
 }
+
+function toggleWallColor() {
+    if (getCookie("wall_color_as_player_color", "") == "false") {
+        setCookie("wall_color_as_player_color", "true");
+    } else {
+        setCookie("wall_color_as_player_color", "false");
+    }
+}
+
 
 // TODO: Remove this old audio functionality
 function toggleAudio() {
