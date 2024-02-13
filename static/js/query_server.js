@@ -151,7 +151,6 @@ async function updateGame(round_diff=0, play_audio=true) {
         current_round_diff = 0;  // defined in game_online.js
     }
     if (fetched_game_data_is_new || round_diff != 0) {
-        console.log(new_complete_game_data);
         changePlayState(reset=true);
         if (play_audio) {
             playAudio();
