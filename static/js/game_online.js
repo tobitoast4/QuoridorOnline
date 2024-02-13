@@ -231,13 +231,13 @@ function Player(player_id, name, amount_walls_left, color) {
     }
 }
 
-function Wall() {
+function Wall(player) {
     this.x = null;
     this.y = null;
     this.width = null;
     this.length = null;
     this.is_vertical = true;  // gets changed when mouse hovers betweeen fields
-    this.placed_by = null;
+    this.player = player;
 
     this.setSizes = function(x, y, width, length) {
         this.x = x - game_board.start_x;  // making it work for resizing
@@ -249,7 +249,11 @@ function Wall() {
     this.draw = function() {
         ctx.beginPath();
         ctx.roundRect(this.x + game_board.start_x, this.y + game_board.start_y, this.width, this.length, 9);
-        ctx.fillStyle = "brown";
+        if (this.player == null) {
+            ctx.fillStyle = "brown";
+        } else {
+            ctx.fillStyle = this.player.color;
+        }
         ctx.fill();
     }
     
@@ -323,6 +327,16 @@ function Wall() {
 }
 
 
+function getPlayerById(player_id) {
+    var player_to_return = null;
+    players.forEach(player => {
+        if (player.player_id == player_id) {
+            player_to_return = player;
+        }
+    });
+    return player_to_return;
+}
+
 function getFieldByCoordinates(x, y) {
     var field_to_return = null;
     fields.forEach(field => {
@@ -371,10 +385,10 @@ function placeWall(the_player) {
     placeWallAsync(the_player.player_id, col_start, row_start, col_end, row_end);
 }
 
-function placeWallByServerCoordinates(col_start, row_start, col_end, row_end) {
+function placeWallByServerCoordinates(player_id, col_start, row_start, col_end, row_end) {
     var width = game_board.wall_width;
     var length = game_board.wall_length;
-    let wall = new Wall();
+    let wall = new Wall(getPlayerById(player_id));
     if (col_start == col_end) {  // wall is vertical
         let field = getFieldByColAndRow(col_start + 0.5, row_start);
         var field_x = field.x + game_board.start_x;
@@ -509,5 +523,5 @@ function animate(){
 
 drawBoard();
 createFields();
-last_wall.wall = new Wall();
+last_wall.wall = new Wall(null);  // this is set again in query_server.js when players are loaded
 animate();

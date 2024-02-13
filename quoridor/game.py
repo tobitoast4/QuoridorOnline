@@ -45,7 +45,7 @@ class Game:
                 raise QuoridorOnlineGameError("It's not your turn currently")
             if self._get_current_player().amount_walls_left <= 0:
                 raise QuoridorOnlineGameError("You do not have any more walls left")
-        new_wall = wall.Wall(col_start, row_start, col_end, row_end, self.game_board)
+        new_wall = wall.Wall(user_id, col_start, row_start, col_end, row_end, self.game_board)
         self.game_board.walls.append(new_wall)
         path_checker = PathChecker()
         if not path_checker.check_if_path_to_win_exists_for_all_players(self.game_board.players):

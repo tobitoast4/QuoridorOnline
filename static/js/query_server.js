@@ -130,6 +130,8 @@ async function createPlayers() {
         players.push(player);  // players is defined in game.js
     }
 
+
+    last_wall.wall = new Wall(getPlayerById(this_player_id));
     refreshPlayerStats();
 }
 
@@ -184,7 +186,7 @@ async function updateGame(round_diff=0, play_audio=true) {
         walls_json.forEach(wall_json => {
             let start = wall_json["start"];
             let end = wall_json["end"];
-            placeWallByServerCoordinates(start["col"], start["row"], end["col"], end["row"]);
+            placeWallByServerCoordinates(wall_json["player_id"], start["col"], start["row"], end["col"], end["row"]);
         });
 
         if (round_diff <= 1) {

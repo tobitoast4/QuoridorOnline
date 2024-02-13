@@ -3,7 +3,7 @@ import math
 
 
 class Wall:
-    def __init__(self, col_start, row_start, col_end, row_end, game_board):
+    def __init__(self, player_id, col_start, row_start, col_end, row_end, game_board):
         """Walls can be placed like this:
         Wall is placed vertically:
                           ->  col_start=0.5, row_start=0, col_end=0.5, row_end=1
@@ -36,6 +36,7 @@ class Wall:
             raise QuoridorOnlineGameError(error_msg)
         if row_start == row_end and row_end % 1 != 0.5:
             raise QuoridorOnlineGameError(error_msg)
+        self.player_id = player_id  # placed by this player
         self.col_start = col_start
         self.row_start = row_start
         self.col_end = col_end
@@ -129,6 +130,7 @@ class Wall:
 
     def __json__(self):
         return {
+            "player_id": self.player_id,
             "start": {
                 "col": self.col_start,
                 "row": self.row_start,
