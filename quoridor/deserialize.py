@@ -36,7 +36,7 @@ def create_game_from_json(json_dict):
 
     game_data_last_round_walls = game_data_last_round["game_board"]["walls"]
     for wall_dict in game_data_last_round_walls:
-        new_game.place_wall(None, wall_dict["start"]["col"], wall_dict["start"]["row"],
+        new_game.place_wall(wall_dict["player_id"], wall_dict["start"]["col"], wall_dict["start"]["row"],
                             wall_dict["end"]["col"], wall_dict["end"]["row"], skip_user_check=True)
     return new_game
 
@@ -64,4 +64,5 @@ def create_user_from_dict(json_dict):
     new_user = user.User()
     new_user.id = json_dict["id"]
     new_user.name = json_dict["name"]
+    new_user.color = json_dict["color"]
     return new_user

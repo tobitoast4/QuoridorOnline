@@ -19,15 +19,12 @@ Web sockets
 
 Error messages
 - Fix bug with message 'lobby_as_dict .....' (or hide it; it has no bad influence on the game)
+  'cannot access local variable 'lobby_as_dict' where it is not associated with a value'
 - Reduce error message 'its not your turn'
 - change error message 'This wall can not be placed (col_start=4.5, row_start=4, col_end=4.5, row_end=5) as it is overlapping with another wall'
 
 Colors
-- Make color (of player) changeable
-- Save color of user in session (and reuse it in other games)
-- Show color of user in lobby (to avoid same colors); maybe find algorithm to determine 'color distance' so that the color of to players can not be almost the same
-- Walls should have the color of the player who placed it
-- Think of donation (before adding advertisement
+- Prevent users from having the same color
 
 Other important!! things:
 - When viewing previous rounds in the game, it is currently unclear whose turn it was
@@ -35,3 +32,5 @@ Other important!! things:
 - Thread to remove empty lobby (lobbies where no game was started) files
 - Server should not delete game data files, when redeploying (maybe use a path outside of the project directory's folder)
 - Put secret app key in env variable
+- Make gameboard not clickable when menu is open
+- Think of donation (before adding advertisement

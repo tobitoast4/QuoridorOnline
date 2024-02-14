@@ -5,9 +5,10 @@ import os
 
 import user
 import lobby as lobby_manager
+import utils
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "eb2f3f32-1cd8-49d6-a491-3c61c2326fdb"
+app.config["SECRET_KEY"] = "eb2f3f32-1cd8-49d6-a491-3c61c2326fd4"
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -73,7 +74,7 @@ def lobby(lobby_id=None):
         if the_lobby is None:
             flash(f"The lobby with id {lobby_id} does not exist.")
             return redirect("/")
-        return render_template("lobby.html", lobby=the_lobby, user=the_user, server_url=request.url_root)
+        return render_template("lobby.html", lobby=the_lobby, user=the_user, server_url=request.url_root, colors=utils.COLORS)
 
 
 @app.route("/get_lobby/", methods=['POST'])
@@ -204,18 +205,36 @@ def rename_player():
     return {"status": f"Player name successfully changed to {new_user_name}"}
 
 
+@app.route("/change_color", methods=['POST'])
+def change_color():
+    request_json = request.json
+    lobby_id = request_json["lobby_id"]
+    user_id = request_json["user_id"]
+    new_color = request_json["new_color"]
+    session['user_color'] = new_color  # update the color
+    # also update the name in the lobby (if the user is currently in one)
+    if lobby_id is not None:
+        lobby_manager.update_color_of_player_in_lobby(lobby_id, user_id, new_color)
+    return {
+        "status": f"Color successfully updated",
+        "color": new_color
+    }
+
+
 def log_in_user():
     if "user_id" in session:
         # user is already logged in
         the_user = user.User()
         the_user.id = session['user_id']
         the_user.name = session['user_name']
+        the_user.color = session['user_color']
         return the_user
     else:
         # user not registered yet, create new
         new_user = user.User()
         session['user_id'] = new_user.id
         session['user_name'] = new_user.name
+        session['user_color'] = new_user.color
         return new_user
 
 

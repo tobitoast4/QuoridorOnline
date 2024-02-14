@@ -3,8 +3,10 @@ var current_lobby_id = null;
 var next_lobby_id = null;
 var this_player_id = null;
 var this_player_name = null;
+var this_player_color = null;
 var complete_game_data = null;
 
+var clear_last_error_msg_started = false;
 var last_error_msg = null;
 
 function throwOnError(json_obj) {
@@ -13,6 +15,23 @@ function throwOnError(json_obj) {
     // E.g.: {"status": "success"} should return false.
     if (Object.hasOwn(json_obj, "error")) {
         throw json_obj["error"];
+    }
+}
+
+function showNewError(error) {
+    // shows an error if it is not the same as last_error_msg
+    // also sets an interval to reset last_error_msg back to null
+    error = error.toString();
+    if (last_error_msg != error) {
+        last_error_msg = error;
+        showNotify("error", "", error, 6);
+    }
+    if (!clear_last_error_msg_started) {  // ensures to only start one of these threads
+        clear_last_error_msg_started = true;
+        setTimeout(() => {
+            last_error_msg = null;
+            clear_last_error_msg_started = false;
+        }, 5000);
     }
 }
 
@@ -33,11 +52,7 @@ async function getGameDataAsync() {
         data_to_be_returned = await response.json();
         throwOnError(data_to_be_returned);
     } catch (error) {
-        error = error.toString();
-        if (last_error_msg != error) {
-            last_error_msg = error;
-            showNotify("error", "", error, 6);
-        }
+        showNewError(error);
     }
 
     return data_to_be_returned;
@@ -59,7 +74,7 @@ async function movePlayerAsync(player_id, new_field_col_num, new_field_row_num) 
         data = await response.json();
         throwOnError(data);
     } catch (error) {
-        showNotify("error", "", error, 6);
+        showNewError(error);
         updateGame(round_diff=1);  // when user views previous rounds and fails to move
     }
 }
@@ -82,7 +97,7 @@ async function placeWallAsync(player_id, col_start, row_start, col_end, row_end)
         data = await response.json();
         throwOnError(data);
     } catch (error) {
-        showNotify("error", "", error, 6);
+        showNewError(error);
         updateGame(round_diff=1);  // when user views previous rounds and fails to place a wall
     }
 }
@@ -91,13 +106,12 @@ async function createPlayers() {
     var game_data = await getGameDataAsync();
     var initial_setup_json = game_data["initial_setup"]; //TODO: Use the amount fields property??
     var players_json = initial_setup_json["players"];
-    var colors = ["red", "blue", "green", "purple"];
     for (var p = 0; p < players_json.length; p++) {
         var player_json = players_json[p];
         var player = new Player(player_json["user"]["id"],
                                 player_json["user"]["name"],
                                 player_json["amount_walls_left"],
-                                colors[p]);
+                                player_json["user"]["color"],);
 
         // Add start_ and win_option_fields
         for (var i = 0; i < player_json["start_option_fields"].length; i++) {
@@ -116,6 +130,8 @@ async function createPlayers() {
         players.push(player);  // players is defined in game.js
     }
 
+
+    last_wall.wall = new Wall(getPlayerById(this_player_id));
     refreshPlayerStats();
 }
 
@@ -169,7 +185,7 @@ async function updateGame(round_diff=0, play_audio=true) {
         walls_json.forEach(wall_json => {
             let start = wall_json["start"];
             let end = wall_json["end"];
-            placeWallByServerCoordinates(start["col"], start["row"], end["col"], end["row"]);
+            placeWallByServerCoordinates(wall_json["player_id"], start["col"], start["row"], end["col"], end["row"]);
         });
 
         if (round_diff <= 1) {
@@ -239,7 +255,7 @@ async function startGameAsync() {
         var data = await response.json();
         throwOnError(data);
     } catch (error) {
-        showNotify("error", "", error, 6);
+        showNewError(error);
     }
 }
 
@@ -257,7 +273,7 @@ async function changeVisibility() {
             showNotify("success", "", data["status"], 6);
         }
     } catch (error) {
-        showNotify("error", "", error, 6);
+        showNewError(error);
     }
 }
 
@@ -275,7 +291,7 @@ async function changeAmountOfWallsPerPlayer(new_amount) {
         var data = await response.json();
         throwOnError(data);
     } catch (error) {
-        showNotify("error", "", error, 6);
+        showNewError(error);
     }
 }
 
@@ -293,7 +309,7 @@ async function getRandomPublicLobby() {
             window.location.replace(data["lobby_url"]);
         }
     } catch (error) {
-        showNotify("error", "", error, 6);
+        showNewError(error);
     }
 }
 
@@ -307,6 +323,7 @@ async function getLobbyAsync() {
             body: JSON.stringify({
                 "user_id": this_player_id,
                 "user_name": this_player_name,
+                "user_color": this_player_color,
             })
         });
         var data = await response.json();
@@ -320,11 +337,16 @@ async function getLobbyAsync() {
                 list_of_players.empty();
                 data.players.forEach(player => {
                     if (player.id == lobby_owner_id) {
-                        list_of_players.append("<div style='display: inline-block; padding: 10px 0; word-wrap: anywhere;'>" + player.name +
-                                               "<i class='fa fa-user-circle-o' aria-hidden='true' style='margin-left: 12px'></i>" +
-                                               "</div>");
+                        list_of_players.append("<div style='display: flex; padding: 10px 0; word-wrap: anywhere;'>" +
+                                                    "<div class='color-of-user-in-list' style='background-color: " + player.color + "'></div>" +
+                                                    player.name +
+                                                    "<i class='fa fa-user-circle-o' aria-hidden='true' style='margin-left: 12px'></i>" +
+                                                "</div>");
                     } else {
-                        list_of_players.append("<div style='padding: 10px 0; word-wrap: anywhere;'>" + player.name + "</div>");
+                        list_of_players.append("<div style='display: flex; padding: 10px 0; word-wrap: anywhere;'>" +
+                                                    "<div class='color-of-user-in-list' style='background-color: " + player.color + "'></div>" +
+                                                    player.name +
+                                               "</div>");
                     }
                 });
 
@@ -341,11 +363,7 @@ async function getLobbyAsync() {
             }
         }
     } catch (error) {
-        error = error.toString();
-        if (last_error_msg != error) {
-            last_error_msg = error;
-            showNotify("error", "", error, 6);
-        }
+        showNewError(error);
     }
 }
 
@@ -368,7 +386,28 @@ async function updatePlayerName() {
         throwOnError(data);
         showNotify("success", "", data["status"], 6);
     } catch (error) {
-        showNotify("error", "", error, 6);
+        showNewError(error);
     }
 }
 
+async function updateColor(new_color) {
+    try {
+        var response = await fetch(server_url + "change_color", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "lobby_id": current_lobby_id,
+                "user_id": this_player_id,
+                "new_color": new_color
+            })
+        });
+        var data = await response.json();
+        throwOnError(data);
+        showNotify("success", "", data["status"], 6);
+        $('#players-color').attr("style", "background-color: " + data["color"]);
+    } catch (error) {
+        showNewError(error);
+    }
+}

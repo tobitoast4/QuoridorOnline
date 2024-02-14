@@ -2,6 +2,9 @@
 {% block body %}
 
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/lobby.css' )}}">
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/color_picker.css' )}}">
+<!--use jQuery UI for draggable color picker-->
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
 <div>
     <h1 class="font-effect-outline font-moul-white-big">QuoridorOnline</h1>
     <h2>LOBBY</h2>
@@ -13,10 +16,17 @@
                id="input-players-name"
                type="text"
                style="width: 100%; border: none; font-size: 16px; font-weight: 600; word-wrap: anywhere;">
+        <div id="players-color" class="color-of-user" style="background-color: {{ user.color }}" onclick="openColorPicker()"></div>
         <button style="display: inline-block;" id="button_update_player_name">
             <i class="fa fa-floppy-o" aria-hidden="true"></i>
         </button>
     </div>
+
+    <div style="">
+        {% include 'menus/color_picker.html' %}
+    </div>
+    <script src="{{ url_for('static', filename='js/color_picker.js' )}}"></script>
+
     <br/>
     <br/>
     Share this link with your friends
@@ -82,6 +92,7 @@
     current_lobby_id = "{{ lobby.lobby_id }}";
     this_player_id = "{{ user.id }}";
     this_player_name = "{{ user.name }}";
+    this_player_color = "{{ user.color }}";
 
     let lobby_link = server_url + "lobby/" + current_lobby_id;
     $('#link-to-lobby').html("" + lobby_link);
