@@ -89,10 +89,10 @@ function getSliderValue(slider_name) {
 }
 
 function toggleWallColor() {
-    if (getCookie("wall_color_as_player_color", "") == "false") {
-        setCookie("wall_color_as_player_color", "true");
-    } else {
+    if (getCookie("wall_color_as_player_color", "") == "true") {
         setCookie("wall_color_as_player_color", "false");
+    } else {
+        setCookie("wall_color_as_player_color", "true");
     }
 }
 
