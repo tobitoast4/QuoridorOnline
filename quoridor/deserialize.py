@@ -64,4 +64,5 @@ def create_user_from_dict(json_dict):
     new_user = user.User()
     new_user.id = json_dict["id"]
     new_user.name = json_dict["name"]
+    new_user.color = json_dict["color"]
     return new_user

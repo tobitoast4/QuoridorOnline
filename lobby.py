@@ -76,6 +76,16 @@ def update_player_name_in_lobby(lobby_id, user_id, new_user_name):
     the_lobby.write_lobby()
 
 
+def update_color_of_player_in_lobby(lobby_id, user_id, new_color):
+    the_lobby = get_lobby(lobby_id)
+    for p in range(len(the_lobby.players)):
+        player = the_lobby.players[p]
+        if player.id == user_id:
+            player.color = new_color
+            break
+    the_lobby.write_lobby()
+
+
 def check_players_last_seen_time(lobby_id):
     try:
         the_lobby = get_lobby(lobby_id)

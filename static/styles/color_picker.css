@@ -18,3 +18,18 @@
     cursor: pointer;
     box-shadow: 1px 1px 1px #666;
 }
+
+.color-of-user {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    margin-right: 8px;
+}
+
+.color-of-user-in-list {
+    width: 16px;
+    height: 16px;
+    border-radius: 6px;
+    margin-right: 8px;
+}
+

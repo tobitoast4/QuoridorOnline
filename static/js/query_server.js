@@ -3,6 +3,7 @@ var current_lobby_id = null;
 var next_lobby_id = null;
 var this_player_id = null;
 var this_player_name = null;
+var this_player_color = null;
 var complete_game_data = null;
 
 var clear_last_error_msg_started = false;
@@ -105,13 +106,12 @@ async function createPlayers() {
     var game_data = await getGameDataAsync();
     var initial_setup_json = game_data["initial_setup"]; //TODO: Use the amount fields property??
     var players_json = initial_setup_json["players"];
-    var colors = ["red", "blue", "green", "purple"];
     for (var p = 0; p < players_json.length; p++) {
         var player_json = players_json[p];
         var player = new Player(player_json["user"]["id"],
                                 player_json["user"]["name"],
                                 player_json["amount_walls_left"],
-                                colors[p]);
+                                player_json["user"]["color"],);
 
         // Add start_ and win_option_fields
         for (var i = 0; i < player_json["start_option_fields"].length; i++) {
@@ -323,6 +323,7 @@ async function getLobbyAsync() {
             body: JSON.stringify({
                 "user_id": this_player_id,
                 "user_name": this_player_name,
+                "user_color": this_player_color,
             })
         });
         var data = await response.json();
@@ -336,11 +337,16 @@ async function getLobbyAsync() {
                 list_of_players.empty();
                 data.players.forEach(player => {
                     if (player.id == lobby_owner_id) {
-                        list_of_players.append("<div style='display: inline-block; padding: 10px 0; word-wrap: anywhere;'>" + player.name +
-                                               "<i class='fa fa-user-circle-o' aria-hidden='true' style='margin-left: 12px'></i>" +
-                                               "</div>");
+                        list_of_players.append("<div style='display: flex; padding: 10px 0; word-wrap: anywhere;'>" +
+                                                    "<div class='color-of-user-in-list' style='background-color: " + player.color + "'></div>" +
+                                                    player.name +
+                                                    "<i class='fa fa-user-circle-o' aria-hidden='true' style='margin-left: 12px'></i>" +
+                                                "</div>");
                     } else {
-                        list_of_players.append("<div style='padding: 10px 0; word-wrap: anywhere;'>" + player.name + "</div>");
+                        list_of_players.append("<div style='display: flex; padding: 10px 0; word-wrap: anywhere;'>" +
+                                                    "<div class='color-of-user-in-list' style='background-color: " + player.color + "'></div>" +
+                                                    player.name +
+                                               "</div>");
                     }
                 });
 
@@ -384,3 +390,24 @@ async function updatePlayerName() {
     }
 }
 
+async function updateColor(new_color) {
+    try {
+        var response = await fetch(server_url + "change_color", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "lobby_id": current_lobby_id,
+                "user_id": this_player_id,
+                "new_color": new_color
+            })
+        });
+        var data = await response.json();
+        throwOnError(data);
+        showNotify("success", "", data["status"], 6);
+        $('#players-color').attr("style", "background-color: " + data["color"]);
+    } catch (error) {
+        showNewError(error);
+    }
+}

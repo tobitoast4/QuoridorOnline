@@ -2,6 +2,8 @@ import random
 import time
 import uuid
 
+COLORS = ["red", "orange", "#FFE600", "#199A19", "blue", "#4A0080", "#EE81EE"]
+
 
 def get_new_uuid():
     return str(uuid.uuid4())
@@ -22,5 +24,5 @@ def get_player_guest_name():
 
 def get_random_color():
     # these are html colors (https://htmlcolorcodes.com/color-names/)
-    colors = ["red", "blue", "green", "black", "deepPink", "orangeRed"]
-    return colors[random.randint(0, len(colors)-1)]
+    # colors = ["red", "blue", "green", "black", "deepPink", "orangeRed"]
+    return COLORS[random.randint(0, len(COLORS)-1)]

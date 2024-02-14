@@ -1,10 +1,6 @@
 <div id="color-picker" class="color-picker-container">
-    <div class="color-picker-color" style="background-color: red"></div>
-    <div class="color-picker-color" style="background-color: orange"></div>
-    <div class="color-picker-color" style="background-color: #FFE600"></div>
-    <div class="color-picker-color" style="background-color: #199A19"></div>
-    <div class="color-picker-color" style="background-color: blue"></div>
-    <div class="color-picker-color" style="background-color: #4A0080"></div>
-    <div class="color-picker-color" style="background-color: #EE81EE"></div>
+    {% for color in colors %}
+        <div class="color-picker-color" style="background-color: {{ color }}" onclick="updateColor('{{ color }}')"></div>
+    {% endfor %}
     <i id="color-picker-icon" class="fa fa-arrows" style="font-size: 24px; margin: 4px 0 6px 2px" aria-hidden="true"></i>
 </div>

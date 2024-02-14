@@ -8,7 +8,7 @@ document.addEventListener("mouseup", function(event) {
 
 function openColorPicker(){
     let offset = $('#players-color').offset();
-    $('#color-picker').attr("style", `top: ${offset.top - 128}px; left: ${offset.left - 96}px`);
+    $('#color-picker').attr("style", `top: ${offset.top - 128}px; left: ${window.innerWidth - 96}px`);
     $("#color-picker").fadeIn(300);
     $("#color-picker").draggable()
     console.log(offset);
