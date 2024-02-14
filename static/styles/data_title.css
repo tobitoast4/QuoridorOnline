@@ -4,6 +4,7 @@
     transition-delay: 1000ms;
     visibility: visible;
 }
+
 [data-title]:after {
     content: attr(data-title);
     background-color: #bbf7d0;
@@ -18,6 +19,7 @@
     z-index: 99999;
     visibility: hidden;
 }
+
 [data-title] {
     position: relative;
 }
