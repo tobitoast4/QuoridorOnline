@@ -28,8 +28,7 @@ class Wall:
             +-----+     +-----+
                             field (1, 1)
         """
-        error_msg = f"This wall can not be placed (col_start={col_start}, row_start={row_start}, " \
-                    f"col_end={col_end}, row_end={row_end})"
+        error_msg = f"This wall can not be placed as it would overlap with another wall"
         if col_start != col_end and row_start != row_end:
             raise QuoridorOnlineGameError(error_msg)
         if col_start == col_end and col_end % 1 != 0.5:
@@ -43,8 +42,6 @@ class Wall:
         self.row_end = row_end
         self.game_board = game_board
         if game_board.is_new_wall_overlapping_old_walls(self):
-            error_msg = f"This wall can not be placed (col_start={col_start}, row_start={row_start}, " \
-                        f"col_end={col_end}, row_end={row_end}) as it is overlapping with another wall"
             raise QuoridorOnlineGameError(error_msg)
         self.remove_links_between_fields()
 
