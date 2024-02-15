@@ -8,7 +8,7 @@ import lobby as lobby_manager
 import utils
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "eb2f3f32-1cd8-49d6-a491-3c61c2326fd4"
+app.config["SECRET_KEY"] = os.getenv("SERVER_SECRET_KEY")
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -58,6 +58,12 @@ def how_to_play():
 @app.route("/about", methods=['GET'])
 def about():
     return render_template("about.html")
+
+
+@app.route("/get_random_lobby", methods=['GET'])
+def get_random_lobby():
+    the_lobby = lobby_manager.get_random_public_lobby()
+    return {"lobby_url": f"{request.url_root}lobby/{the_lobby.lobby_id}"}, 200
 
 
 @app.route("/lobby/", methods=['GET'])
@@ -131,12 +137,6 @@ def change_amount_of_walls_per_player(lobby_id):
     the_lobby.change_amount_of_walls_of_players(new_amount)
     the_lobby.write_lobby()
     return {"amount_of_walls_per_player": new_amount}, 200  # if all was successful
-
-
-@app.route("/get_random_lobby", methods=['GET'])
-def get_random_lobby():
-    the_lobby = lobby_manager.get_random_public_lobby()
-    return {"lobby_url": f"{request.url_root}lobby/{the_lobby.lobby_id}"}, 200
 
 
 @app.route("/game/<string:lobby_id>", methods=['GET'])
