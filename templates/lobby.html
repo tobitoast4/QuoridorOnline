@@ -17,7 +17,7 @@
                type="text"
                style="width: 100%; border: none; font-size: 16px; font-weight: 600; word-wrap: anywhere;">
         <div id="players-color" class="color-of-user" style="background-color: {{ user.color }}" onclick="openColorPicker()"></div>
-        <button style="display: inline-block;" id="button_update_player_name">
+        <button title="Save name" style="display: inline-block;" id="button_update_player_name">
             <i class="fa fa-floppy-o" aria-hidden="true"></i>
         </button>
     </div>
@@ -32,7 +32,7 @@
     Share this link with your friends
     <div class="element-box" style="display: flex">
         <div id="link-to-lobby" style="width: 100%; word-wrap: anywhere;"></div>
-        <button onclick="copy_to_clipboard()" style="display: inline-block;">
+        <button title="Copy" onclick="copy_to_clipboard()" style="display: inline-block;">
             <i class="fa fa-files-o" aria-hidden="true"></i>
         </button>
     </div>

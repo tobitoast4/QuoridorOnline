@@ -2,7 +2,8 @@ const STATE_PLACE_PLAYER = -1;
 const STATE_MOVE = 0;
 const STATE_PLACE_WALL = 1;
 const STATE_PLAYER_DID_WIN = 2;
-
+var is_overlay_menu_open = false; // use this to prevent players from moving their
+                                  // pawn while menu (e.g. settings menu) is open
 var canvas = document.querySelector("canvas");
 
 var stats_height = document.getElementById('game-stats').clientHeight;
@@ -41,19 +42,22 @@ window.addEventListener("resize", function(event) {
 let last_touch_X = -1;
 let last_touch_Y = -1;
 document.addEventListener('touchend', e => {
+    // use this to reset last touch position on single tap / swipe end
     last_touch_X = -1;
     last_touch_Y = -1;
 })
 
 document.addEventListener("touchmove", function clicked(e) {
-    if (last_touch_X >= 0) {
-        let touch_distance_X = e.touches[0].screenX - last_touch_X;
-        let touch_distance_Y = e.touches[0].screenY - last_touch_Y;
-        mouse.x = mouse.x + touch_distance_X;
-        mouse.y = mouse.y + touch_distance_Y;
+    if (!is_overlay_menu_open) {
+        if (last_touch_X >= 0) {
+            let touch_distance_X = e.touches[0].screenX - last_touch_X;
+            let touch_distance_Y = e.touches[0].screenY - last_touch_Y;
+            mouse.x = mouse.x + touch_distance_X;
+            mouse.y = mouse.y + touch_distance_Y;
+        }
+        last_touch_X = e.touches[0].screenX;
+        last_touch_Y = e.touches[0].screenY;
     }
-    last_touch_X = e.touches[0].screenX;
-    last_touch_Y = e.touches[0].screenY;
 });
 // ##########################
 
@@ -62,39 +66,45 @@ function clear(){
 }
 
 document.addEventListener("mousemove", function(event) {
-    mouse.x = event.x + window.scrollX;  // scrollXY corrects mouse position 
-    mouse.y = event.y + window.scrollY;  // when window is scrolled
+    if (!is_overlay_menu_open) {
+        mouse.x = event.x + window.scrollX;  // scrollXY corrects mouse position
+        mouse.y = event.y + window.scrollY;  // when window is scrolled
+    }
 });
 
 document.addEventListener("mouseup", function(event) {
-    current_player = players[its_this_players_turn];
-    if (players_action_state == STATE_PLACE_PLAYER) {
-        field_clicked = getFieldByCoordinates(event.x + window.scrollX, event.y + window.scrollY);
-        if (field_clicked != null) {
-            movePlayerAsync(current_player.player_id, field_clicked.col_num, field_clicked.row_num);
-        }
-    } else if (players_action_state == STATE_MOVE) {
-        field_clicked = getFieldByCoordinates(event.x + window.scrollX, event.y + window.scrollY);
-        if (field_clicked != null) {
-            movePlayerAsync(current_player.player_id, field_clicked.col_num, field_clicked.row_num);
-        }
-    } else if (players_action_state == STATE_PLACE_WALL) {
-        if (last_wall.wall_can_be_placed){
-            placeWall(current_player);
+    if (!is_overlay_menu_open) {
+        current_player = players[its_this_players_turn];
+        if (players_action_state == STATE_PLACE_PLAYER) {
+            field_clicked = getFieldByCoordinates(event.x + window.scrollX, event.y + window.scrollY);
+            if (field_clicked != null) {
+                movePlayerAsync(current_player.player_id, field_clicked.col_num, field_clicked.row_num);
+            }
+        } else if (players_action_state == STATE_MOVE) {
+            field_clicked = getFieldByCoordinates(event.x + window.scrollX, event.y + window.scrollY);
+            if (field_clicked != null) {
+                movePlayerAsync(current_player.player_id, field_clicked.col_num, field_clicked.row_num);
+            }
+        } else if (players_action_state == STATE_PLACE_WALL) {
+            if (last_wall.wall_can_be_placed){
+                placeWall(current_player);
+            }
         }
     }
 });
 
 document.addEventListener('keyup', function(event) {
-    if (event.key == '.') {
-        field_clicked = getFieldByCoordinates(mouse.x + window.scrollX, mouse.y + window.scrollY);
-        console.log(field_clicked);
-    } else if (event.key == "ArrowLeft") {
-        viewPreviousOrNextGameRound(1);
-    } else if (event.key == "ArrowRight") {
-        viewPreviousOrNextGameRound(-1);
-    } else if (event.key) {
-        changePlayState();  // place walls
+    if (!is_overlay_menu_open) {
+        if (event.key == '.') {
+            field_clicked = getFieldByCoordinates(mouse.x + window.scrollX, mouse.y + window.scrollY);
+            console.log(field_clicked);
+        } else if (event.key == "ArrowLeft") {
+            viewPreviousOrNextGameRound(1);
+        } else if (event.key == "ArrowRight") {
+            viewPreviousOrNextGameRound(-1);
+        } else if (event.key) {
+            changePlayState();  // place walls
+        }
     }
 });
 

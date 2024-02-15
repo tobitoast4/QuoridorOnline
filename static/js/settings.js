@@ -46,10 +46,12 @@ function openSettingsMenu(){
     let zoom_level = getSliderValue("zoom");
     $('#slider-zoom').attr("value", zoom_level);
     $('#slider-zoom-value').html(`${zoom_level} %`);
+    is_overlay_menu_open = true;
 }
 
 function closeSettingsMenu(){
     $('#settings_overlay').attr("style", "display:none");
+    is_overlay_menu_open = false;
 }
 
 function setButtonSizes(value) {
