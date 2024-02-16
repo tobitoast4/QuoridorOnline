@@ -10,7 +10,7 @@ from filelock import FileLock
 
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(PROJECT_DIR, "data")
+DATA_DIR = os.path.join(PROJECT_DIR, "..", "QuoridorOnlineData")
 PLAYER_TIME_OUT_TIME = 2  # how long (in sec) is the player allowed to not poll until removed from the lobby
 
 
