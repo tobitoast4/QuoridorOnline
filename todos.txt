@@ -23,6 +23,11 @@ Error messages
 
 Colors
 - Prevent users from having the same color
+- Add color check, that only colors of the list can be used
+
+Kick players
+- Lobby owner should be able to kick players
+- Players should not be able to rejoin
 
 Other important!! things:
 - When viewing previous rounds in the game, it is currently unclear whose turn it was
