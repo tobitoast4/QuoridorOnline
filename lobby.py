@@ -23,6 +23,27 @@ def create_new_lobby(lobby_owner):
     return new_lobby
 
 
+def create_lobby_from_json(lobby_as_dict):
+    new_lobby = Lobby(None)
+    for key in lobby_as_dict:
+        if key == "lobby_owner":
+            new_lobby.__setattr__(key, deserialize.create_user_from_dict(lobby_as_dict[key]))
+        elif key == "players":
+            users = []
+            for user_as_dict in lobby_as_dict["players"]:
+                users.append(deserialize.create_user_from_dict(user_as_dict))
+            new_lobby.__setattr__(key, users)
+        elif key == "game":
+            if lobby_as_dict["game"] is None:
+                new_lobby.__setattr__(key, None)
+            else:
+                game = deserialize.create_game_from_json(lobby_as_dict["game"]["game_data"])
+                new_lobby.__setattr__(key, game)
+        else:
+            new_lobby.__setattr__(key, lobby_as_dict[key])
+    return new_lobby
+
+
 def get_lobby(lobby_id):
     file_location = os.path.join(DATA_DIR, f"{lobby_id}.json")
     if os.path.isfile(file_location):
@@ -103,27 +124,6 @@ def check_players_last_seen_time(lobby_id):
         the_lobby.write_lobby()
     except Exception as e:
         print(e)
-
-
-def create_lobby_from_json(lobby_as_dict):
-    new_lobby = Lobby(None)
-    for key in lobby_as_dict:
-        if key == "lobby_owner":
-            new_lobby.__setattr__(key, deserialize.create_user_from_dict(lobby_as_dict[key]))
-        elif key == "players":
-            users = []
-            for user_as_dict in lobby_as_dict["players"]:
-                users.append(deserialize.create_user_from_dict(user_as_dict))
-            new_lobby.__setattr__(key, users)
-        elif key == "game":
-            if lobby_as_dict["game"] is None:
-                new_lobby.__setattr__(key, None)
-            else:
-                game = deserialize.create_game_from_json(lobby_as_dict["game"]["game_data"])
-                new_lobby.__setattr__(key, game)
-        else:
-            new_lobby.__setattr__(key, lobby_as_dict[key])
-    return new_lobby
 
 
 class Lobby:
