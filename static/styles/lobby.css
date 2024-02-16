@@ -63,12 +63,11 @@ textarea:focus, input:focus{
     border-radius: 128px;
     aspect-ratio: 1;
     padding: 8px;
-    border: none;
+    border: 1px solid white;
     box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .inline-button:hover {
-    cursor: pointer;
     background-color: #ededed;
     box-shadow: 1px 1px 6px rgba(0, 0, 0, 0.5);
 }

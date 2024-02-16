@@ -16,11 +16,18 @@
                id="input-players-name"
                type="text"
                style="width: 100%; border: none; font-size: 16px; font-weight: 600; word-wrap: anywhere;">
+        <!-- <div style="font-size: 11px">Name not saved yet</div>-->
         <div id="players-color" class="color-of-user" style="background-color: {{ user.color }}" onclick="openColorPicker()"></div>
         <button title="Save name" class="inline-button" id="button_update_player_name">
-            <i class="fa fa-floppy-o" aria-hidden="true"></i>
+            <i id="button_update_player_name_icon" class="fa fa-floppy-o" aria-hidden="true"></i>
         </button>
     </div>
+    <script>
+        $("#input-players-name").keydown(function() {
+            $("#button_update_player_name").attr("style", "border: 1px solid green;");
+            $("#button_update_player_name_icon").attr("style", "color: green;");
+        });
+    </script>
 
     <div style="">
         {% include 'menus/color_picker.html' %}

@@ -385,6 +385,8 @@ async function updatePlayerName() {
         var data = await response.json();
         throwOnError(data);
         showNotify("success", "", data["status"], 6);
+        $("#button_update_player_name").removeAttr("style");
+        $("#button_update_player_name_icon").removeAttr("style");
     } catch (error) {
         showNewError(error);
     }
