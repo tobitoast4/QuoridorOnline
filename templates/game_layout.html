@@ -21,6 +21,12 @@
         <!-- <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> --> <!-- use this for production -->
     </head>
     <body>
+        <style>
+            body {
+               touch-action: manipulation;
+            }
+        </style>
+
         {% block body %}
         {% endblock %}
     </body>
