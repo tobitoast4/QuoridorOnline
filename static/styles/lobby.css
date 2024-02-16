@@ -4,7 +4,7 @@
     margin-right: 5%;
     text-align: left;
     border-radius: 30px;
-    padding: 25px
+    padding: 16px 18px 16px 25px;
 }
 
 @media screen and (min-width: 768px) {
@@ -55,3 +55,25 @@ textarea:focus, input:focus{
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+
+
+.inline-button {
+    background-color: white;
+    border-radius: 128px;
+    aspect-ratio: 1;
+    padding: 8px;
+    border: none;
+    box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.inline-button:hover {
+    cursor: pointer;
+    background-color: #ededed;
+    box-shadow: 1px 1px 6px rgba(0, 0, 0, 0.5);
+}
+
+.inline-button i {
+    font-size: 24px
+}
+

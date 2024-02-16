@@ -11,13 +11,13 @@
     <br/>
     <br/>
     You
-    <div class="element-box" style="display: flex">
+    <div class="element-box" style="display: flex; align-items: center;">
         <input value="{{ user.name }}"
                id="input-players-name"
                type="text"
                style="width: 100%; border: none; font-size: 16px; font-weight: 600; word-wrap: anywhere;">
         <div id="players-color" class="color-of-user" style="background-color: {{ user.color }}" onclick="openColorPicker()"></div>
-        <button title="Save name" style="display: inline-block;" id="button_update_player_name">
+        <button title="Save name" class="inline-button" id="button_update_player_name">
             <i class="fa fa-floppy-o" aria-hidden="true"></i>
         </button>
     </div>
@@ -30,16 +30,16 @@
     <br/>
     <br/>
     Share this link with your friends
-    <div class="element-box" style="display: flex">
+    <div class="element-box" style="display: flex; align-items: center;">
         <div id="link-to-lobby" style="width: 100%; word-wrap: anywhere;"></div>
-        <button title="Copy" onclick="copy_to_clipboard()" style="display: inline-block;">
+        <button title="Copy" class="inline-button" onclick="copy_to_clipboard()" style="display: inline-block;">
             <i class="fa fa-files-o" aria-hidden="true"></i>
         </button>
     </div>
     <br/>
     <br/>
     List of players in lobby
-    <div class="element-box">
+    <div class="element-box" style="padding: 25px;">
         <div id="list_of_players">
             <!-- display loading until players are loaded-->
             <div style="margin: auto;" class="loader"></div>
