@@ -51,7 +51,8 @@ def get_lobby(lobby_id):
             try:
                 lobby_as_dict = json.load(f)
             except:
-                return None
+                # try again a second time
+                lobby_as_dict = json.load(f)
             return create_lobby_from_json(lobby_as_dict)
     return None
 
