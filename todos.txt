@@ -20,6 +20,7 @@ Web sockets
 Error messages
 - Fix bug with message 'lobby_as_dict .....' (or hide it; it has no bad influence on the game)
   'cannot access local variable 'lobby_as_dict' where it is not associated with a value'
+- Fix bug: Expecting value: line 2 column 25 (char 25)
 
 Colors
 - Prevent users from having the same color
