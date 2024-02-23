@@ -4,6 +4,7 @@ body {
     background-color: #bbf7d0;
     font-weight: bold;
     margin: 0;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
 .font-moul-white {
