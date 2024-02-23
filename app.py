@@ -1,7 +1,7 @@
 from flask import Flask, request, render_template, redirect, url_for, session, make_response, session, flash
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from werkzeug.exceptions import HTTPException
-import os
+import os, json
 
 import user
 import lobby as lobby_manager
@@ -19,6 +19,8 @@ def handle_exception(e):
     # pass through HTTP errors
     if isinstance(e, HTTPException):
         return e
+    if isinstance(e, json.decoder.JSONDecodeError):
+        return {"error": f"JSONDecodeError: {str(e)}"}, 500
     return {"error": str(e)}, 500
 
 

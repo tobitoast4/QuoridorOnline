@@ -47,11 +47,7 @@ def get_lobby(lobby_id):
     file_location = os.path.join(DATA_DIR, f"{lobby_id}.json")
     if os.path.isfile(file_location):
         with open(file_location) as f:
-            try:
-                lobby_as_dict = json.load(f)
-            except:
-                # try again a second time
-                lobby_as_dict = json.load(f)
+            lobby_as_dict = json.load(f)
             return create_lobby_from_json(lobby_as_dict)
     return None
 
