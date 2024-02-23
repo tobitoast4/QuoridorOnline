@@ -20,10 +20,10 @@ class Player:
             if new_field.player is not None:
                 raise QuoridorOnlineGameError("Field is already blocked.")
             if new_field not in self.start_option_fields:
-                raise QuoridorOnlineGameError("Field not allowed for this player as initial move.")
+                raise QuoridorOnlineGameError("Illegal initial move.")
         else:
             if new_field not in self.getMoveOptions():
-                raise QuoridorOnlineGameError("Field not allowed for this player.")
+                raise QuoridorOnlineGameError("Illegal move.")
         if self.field is not None:
             self.field.player = None  # remove player from old field
         new_field.player = self
