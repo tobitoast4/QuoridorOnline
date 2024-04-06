@@ -8,7 +8,7 @@ import lobby as lobby_manager
 import utils
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.getenv("SERVER_SECRET_KEY")
+app.config["SECRET_KEY"] = os.getenv("QUORIDOR_SECRET_KEY")
 
 login_manager = LoginManager()
 login_manager.init_app(app)

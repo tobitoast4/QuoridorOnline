@@ -9,8 +9,15 @@ import os
 from filelock import FileLock
 
 
-PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(PROJECT_DIR, "data")
+QUORIDOR_DATA_DIR = os.getenv("QUORIDOR_DATA_DIR", None)
+DATA_DIR = None
+if QUORIDOR_DATA_DIR is not None:
+    if not os.path.isdir(QUORIDOR_DATA_DIR):
+        DATA_DIR = QUORIDOR_DATA_DIR
+if DATA_DIR is None:  # either QUORIDOR_DATA_DIR is not set or its path is not valid
+    PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+    DATA_DIR = os.path.join(PROJECT_DIR, "data")  # this is the alternative data path, if QUORIDOR_DATA_DIR is not set
+
 PLAYER_TIME_OUT_TIME = 2  # how long (in sec) is the player allowed to not poll until removed from the lobby
 
 os.makedirs(DATA_DIR, exist_ok=True)
