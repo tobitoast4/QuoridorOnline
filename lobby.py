@@ -12,7 +12,7 @@ from filelock import FileLock
 QUORIDOR_DATA_DIR = os.getenv("QUORIDOR_DATA_DIR", None)
 DATA_DIR = None
 if QUORIDOR_DATA_DIR is not None:
-    if not os.path.isdir(QUORIDOR_DATA_DIR):
+    if os.path.isdir(QUORIDOR_DATA_DIR):
         DATA_DIR = QUORIDOR_DATA_DIR
 if DATA_DIR is None:  # either QUORIDOR_DATA_DIR is not set or its path is not valid
     PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
