@@ -14,7 +14,11 @@ function throwOnError(json_obj) {
     // E.g.: {"error": "Player can not move here"} should show a notify and return true.
     // E.g.: {"status": "success"} should return false.
     if (Object.hasOwn(json_obj, "error")) {
-        throw json_obj["error"];
+        if (json_obj["error"].startsWith("JSONDecodeError")) {
+            console.log(json_obj["error"]);
+        } else {
+            throw json_obj["error"];
+        }
     }
 }
 

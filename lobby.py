@@ -9,10 +9,16 @@ import os
 from filelock import FileLock
 
 
-PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(PROJECT_DIR, "data")
-PLAYER_TIME_OUT_TIME = 2  # how long (in sec) is the player allowed to not poll until removed from the lobby
+QUORIDOR_DATA_DIR = os.getenv("QUORIDOR_DATA_DIR", None)
+DATA_DIR = None
+if QUORIDOR_DATA_DIR is not None:
+    if os.path.isdir(QUORIDOR_DATA_DIR):
+        DATA_DIR = QUORIDOR_DATA_DIR
+if DATA_DIR is None:  # either QUORIDOR_DATA_DIR is not set or its path is not valid
+    PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+    DATA_DIR = os.path.join(PROJECT_DIR, "data")  # this is the alternative data path, if QUORIDOR_DATA_DIR is not set
 
+PLAYER_TIME_OUT_TIME = 2  # how long (in sec) is the player allowed to not poll until removed from the lobby
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -48,10 +54,7 @@ def get_lobby(lobby_id):
     file_location = os.path.join(DATA_DIR, f"{lobby_id}.json")
     if os.path.isfile(file_location):
         with open(file_location) as f:
-            try:
-                lobby_as_dict = json.load(f)
-            except:
-                return None
+            lobby_as_dict = json.load(f)
             return create_lobby_from_json(lobby_as_dict)
     return None
 

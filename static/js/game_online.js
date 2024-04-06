@@ -39,8 +39,8 @@ window.addEventListener("resize", function(event) {
 
 // ##########################
 // this is for mobile devices
-let last_touch_X = -1;
-let last_touch_Y = -1;
+let last_touch_X = undefined;
+let last_touch_Y = undefined;
 document.addEventListener('touchend', e => {
     // use this to reset last touch position on single tap / swipe end
     last_touch_X = -1;
@@ -84,6 +84,14 @@ document.addEventListener("mouseup", function(event) {
             field_clicked = getFieldByCoordinates(event.x + window.scrollX, event.y + window.scrollY);
             if (field_clicked != null) {
                 movePlayerAsync(current_player.player_id, field_clicked.col_num, field_clicked.row_num);
+                if (last_touch_X != undefined) {
+                // last_touch_X will stay undefined for non-touch devices. For touch devices, the highlighting of a
+                // field should vanish almost right after the touch
+                    setTimeout(() => {
+                        mouse.x = -1;
+                        mouse.y = -1;
+                    }, 100);
+                }
             }
         } else if (players_action_state == STATE_PLACE_WALL) {
             if (last_wall.wall_can_be_placed){
@@ -172,9 +180,11 @@ function Field(x, y, col_num, row_num) {
 
     this.update = function() {
         // hover effect
-        if (mouse.x > this.x + game_board.start_x && mouse.x < this.x + game_board.start_x + this.size - game_board.margin_between_fields 
+        if (mouse.x > this.x + game_board.start_x && mouse.x < this.x + game_board.start_x + this.size - game_board.margin_between_fields
            && mouse.y > this.y + game_board.start_y && mouse.y < this.y + game_board.start_y + this.size - game_board.margin_between_fields){
-            this.fill_color = "#e0e0e0";
+            if (players_action_state != STATE_PLACE_WALL) {
+                this.fill_color = "#e0e0e0";
+            }
         } else {
             this.fill_color = "white";
         }

@@ -28,7 +28,7 @@ class Wall:
             +-----+     +-----+
                             field (1, 1)
         """
-        error_msg = f"This wall can not be placed as it would overlap with another wall"
+        error_msg = f"Walls can not overlap"
         if col_start != col_end and row_start != row_end:
             raise QuoridorOnlineGameError(error_msg)
         if col_start == col_end and col_end % 1 != 0.5:

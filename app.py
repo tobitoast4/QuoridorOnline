@@ -1,14 +1,14 @@
 from flask import Flask, request, render_template, redirect, url_for, session, make_response, session, flash
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from werkzeug.exceptions import HTTPException
-import os
+import os, json
 
 import user
 import lobby as lobby_manager
 import utils
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.getenv("SERVER_SECRET_KEY")
+app.config["SECRET_KEY"] = os.getenv("QUORIDOR_SECRET_KEY")
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -19,6 +19,8 @@ def handle_exception(e):
     # pass through HTTP errors
     if isinstance(e, HTTPException):
         return e
+    if isinstance(e, json.decoder.JSONDecodeError):
+        return {"error": f"JSONDecodeError: {str(e)}"}, 500
     return {"error": str(e)}, 500
 
 
@@ -133,7 +135,7 @@ def change_amount_of_walls_per_player(lobby_id):
         return {"error": "Only the lobby owner can change the amount of walls per player"}
     if the_lobby.game is not None:
         return {"error": "You can not change the amount of walls per player when the game is already running"}
-    new_amount = request.json["new_amount"]
+    new_amount = request.json.get("new_amount")
     the_lobby.change_amount_of_walls_of_players(new_amount)
     the_lobby.write_lobby()
     return {"amount_of_walls_per_player": new_amount}, 200  # if all was successful
@@ -150,13 +152,12 @@ def game(lobby_id):
 def game_move_player(lobby_id):
     the_lobby = lobby_manager.get_lobby(lobby_id)
     the_game = the_lobby.game
-    request_data = request.json
-    if request_data["user_id"] != session['user_id']:
+    if request.json.get("user_id") != session['user_id']:
         return {"error": "It's not your turn"}
     else:
-        the_game.move_player(request_data["user_id"],
-                             request_data["new_field_col_num"],
-                             request_data["new_field_row_num"])
+        the_game.move_player(request.json.get("user_id"),
+                             request.json.get("new_field_col_num"),
+                             request.json.get("new_field_row_num"))
     the_lobby.write_lobby()
     return {"status": "player moved"}, 200
 
@@ -165,16 +166,15 @@ def game_move_player(lobby_id):
 def game_place_wall(lobby_id):
     the_lobby = lobby_manager.get_lobby(lobby_id)
     the_game = the_lobby.game
-    request_data = request.json
-    if request_data["user_id"] != session['user_id']:
+    if request.json.get("user_id") != session['user_id']:
         # raise QuoridorOnlineGameError("User can not move another player")
         return {"error": "It is not your turn"}
     else:
-        the_game.place_wall(request_data["user_id"],
-                            request_data["col_start"],
-                            request_data["row_start"],
-                            request_data["col_end"],
-                            request_data["row_end"])
+        the_game.place_wall(request.json.get("user_id"),
+                            request.json.get("col_start"),
+                            request.json.get("row_start"),
+                            request.json.get("col_end"),
+                            request.json.get("row_end"))
     the_lobby.write_lobby()
     return {"status": "wall placed"}, 200
 
@@ -190,10 +190,9 @@ def get_game_data(lobby_id):
 
 @app.route("/rename_player", methods=['POST'])
 def rename_player():
-    request_json = request.json
-    lobby_id = request_json["lobby_id"]
-    user_id = request_json["user_id"]
-    new_user_name = request_json["new_user_name"]
+    lobby_id = request.json.get("lobby_id")
+    user_id = request.json.get("user_id")
+    new_user_name = request.json.get("new_user_name")
     if new_user_name == "":
         raise ValueError("User name can not be empty")
     if len(new_user_name) > 64:
@@ -207,10 +206,9 @@ def rename_player():
 
 @app.route("/change_color", methods=['POST'])
 def change_color():
-    request_json = request.json
-    lobby_id = request_json["lobby_id"]
-    user_id = request_json["user_id"]
-    new_color = request_json["new_color"]
+    lobby_id = request.json.get("lobby_id")
+    user_id = request.json.get("user_id")
+    new_color = request.json.get("new_color")
     session['user_color'] = new_color  # update the color
     # also update the name in the lobby (if the user is currently in one)
     if lobby_id is not None:
