@@ -1,7 +1,7 @@
 
 function updatePlayersTurnInstruction(player){
     let turn_description = $(`
-        <div>
+        <div style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
             It's your turn,
             <span class="font-effect-outline" style="font-weight: 100; color: ${player.color}">${player.name}</span> !
         </div>
