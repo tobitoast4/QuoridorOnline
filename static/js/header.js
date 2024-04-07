@@ -1,6 +1,5 @@
 
 function updatePlayersTurnInstruction(player){
-    console.log(player);
     let turn_description = $(`
         <div>
             It's your turn,
