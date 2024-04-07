@@ -5,3 +5,14 @@
     background-color: #bbf7d0;
     border-bottom: 1px solid #fff;
 }
+
+.header-text-container {
+  display: grid;
+  grid-template-columns: 1fr repeat(1, auto) 1fr;
+  grid-column-gap: 5px;
+  justify-items: center;
+}
+
+.header-text-element:nth-child(2) {
+    margin-left: auto;
+}
