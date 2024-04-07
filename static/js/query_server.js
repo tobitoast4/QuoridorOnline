@@ -204,7 +204,7 @@ async function updateGame(round_diff=0, play_audio=true) {
                 updatePlayerWonTheGame(last_player.name);
             } else {
                 player = players[its_this_players_turn];
-                updatePlayersTurnInstuction(player.name);
+                updatePlayersTurnInstruction(player);
             }
         }
     }

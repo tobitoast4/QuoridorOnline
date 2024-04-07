@@ -450,7 +450,7 @@ function nextPlayersTurn(next_players_action_state=STATE_MOVE){
     }
     changePlayState(reset=true);
     player = players[its_this_players_turn];
-    updatePlayersTurnInstuction(player.name);
+    updatePlayersTurnInstruction(player);
     players_action_state = next_players_action_state;
 }
 

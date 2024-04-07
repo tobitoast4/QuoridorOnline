@@ -1,6 +1,13 @@
 
-function updatePlayersTurnInstuction(player_name){
-    $('#players_turn').html("It's your turn, " + player_name + "!");
+function updatePlayersTurnInstruction(player){
+    console.log(player);
+    let turn_description = $(`
+        <div>
+            It's your turn,
+            <span class="font-effect-outline" style="font-weight: 100; color: ${player.color}">${player.name}</span> !
+        </div>
+    `);
+    $('#players_turn').html(turn_description);
 }
 
 function updatePlayerWonTheGame(player_name){
