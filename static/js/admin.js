@@ -8,6 +8,8 @@ for (let i = 0; i < labels_as_str.length; i++) {
 }
 labels.push(new Date());  // add today's date to x axis
 
+let currently_selected_date = null;
+
 const ctx = document.getElementById("lineChart").getContext("2d");
 const lineChart = new Chart(ctx, {
     type: "bar",
@@ -44,27 +46,35 @@ document.getElementById("lineChart").addEventListener("click", function(event) {
         const label = lineChart.data.labels[clickedDataIndex];
         let date = label.toISOString();
         let date_formatted = date.substring(0, date.indexOf('T'));
-        console.log();
 
-        let table = $(`<table></table>`);
-
-        lobbies_in_group[date_formatted].forEach(async (lobby) => {
-            table.append(`
-                <tr>
-                    <td>
-                        <a href="#" onclick="getLobbyJson('${lobby.lobby_id}')">${lobby.lobby_id}</a>
-                    </td>
-                    <td>${lobby.time_created}</td>
-                </tr>
-            `);
-        });
-
-        $('#list_of_games_container').html(table);
+        currently_selected_date = date_formatted;
+        fillTableListOfGames();
     }
 });
 
+function fillTableListOfGames() {
+    let table = $(`<table></table>`);
+    lobbies_in_group[currently_selected_date].forEach(async (lobby) => {
+        table.append(`
+            <tr id="row-${lobby.lobby_id}">
+                <td>
+                    <div style="cursor:pointer; color:#551a8b; text-decoration:underline;"
+                         onclick="getLobbyJson('${lobby.lobby_id}')">
+                            ${lobby.lobby_id}
+                    </div>
+                </td>
+                <td>${lobby.time_created}</td>
+            </tr>
+        `);
+    });
+
+    $('#list_of_games_container').html(table);
+}
+
 
 async function getLobbyJson(lobby_id) {
+    fillTableListOfGames();  // to remove the old selected color
+    $('#row-' + lobby_id).attr("style", "background-color: #D6EEEE");
     try {
         var response = await fetch(server_url + "get_lobby_json/" + lobby_id, {
             method: 'GET',
