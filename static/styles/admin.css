@@ -45,13 +45,19 @@ table {
     width: 100%
 }
 
+tr th {
+    text-align: left;
+    background-color: #ddd;
+}
+
 tr {
     border-bottom: 1px solid #333;
 }
 
-tr:nth-child(even) {
+tbody tr:nth-child(even) {
     background-color: #eee;
 }
-tr:hover {
+
+tbody tr:hover {
     background-color: #D6EEEE;
 }

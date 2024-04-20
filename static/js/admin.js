@@ -56,9 +56,19 @@ document.getElementById("lineChart").addEventListener("click", function(event) {
 });
 
 function fillTableListOfGames() {
-    let table = $(`<table></table>`);
+    let table = $(`
+        <table>
+            <thead>
+                <tr>
+                    <th>Lobby ID</th>
+                    <th>Time created</th>
+                </tr>
+            </thead>
+        </table>
+    `);
+    let table_body = $(`<tbody></tbody>`)
     lobbies_in_group[currently_selected_date].forEach(async (lobby) => {
-        table.append(`
+        table_body.append(`
             <tr id="row-${lobby.lobby_id}">
                 <td>
                     <div style="cursor:pointer; color:#551a8b; text-decoration:underline;"
@@ -70,6 +80,7 @@ function fillTableListOfGames() {
             </tr>
         `);
     });
+    table.append(table_body);
 
     $('#list_of_games_container').html(table);
 }
