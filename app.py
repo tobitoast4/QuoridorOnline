@@ -7,6 +7,9 @@ import user
 import lobby as lobby_manager
 import utils
 
+import time
+import pandas as pd
+
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("QUORIDOR_SECRET_KEY")
 
@@ -235,10 +238,8 @@ def log_in_user():
         session['user_color'] = new_user.color
         return new_user
 
-import time
-import pandas as pd
 
-@app.route("/admin_dashboard", methods=['GET'])
+@app.route("/admin", methods=['GET'])
 def admin_dashboard():
     data = []
     for file in os.listdir(lobby_manager.DATA_DIR):
@@ -267,7 +268,12 @@ def admin_dashboard():
     labels = [date.strftime("%Y-%m-%d") for date in column_as_list]
     data = df_grouped['count'].to_list()
 
-    return render_template("admin.html", labels=labels, data=data, lobbies_in_group=lobbies_in_group)
+    return render_template("admin.html", labels=labels, data=data, lobbies_in_group=lobbies_in_group, server_url=request.url_root)
+
+
+@app.route("/get_lobby_json/<string:lobby_id>", methods=['GET'])
+def get_lobby_json(lobby_id):
+    return lobby_manager.read_lobby(lobby_id)
 
 
 if __name__ == '__main__':

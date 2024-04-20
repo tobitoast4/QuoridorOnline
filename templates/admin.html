@@ -23,12 +23,12 @@
     <div id="content">
         <h1>Dashboard for QuoridorOnline</h1>
 
-        <div class="widget">
+        <div class="widget" style="margin-bottom: 20px;">
             <h2>Recent Activity</h2>
             <ul id="activityList"></ul>
         </div>
 
-        <div style="display: flex; gap: 20px;">
+        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
             <div style="width: 100%">
                 <div class="widget">
                     <h2>Amount of games per time</h2>
@@ -44,9 +44,19 @@
                 </div>
             </div>
         </div>
+
+        <div class="widget">
+            <h2>Selected game</h2>
+            <div class="widget" style="background-color: white">
+                <pre id="selected_game_json_container"></pre>
+            </div>
+        </div>
+        <br>
     </div>
 
+
     <script>
+        server_url = "{{ server_url }}";
         var lobbies_in_group = {{ lobbies_in_group | tojson }};
         var labels_as_str = {{ labels | tojson }};
         var data = {{ data | tojson }};

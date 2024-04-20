@@ -50,7 +50,9 @@ document.getElementById("lineChart").addEventListener("click", function(event) {
         lobbies_in_group[date_formatted].forEach(async (lobby_id) => {
             table.append(`
                 <tr>
-                    <td>${lobby_id}</td>
+                    <td>
+                        <a href="#" onclick="getLobbyJson('${lobby_id}')">${lobby_id}</a>
+                    </td>
                 </tr>
             `);
         });
@@ -58,3 +60,20 @@ document.getElementById("lineChart").addEventListener("click", function(event) {
         $('#list_of_games_container').html(table);
     }
 });
+
+
+async function getLobbyJson(lobby_id) {
+    try {
+        var response = await fetch(server_url + "get_lobby_json/" + lobby_id, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        var data = await response.json();
+        console.log(data);
+        data_str = JSON.stringify(data, null, 4);
+        $('#selected_game_json_container').html(data_str);
+    } catch (error) {
+    }
+}
