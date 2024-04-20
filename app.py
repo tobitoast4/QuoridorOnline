@@ -251,6 +251,8 @@ def admin_dashboard():
             data.append(data_row)
     df = pd.DataFrame(data, columns=['lobby_id', 'time_created'])
     df['time_created'] = pd.to_datetime(df['time_created'])
+    df = df.sort_values(by='time_created', ascending=False)
+    df = df.reset_index()
 
     # Converting df_groups.groups = {"2024-02-23": [2, 5, 7, 12], "2024-04-06": [0, ...], ....}
     # to         df_groups.groups = {"2024-02-23": [<lobby_id>, <lobby_id>, ....], "2024-04-06": [<lobby_id>, ..], ...}
@@ -260,10 +262,14 @@ def admin_dashboard():
         group_date_str = group_date.strftime("%Y-%m-%d")
         new_list = []
         for row_id in df_groups.groups[group_date]:
-            new_list.append(df['lobby_id'].iloc[df.index[int(row_id)]])
+            new_list.append({
+                "lobby_id": df['lobby_id'].iloc[df.index[int(row_id)]],
+                "time_created": df['time_created'].iloc[df.index[int(row_id)]].strftime("%Y-%m-%d %H:%M:%S")
+            })
         lobbies_in_group[group_date_str] = new_list
 
     df_grouped = df_groups.size().reset_index(name='count')
+    print(df_grouped)
     column_as_list = df_grouped['time_created'].to_list()
     labels = [date.strftime("%Y-%m-%d") for date in column_as_list]
     data = df_grouped['count'].to_list()

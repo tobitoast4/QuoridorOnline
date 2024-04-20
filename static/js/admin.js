@@ -48,12 +48,13 @@ document.getElementById("lineChart").addEventListener("click", function(event) {
 
         let table = $(`<table></table>`);
 
-        lobbies_in_group[date_formatted].forEach(async (lobby_id) => {
+        lobbies_in_group[date_formatted].forEach(async (lobby) => {
             table.append(`
                 <tr>
                     <td>
-                        <a href="#" onclick="getLobbyJson('${lobby_id}')">${lobby_id}</a>
+                        <a href="#" onclick="getLobbyJson('${lobby.lobby_id}')">${lobby.lobby_id}</a>
                     </td>
+                    <td>${lobby.time_created}</td>
                 </tr>
             `);
         });
