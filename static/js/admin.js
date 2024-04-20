@@ -8,7 +8,7 @@ for (let i = 0; i < labels_as_str.length; i++) {
 }
 labels.push(new Date());  // add today's date to x axis
 
-let currently_selected_date = null;
+let currently_list_of_lobbies = null;
 
 var jsonViewer = new JSONViewer();
 document.querySelector("#selected_game_json_container").appendChild(jsonViewer.getContainer());
@@ -50,12 +50,12 @@ document.getElementById("lineChart").addEventListener("click", function(event) {
         let date = label.toISOString();
         let date_formatted = date.substring(0, date.indexOf('T'));
 
-        currently_selected_date = date_formatted;
-        fillTableListOfGames(lobbies_in_group[currently_selected_date]);
+        currently_list_of_lobbies = lobbies_in_group[date_formatted];
+        fillTableListOfGames();
     }
 });
 
-function fillTableListOfGames(list_of_lobbies) {
+function fillTableListOfGames() {
     let table = $(`
         <table>
             <thead>
@@ -63,12 +63,23 @@ function fillTableListOfGames(list_of_lobbies) {
                     <th>Lobby ID</th>
                     <th>Time created</th>
                     <th>Amount of players</th>
+                    <th></th>
                 </tr>
             </thead>
         </table>
     `);
     let table_body = $(`<tbody></tbody>`)
-    list_of_lobbies.forEach((lobby) => {
+    currently_list_of_lobbies.forEach((lobby) => {
+    let link_to_game = "<td></td>";
+        if (!isNaN(lobby.amount_players)) {
+            link_to_game = `
+                <td>
+                    <a href='${server_url}game/${lobby.lobby_id}' target='_blank' style='color: black'>
+                        <i class="fa fa-external-link" aria-hidden="true"></i>
+                    </a>
+                </td>
+            `;
+        }
         table_body.append(`
             <tr id="row-${lobby.lobby_id}">
                 <td>
@@ -79,18 +90,19 @@ function fillTableListOfGames(list_of_lobbies) {
                 </td>
                 <td>${lobby.time_created}</td>
                 <td>${lobby.amount_players}</td>
+                ${link_to_game}
             </tr>
         `);
     });
     table.append(table_body);
 
     $('#list_of_games_container').html(table);
-    $('#amount_of_lobbies_in_list').html("(" + list_of_lobbies.length + ")");
+    $('#amount_of_lobbies_in_list').html("(" + currently_list_of_lobbies.length + ")");
 }
 
 
 async function getLobbyJson(lobby_id) {
-    fillTableListOfGames(lobbies_in_group[currently_selected_date]);  // to remove the old selected color
+    fillTableListOfGames();  // to remove the old selected color
     $('#row-' + lobby_id).attr("style", "background-color: #D6EEEE");
     try {
         var response = await fetch(server_url + "get_lobby_json/" + lobby_id, {
@@ -100,21 +112,18 @@ async function getLobbyJson(lobby_id) {
             }
         });
         var data = await response.json();
-        console.log(data);
-        data_str = JSON.stringify(data, null, 4);
         jsonViewer.showJSON(data);
-//        $('#selected_game_json_container').html(data_str);
     } catch (error) {
         console.log(error);
     }
 }
 
+// Initially show all games in the list
 let list_of_all_lobbies = [];
-
 Object.entries(lobbies_in_group).forEach(([k,value]) => {
-    console.log(value);
     value.forEach((lobby) => {
         list_of_all_lobbies.push(lobby);
     });
-})
-fillTableListOfGames(list_of_all_lobbies);
+});
+currently_list_of_lobbies = list_of_all_lobbies;
+fillTableListOfGames();
