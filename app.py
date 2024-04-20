@@ -235,6 +235,40 @@ def log_in_user():
         session['user_color'] = new_user.color
         return new_user
 
+import time
+import pandas as pd
+
+@app.route("/admin", methods=['GET'])
+def admin():
+    data = []
+    for file in os.listdir(lobby_manager.DATA_DIR):
+        filename = os.fsdecode(file)
+        lobby_id = os.path.splitext(filename)[0]
+        lobby_json = lobby_manager.read_lobby(lobby_id)
+        if lobby:
+            data_row = [lobby_id, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(lobby_json.get("time_created")))]
+            data.append(data_row)
+    df = pd.DataFrame(data, columns=['lobby_id', 'time_created'])
+    df['time_created'] = pd.to_datetime(df['time_created'])
+
+    # Converting df_groups.groups = {"2024-02-23": [2, 5, 7, 12], "2024-04-06": [0, ...], ....}
+    # to         df_groups.groups = {"2024-02-23": [<lobby_id>, <lobby_id>, ....], "2024-04-06": [<lobby_id>, ..], ...}
+    df_groups = df.groupby(df['time_created'].dt.date)
+    lobbies_in_group = dict()
+    for group_date in df_groups.groups:
+        group_date_str = group_date.strftime("%Y-%m-%d")
+        new_list = []
+        for row_id in df_groups.groups[group_date]:
+            new_list.append(df['lobby_id'].iloc[df.index[int(row_id)]])
+        lobbies_in_group[group_date_str] = new_list
+
+    df_grouped = df_groups.size().reset_index(name='count')
+    column_as_list = df_grouped['time_created'].to_list()
+    labels = [date.strftime("%Y-%m-%d") for date in column_as_list]
+    data = df_grouped['count'].to_list()
+
+    return render_template("admin.html", labels=labels, data=data, lobbies_in_group=lobbies_in_group)
+
 
 if __name__ == '__main__':
     # app.run(host="0.0.0.0", port=80, debug=False)  # use me for prod

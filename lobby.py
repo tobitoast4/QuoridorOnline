@@ -50,12 +50,19 @@ def create_lobby_from_json(lobby_as_dict):
     return new_lobby
 
 
-def get_lobby(lobby_id):
+def read_lobby(lobby_id):
     file_location = os.path.join(DATA_DIR, f"{lobby_id}.json")
     if os.path.isfile(file_location):
         with open(file_location) as f:
             lobby_as_dict = json.load(f)
-            return create_lobby_from_json(lobby_as_dict)
+            return lobby_as_dict
+    return None
+
+
+def get_lobby(lobby_id):
+    lobby_as_dict = read_lobby(lobby_id)
+    if lobby_as_dict:
+        return create_lobby_from_json(lobby_as_dict)
     return None
 
 
