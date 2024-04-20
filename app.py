@@ -247,12 +247,22 @@ def admin_dashboard():
         lobby_id = os.path.splitext(filename)[0]
         lobby_json = lobby_manager.read_lobby(lobby_id)
         if lobby_json:
-            data_row = [lobby_id, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(lobby_json.get("time_created")))]
+            amount_players = None
+            if lobby_json.get("game") is not None:
+                amount_players = 0
+                for _ in lobby_json["game"]["game_data"]["initial_setup"]["players"]:
+                    amount_players += 1
+            data_row = [
+                lobby_id,
+                time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(lobby_json.get("time_created"))),
+                amount_players
+            ]
             data.append(data_row)
-    df = pd.DataFrame(data, columns=['lobby_id', 'time_created'])
+    df = pd.DataFrame(data, columns=['lobby_id', 'time_created', 'amount_players'])
     df['time_created'] = pd.to_datetime(df['time_created'])
     df = df.sort_values(by='time_created', ascending=False)
     df = df.reset_index()
+    print(df)
 
     # Converting df_groups.groups = {"2024-02-23": [2, 5, 7, 12], "2024-04-06": [0, ...], ....}
     # to         df_groups.groups = {"2024-02-23": [<lobby_id>, <lobby_id>, ....], "2024-04-06": [<lobby_id>, ..], ...}
@@ -264,7 +274,8 @@ def admin_dashboard():
         for row_id in df_groups.groups[group_date]:
             new_list.append({
                 "lobby_id": df['lobby_id'].iloc[df.index[int(row_id)]],
-                "time_created": df['time_created'].iloc[df.index[int(row_id)]].strftime("%Y-%m-%d %H:%M:%S")
+                "time_created": df['time_created'].iloc[df.index[int(row_id)]].strftime("%Y-%m-%d %H:%M:%S"),
+                "amount_players": df['amount_players'].iloc[df.index[int(row_id)]]
             })
         lobbies_in_group[group_date_str] = new_list
 

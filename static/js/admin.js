@@ -51,23 +51,24 @@ document.getElementById("lineChart").addEventListener("click", function(event) {
         let date_formatted = date.substring(0, date.indexOf('T'));
 
         currently_selected_date = date_formatted;
-        fillTableListOfGames();
+        fillTableListOfGames(lobbies_in_group[currently_selected_date]);
     }
 });
 
-function fillTableListOfGames() {
+function fillTableListOfGames(list_of_lobbies) {
     let table = $(`
         <table>
             <thead>
                 <tr>
                     <th>Lobby ID</th>
                     <th>Time created</th>
+                    <th>Amount of players</th>
                 </tr>
             </thead>
         </table>
     `);
     let table_body = $(`<tbody></tbody>`)
-    lobbies_in_group[currently_selected_date].forEach(async (lobby) => {
+    list_of_lobbies.forEach((lobby) => {
         table_body.append(`
             <tr id="row-${lobby.lobby_id}">
                 <td>
@@ -77,17 +78,19 @@ function fillTableListOfGames() {
                     </div>
                 </td>
                 <td>${lobby.time_created}</td>
+                <td>${lobby.amount_players}</td>
             </tr>
         `);
     });
     table.append(table_body);
 
     $('#list_of_games_container').html(table);
+    $('#amount_of_lobbies_in_list').html("(" + list_of_lobbies.length + ")");
 }
 
 
 async function getLobbyJson(lobby_id) {
-    fillTableListOfGames();  // to remove the old selected color
+    fillTableListOfGames(lobbies_in_group[currently_selected_date]);  // to remove the old selected color
     $('#row-' + lobby_id).attr("style", "background-color: #D6EEEE");
     try {
         var response = await fetch(server_url + "get_lobby_json/" + lobby_id, {
@@ -102,5 +105,16 @@ async function getLobbyJson(lobby_id) {
         jsonViewer.showJSON(data);
 //        $('#selected_game_json_container').html(data_str);
     } catch (error) {
+        console.log(error);
     }
 }
+
+let list_of_all_lobbies = [];
+
+Object.entries(lobbies_in_group).forEach(([k,value]) => {
+    console.log(value);
+    value.forEach((lobby) => {
+        list_of_all_lobbies.push(lobby);
+    });
+})
+fillTableListOfGames(list_of_all_lobbies);
