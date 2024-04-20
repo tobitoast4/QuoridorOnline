@@ -48,7 +48,7 @@ async function getGameDataAsync() {
     var data_to_be_returned = null;
     try {
         var response = await fetch(server_url + "get_game_data/" + current_lobby_id, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
             }

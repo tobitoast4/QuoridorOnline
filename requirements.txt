@@ -3,3 +3,4 @@ werkzeug~=3.0.1
 flask_login
 filelock~=3.13.1
 gunicorn
+pandas

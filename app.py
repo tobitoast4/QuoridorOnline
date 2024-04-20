@@ -7,6 +7,9 @@ import user
 import lobby as lobby_manager
 import utils
 
+import time
+import pandas as pd
+
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("QUORIDOR_SECRET_KEY")
 
@@ -179,7 +182,7 @@ def game_place_wall(lobby_id):
     return {"status": "wall placed"}, 200
 
 
-@app.route("/get_game_data/<string:lobby_id>", methods=['POST'])
+@app.route("/get_game_data/<string:lobby_id>", methods=['GET'])
 def get_game_data(lobby_id):
     the_lobby = lobby_manager.get_lobby(lobby_id)
     if the_lobby is None:
@@ -234,6 +237,43 @@ def log_in_user():
         session['user_name'] = new_user.name
         session['user_color'] = new_user.color
         return new_user
+
+
+@app.route("/admin", methods=['GET'])
+def admin_dashboard():
+    data = []
+    for file in os.listdir(lobby_manager.DATA_DIR):
+        filename = os.fsdecode(file)
+        lobby_id = os.path.splitext(filename)[0]
+        lobby_json = lobby_manager.read_lobby(lobby_id)
+        if lobby:
+            data_row = [lobby_id, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(lobby_json.get("time_created")))]
+            data.append(data_row)
+    df = pd.DataFrame(data, columns=['lobby_id', 'time_created'])
+    df['time_created'] = pd.to_datetime(df['time_created'])
+
+    # Converting df_groups.groups = {"2024-02-23": [2, 5, 7, 12], "2024-04-06": [0, ...], ....}
+    # to         df_groups.groups = {"2024-02-23": [<lobby_id>, <lobby_id>, ....], "2024-04-06": [<lobby_id>, ..], ...}
+    df_groups = df.groupby(df['time_created'].dt.date)
+    lobbies_in_group = dict()
+    for group_date in df_groups.groups:
+        group_date_str = group_date.strftime("%Y-%m-%d")
+        new_list = []
+        for row_id in df_groups.groups[group_date]:
+            new_list.append(df['lobby_id'].iloc[df.index[int(row_id)]])
+        lobbies_in_group[group_date_str] = new_list
+
+    df_grouped = df_groups.size().reset_index(name='count')
+    column_as_list = df_grouped['time_created'].to_list()
+    labels = [date.strftime("%Y-%m-%d") for date in column_as_list]
+    data = df_grouped['count'].to_list()
+
+    return render_template("admin.html", labels=labels, data=data, lobbies_in_group=lobbies_in_group, server_url=request.url_root)
+
+
+@app.route("/get_lobby_json/<string:lobby_id>", methods=['GET'])
+def get_lobby_json(lobby_id):
+    return lobby_manager.read_lobby(lobby_id)
 
 
 if __name__ == '__main__':
