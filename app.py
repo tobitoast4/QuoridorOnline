@@ -269,7 +269,6 @@ def admin_dashboard():
         lobbies_in_group[group_date_str] = new_list
 
     df_grouped = df_groups.size().reset_index(name='count')
-    print(df_grouped)
     column_as_list = df_grouped['time_created'].to_list()
     labels = [date.strftime("%Y-%m-%d") for date in column_as_list]
     data = df_grouped['count'].to_list()
