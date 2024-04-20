@@ -246,7 +246,7 @@ def admin_dashboard():
         filename = os.fsdecode(file)
         lobby_id = os.path.splitext(filename)[0]
         lobby_json = lobby_manager.read_lobby(lobby_id)
-        if lobby:
+        if lobby_json:
             data_row = [lobby_id, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(lobby_json.get("time_created")))]
             data.append(data_row)
     df = pd.DataFrame(data, columns=['lobby_id', 'time_created'])
