@@ -10,6 +10,9 @@ labels.push(new Date());  // add today's date to x axis
 
 let currently_selected_date = null;
 
+var jsonViewer = new JSONViewer();
+document.querySelector("#selected_game_json_container").appendChild(jsonViewer.getContainer());
+
 const ctx = document.getElementById("lineChart").getContext("2d");
 const lineChart = new Chart(ctx, {
     type: "bar",
@@ -85,7 +88,8 @@ async function getLobbyJson(lobby_id) {
         var data = await response.json();
         console.log(data);
         data_str = JSON.stringify(data, null, 4);
-        $('#selected_game_json_container').html(data_str);
+        jsonViewer.showJSON(data);
+//        $('#selected_game_json_container').html(data_str);
     } catch (error) {
     }
 }
