@@ -6,6 +6,7 @@ var labels = [];
 for (let i = 0; i < labels_as_str.length; i++) {
     labels.push(new Date(labels_as_str[i]));
 }
+labels.push(new Date());  // add today's date to x axis
 
 const ctx = document.getElementById("lineChart").getContext("2d");
 const lineChart = new Chart(ctx, {
