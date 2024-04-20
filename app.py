@@ -262,7 +262,6 @@ def admin_dashboard():
     df['time_created'] = pd.to_datetime(df['time_created'])
     df = df.sort_values(by='time_created', ascending=False)
     df = df.reset_index()
-    print(df)
 
     # Converting df_groups.groups = {"2024-02-23": [2, 5, 7, 12], "2024-04-06": [0, ...], ....}
     # to         df_groups.groups = {"2024-02-23": [<lobby_id>, <lobby_id>, ....], "2024-04-06": [<lobby_id>, ..], ...}
