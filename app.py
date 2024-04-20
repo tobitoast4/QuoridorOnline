@@ -179,7 +179,7 @@ def game_place_wall(lobby_id):
     return {"status": "wall placed"}, 200
 
 
-@app.route("/get_game_data/<string:lobby_id>", methods=['POST'])
+@app.route("/get_game_data/<string:lobby_id>", methods=['GET'])
 def get_game_data(lobby_id):
     the_lobby = lobby_manager.get_lobby(lobby_id)
     if the_lobby is None:
@@ -238,8 +238,8 @@ def log_in_user():
 import time
 import pandas as pd
 
-@app.route("/admin", methods=['GET'])
-def admin():
+@app.route("/admin_dashboard", methods=['GET'])
+def admin_dashboard():
     data = []
     for file in os.listdir(lobby_manager.DATA_DIR):
         filename = os.fsdecode(file)
