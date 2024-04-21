@@ -1,5 +1,6 @@
 /**
  * JSONViewer - by Roman Makudera 2016 (c) MIT licence.
+ * From https://www.cssscript.com/minimal-json-data-formatter-jsonviewer/
  */
 var JSONViewer = (function(document) {
 	var Object_prototype_toString = ({}).toString;
