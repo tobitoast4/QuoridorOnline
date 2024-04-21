@@ -16,6 +16,41 @@
     grid-row-gap: 0;
 }
 
+.left-buttons-container {
+    width: 100%;
+    text-align:
+    left;
+    display: flex;
+    flex-flow: column;
+}
+.left-buttons-container-child-1 {
+    order: 2;
+}
+.left-buttons-container-child-2 {
+    order: 1;
+}
+
+.right-buttons-pair-container {
+    display: inline;
+}
+
+@media screen and (min-width: 768px) {
+    .left-buttons-container {
+        display: flex;
+        flex-flow: row nowrap;
+    }
+    .left-buttons-container-child-1 {
+        order: 1;
+    }
+    .left-buttons-container-child-2 {
+        order: 2;
+    }
+
+    .right-buttons-pair-container {
+        display: flex;
+    }
+}
+
 .stats-padding {
     padding: 0 10%;
 }

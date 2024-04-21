@@ -22,7 +22,7 @@
 
 <canvas></canvas>
 
-<div class="side-game-ad">
+<div class="side-game-ad-left">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6524991249344915"
          crossorigin="anonymous"></script>
     <!-- SideGameAdvertisement -->
@@ -37,7 +37,7 @@
     </script>
 </div>
 
-<div class="side-game-ad">
+<div class="side-game-ad-right">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6524991249344915"
          crossorigin="anonymous"></script>
     <!-- SideGameAdvertisement -->
@@ -54,31 +54,35 @@
 
 <div class="stats-container">
     <div style="display: flex;">
-        <div style="width: 100%; text-align: left; display: flex;">
-            <div style="margin: 16px">
-                <button data-title="View previous round" id="button-inspect-previous-round" onclick="viewPreviousOrNextGameRound(1)" class="control-button">
-                    <i id="button-inspect-previous-round-icon" class="fa fa-angle-left" aria-hidden="true"></i>
-                </button>
+        <div class="left-buttons-container">
+            <div style="display: flex;" class="left-buttons-container-child-1">
+                <div style="margin: 16px">
+                    <button data-title="View previous round" id="button-inspect-previous-round" onclick="viewPreviousOrNextGameRound(1)" class="control-button">
+                        <i id="button-inspect-previous-round-icon" class="fa fa-angle-left" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div style="margin: 16px">
+                    <button data-title="View next round" id="button-inspect-next-round" onclick="viewPreviousOrNextGameRound(-1)" class="control-button">
+                        <i id="button-inspect-next-round-icon" class="fa fa-angle-right" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div style="margin: 16px">
+                    <button data-title="View latest round" id="button-inspect-current-round" class="control-button"
+                            onclick="current_round_diff=0;updateGame(round_diff=1)">
+                        <i id="button-inspect-current-round-icon" class="fa fa-angle-double-right" aria-hidden="true"></i>
+                    </button>
+                </div>
             </div>
-            <div style="margin: 16px">
-                <button data-title="View next round" id="button-inspect-next-round" onclick="viewPreviousOrNextGameRound(-1)" class="control-button">
-                    <i id="button-inspect-next-round-icon" class="fa fa-angle-right" aria-hidden="true"></i>
-                </button>
-            </div>
-            <div style="margin: 16px">
-                <button data-title="View latest round" id="button-inspect-current-round" class="control-button"
-                        onclick="current_round_diff=0;updateGame(round_diff=1)">
-                    <i id="button-inspect-current-round-icon" class="fa fa-angle-double-right" aria-hidden="true"></i>
-                </button>
-            </div>
-            <div style="margin: 16px; margin-left: 48px">
-                <button id="button-place-walls" onclick="changePlayState()"
-                        class="control-button" style="padding: 20px 18px 16px 18px;">
-                    Place<br/>wall
-                </button>
+            <div style="display: flex;" class="left-buttons-container-child-2">
+                <div style="margin: 16px; margin-left: 16px">
+                    <button id="button-place-walls" onclick="changePlayState()"
+                            class="control-button" style="padding: 20px 18px 16px 18px;">
+                        Place<br/>wall
+                    </button>
+                </div>
             </div>
         </div>
-        <div style="display: flex;">
+        <div class="right-buttons-pair-container">
             <div style="margin: 16px">
                 <button data-title="Toggle wall color"  id="button-toggle-wall-color" onclick="toggleWallColor()" class="control-button">
                     <i id="button-toggle-wall-color-icon" class="fa fa-adjust" aria-hidden="true"></i>
