@@ -1,13 +1,18 @@
-
+.side-game-ad-bottom {
+    height: 8rem;
+}
 
 @media screen and (min-width: 992px) {
+    .side-game-ad-bottom {
+        display: none;
+    }
+
     .side-game-ad-right {
         position: fixed;
         top: 100px;
         right: 0px;
         width: 10%;
         height: 60%;
-        background-color: red
     }
 
     .side-game-ad-left {
@@ -16,6 +21,5 @@
         left: 0px;
         width: 10%;
         height: 60%;
-        background-color: red
     }
 }
