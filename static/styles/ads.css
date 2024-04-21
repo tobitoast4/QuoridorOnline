@@ -1,0 +1,8 @@
+.side-game-ad {
+    position: fixed;
+    top: 100px;
+    right: 0px;
+    width: 10%;
+    height: 60%;
+    background-color: red
+}
