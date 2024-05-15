@@ -1,4 +1,5 @@
-from flask import Flask, request, render_template, redirect, url_for, session, make_response, session, flash
+from flask import Flask, request, render_template, redirect, url_for, session, make_response, \
+    session, flash, send_from_directory
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from werkzeug.exceptions import HTTPException
 import os, json
@@ -41,6 +42,12 @@ def handle_options(response):
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Requested-With"
     return response
+
+
+@app.route('/ads.txt')
+def static_from_root():
+    # Serve files under root dir (e.g. http://127.0.0.1:8080/ads.txt
+    return send_from_directory(app.static_folder, request.path[1:])
 
 
 @app.route("/", methods=['GET'])
