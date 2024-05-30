@@ -72,6 +72,11 @@ def about():
     return render_template("about.html")
 
 
+@app.route("/privacy_policy", methods=['GET'])
+def privacy_policy():
+    return render_template("privacy_policy.html")
+
+
 @app.route("/get_random_lobby", methods=['GET'])
 def get_random_lobby():
     the_lobby = lobby_manager.get_random_public_lobby()
