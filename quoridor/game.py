@@ -24,7 +24,7 @@ class Game:
 
     def move_player(self, user_id, new_field_col, new_field_row):
         """Can be used to move a player."""
-        if self._get_current_player().user.id != user_id:
+        if self.get_current_player().user.id != user_id:
             raise QuoridorOnlineGameError("It's not your turn currently")
         player = self._get_player_of_user(user_id)
         new_field = self.game_board.getFieldByColAndRow(new_field_col, new_field_row)
@@ -41,9 +41,9 @@ class Game:
     def place_wall(self, user_id, col_start, row_start, col_end, row_end, skip_user_check=False):
         """Can be used to place a wall."""
         if not skip_user_check:
-            if self._get_current_player().user.id != user_id:
+            if self.get_current_player().user.id != user_id:
                 raise QuoridorOnlineGameError("It's not your turn currently")
-            if self._get_current_player().amount_walls_left <= 0:
+            if self.get_current_player().amount_walls_left <= 0:
                 raise QuoridorOnlineGameError("You do not have any more walls left")
         new_wall = wall.Wall(user_id, col_start, row_start, col_end, row_end, self.game_board)
         self.game_board.walls.append(new_wall)
@@ -53,8 +53,11 @@ class Game:
             raise QuoridorOnlineGameError("Wall could not be placed as it would block a player from winning")
         # if creating a wall did not throw an exception, decrease the amount of walls the player has
         if not skip_user_check:
-            self._get_current_player().amount_walls_left -= 1
+            self.get_current_player().amount_walls_left -= 1
             self._next_players_turn()
+
+    def get_current_player(self):
+        return self.game_board.players[self.its_this_players_turn]
 
     def _next_players_turn(self):
         self.its_this_players_turn += 1
@@ -68,9 +71,6 @@ class Game:
             if player.user.id == user_id:
                 return player
         return None
-
-    def _get_current_player(self):
-        return self.game_board.players[self.its_this_players_turn]
 
     def _append_game_data(self):
         self.game_data["game"].append({

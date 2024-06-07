@@ -234,6 +234,16 @@ def change_color():
     }
 
 
+@app.route("/get_amount_of_moves/<string:lobby_id>", methods=['GET'])
+def get_amount_of_moves(lobby_id):
+    the_lobby = lobby_manager.get_lobby(lobby_id)
+    current_player = the_lobby.game.get_current_player()
+    move_options = len(current_player.getMoveOptions())  # TODO create a method that returns a number already
+    return {
+        "player": current_player.user.name,
+        "amount": move_options
+    }
+
 def log_in_user():
     if "user_id" in session:
         # user is already logged in

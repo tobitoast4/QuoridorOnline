@@ -210,6 +210,22 @@ async function updateGame(round_diff=0, play_audio=true) {
     }
 }
 
+async function getAmountOfMoves() {
+    try {
+        var response = await fetch(server_url + "get_amount_of_moves/" + current_lobby_id, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        the_response = await response.json();
+        throwOnError(the_response);
+        console.log(the_response);
+    } catch (error) {
+        showNewError(error);
+    }
+}
+
 function updatePlayer(player_id, players_field, amount_walls_left, move_options) {
     // get the correct player in the game
     for (var p = 0; p < players.length; p++) {
