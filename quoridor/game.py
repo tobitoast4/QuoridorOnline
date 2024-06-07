@@ -6,6 +6,7 @@ import quoridor.wall as wall
 import user
 import utils
 import threading
+import sys
 
 STATE_PLACING_PLAYERS = -1
 STATE_PLAYING = 0
@@ -70,6 +71,7 @@ class Game:
                     amount_of_walls += 1
                 except QuoridorOnlineGameError as e:
                     pass
+        # calculate all vertical walls
         for col_start in range(self.game_board.amount_fields-1):
             col_start += 0.5  # for the horizontal case, row_start and row_end is the same
             for row_start in range(self.game_board.amount_fields-1):
@@ -83,7 +85,7 @@ class Game:
 
     def get_length_of_shortest_path_to_win(self):
         current_player = self.get_current_player()
-        shortest_path = 99999999
+        shortest_path = sys.maxsize
         for _ in range(3):
             path_finder = PathFinder()
             path_finder.start_find_length_of_shortest_path_to_win(current_player.field, current_player.win_option_fields)
@@ -164,7 +166,7 @@ class PathFinder:
        Same problem as for PathChecker
     """
     def __init__(self):
-        self.path_length = 999999
+        self.path_length = sys.maxsize
         self.fields_visited = []
         self.running_threads = []
 
