@@ -241,7 +241,8 @@ def get_amount_of_moves(lobby_id):
     move_options = len(current_player.getMoveOptions())  # TODO create a method that returns a number already
     return {
         "player": current_player.user.name,
-        "amount": move_options
+        "amount": the_lobby.game.get_amount_of_moves(),
+        "shortest_path_to_win": the_lobby.game.get_length_of_shortest_path_to_win()
     }
 
 def log_in_user():

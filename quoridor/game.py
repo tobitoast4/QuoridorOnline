@@ -1,8 +1,11 @@
+import time
+
 from errors import QuoridorOnlineGameError
 import quoridor.game_board as game_board
 import quoridor.wall as wall
 import user
 import utils
+import threading
 
 STATE_PLACING_PLAYERS = -1
 STATE_PLAYING = 0
@@ -46,7 +49,6 @@ class Game:
             if self.get_current_player().amount_walls_left <= 0:
                 raise QuoridorOnlineGameError("You do not have any more walls left")
         new_wall = wall.Wall(user_id, col_start, row_start, col_end, row_end, self.game_board)
-        self.game_board.walls.append(new_wall)
         path_checker = PathChecker()
         if not path_checker.check_if_path_to_win_exists_for_all_players(self.game_board.players):
             new_wall.remove_wall_from_field()
@@ -55,6 +57,40 @@ class Game:
         if not skip_user_check:
             self.get_current_player().amount_walls_left -= 1
             self._next_players_turn()
+
+    def get_amount_of_moves(self):
+        amount_of_walls = 0
+        # calculate all horizontal walls
+        for row_start in range(self.game_board.amount_fields-1):
+            row_start += 0.5  # for the horizontal case, row_start and row_end is the same
+            for col_start in range(self.game_board.amount_fields-1):
+                try:  # if trying to place a wall does not throw an error, we know its a legal move
+                    # for the horizontal case, col_end is equal to col_start+1
+                    wall.Wall(None, col_start, row_start, col_start+1, row_start, self.game_board, place_wall=False)
+                    amount_of_walls += 1
+                except QuoridorOnlineGameError as e:
+                    pass
+        for col_start in range(self.game_board.amount_fields-1):
+            col_start += 0.5  # for the horizontal case, row_start and row_end is the same
+            for row_start in range(self.game_board.amount_fields-1):
+                try:  # if trying to place a wall does not throw an error, we know its a legal move
+                    # for the horizontal case, col_end is equal to col_start+1
+                    wall.Wall(None, col_start, row_start, col_start, row_start+1, self.game_board, place_wall=False)
+                    amount_of_walls += 1
+                except QuoridorOnlineGameError as e:
+                    pass
+        return amount_of_walls
+
+    def get_length_of_shortest_path_to_win(self):
+        current_player = self.get_current_player()
+        shortest_path = 99999999
+        for _ in range(3):
+            path_finder = PathFinder()
+            path_finder.start_find_length_of_shortest_path_to_win(current_player.field, current_player.win_option_fields)
+            for my_thread in path_finder.running_threads:
+                my_thread.join()
+            shortest_path = min(path_finder.path_length, shortest_path)
+        return shortest_path
 
     def get_current_player(self):
         return self.game_board.players[self.its_this_players_turn]
@@ -100,12 +136,12 @@ class PathChecker:
         for player in players:
             self.path_found = False
             self.fields_visited = []
-            self.check_if_path_to_win_exists(player.field, player.win_option_fields)
+            self._check_if_path_to_win_exists(player.field, player.win_option_fields)
             if self.path_found == False:  # after check_if_path_to_win_exists() this should be set
                 return False              # to true if there is a path
         return True
 
-    def check_if_path_to_win_exists(self, field, fields_to_win):
+    def _check_if_path_to_win_exists(self, field, fields_to_win):
         # Returns true if there is at least one path from field to one of
         # the fields in fields_to_win. Otherwise returns false.
         if field in self.fields_visited:
@@ -118,4 +154,37 @@ class PathChecker:
         self.fields_visited.append(field)
         neighbour_fields = field.neighbour_fields
         for neighbour_field in neighbour_fields:
-            self.check_if_path_to_win_exists(neighbour_field, fields_to_win)
+            self._check_if_path_to_win_exists(neighbour_field, fields_to_win)
+
+
+class PathFinder:
+    """Class that finds the length of the shortest way to winning.
+
+       # TODO: PROBLEM THAT COULD OCCUR:
+       Same problem as for PathChecker
+    """
+    def __init__(self):
+        self.path_length = 999999
+        self.fields_visited = []
+        self.running_threads = []
+
+    def start_find_length_of_shortest_path_to_win(self, field, fields_to_win):
+        self.find_length_of_shortest_path_to_win(field, fields_to_win, 0)
+
+    def find_length_of_shortest_path_to_win(self, field, fields_to_win, current_path_length):
+        # TODO: CURRENTLY THIS DOES NOT ALWAYS RETURN THE SHORTEST WAY!!!
+        # But we accept this currently because is is a fastly running algorithm
+        if field in self.fields_visited:
+            return
+        if field in fields_to_win:
+            self.path_length = min(self.path_length, current_path_length)
+            return
+        self.fields_visited.append(field)
+        neighbour_fields = field.neighbour_fields
+        for neighbour_field in neighbour_fields:
+            new_thread = threading.Thread(
+                target=self.find_length_of_shortest_path_to_win,
+                args=(neighbour_field, fields_to_win, current_path_length+1)
+            )
+            self.running_threads.append(new_thread)
+            new_thread.start()

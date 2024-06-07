@@ -3,8 +3,12 @@ import math
 
 
 class Wall:
-    def __init__(self, player_id, col_start, row_start, col_end, row_end, game_board):
-        """Walls can be placed like this:
+    def __init__(self, player_id, col_start, row_start, col_end, row_end, game_board, place_wall=True):
+        """Creates and places a wall on the given game_board, EXCEPT if place_wall is set to False.
+           place_wall=False may be used to check if a wall can be placed at a certain location
+           without actually placing it.
+
+        Walls can be placed like this:
         Wall is placed vertically:
                           ->  col_start=0.5, row_start=0, col_end=0.5, row_end=1
           field (0, 0)
@@ -43,7 +47,9 @@ class Wall:
         self.game_board = game_board
         if game_board.is_new_wall_overlapping_old_walls(self):
             raise QuoridorOnlineGameError(error_msg)
-        self.remove_links_between_fields()
+        if place_wall:
+            self.remove_links_between_fields()
+            game_board.walls.append(self)
 
     def remove_links_between_fields(self):
         if self.col_start == self.col_end:  # wall is vertical
