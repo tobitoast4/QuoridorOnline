@@ -6,7 +6,7 @@ import quoridor.wall as wall
 import user
 import utils
 import threading
-import sys
+import sys, random
 
 STATE_PLACING_PLAYERS = -1
 STATE_PLAYING = 0
@@ -85,13 +85,19 @@ class Game:
 
     def get_length_of_shortest_path_to_win(self):
         current_player = self.get_current_player()
-        shortest_path = sys.maxsize
-        for _ in range(3):
-            path_finder = PathFinder()
-            path_finder.start_find_length_of_shortest_path_to_win(current_player.field, current_player.win_option_fields)
-            for my_thread in path_finder.running_threads:
-                my_thread.join()
-            shortest_path = min(path_finder.path_length, shortest_path)
+        # shortest_path = sys.maxsize
+        # for _ in range(3):
+        #     path_finder = PathFinder()
+        #     path_finder.start_find_length_of_shortest_path_to_win(current_player.field, current_player.win_option_fields)
+        #     for my_thread in path_finder.running_threads:
+        #         my_thread.join()
+        #     shortest_path = min(path_finder.path_length, shortest_path)
+        # path_finder = PathFinder2()
+        # path_finder.start_find_length_of_shortest_path_to_win(current_player.field, current_player.win_option_fields)
+        # for my_thread in path_finder.running_threads:
+        #     my_thread.join()
+        path_finder = PathFinderDijkstra(current_player.field, self.game_board.fields, self.game_board)
+        shortest_path = path_finder.get_shortest_path_to_win(current_player.win_option_fields)
         return shortest_path
 
     def get_current_player(self):
@@ -190,3 +196,130 @@ class PathFinder:
             )
             self.running_threads.append(new_thread)
             new_thread.start()
+
+
+class PathFinder2:
+    """Class that finds the length of the shortest way to winning.
+
+       # TODO: PROBLEM THAT COULD OCCUR:
+       Same problem as for PathChecker
+    """
+    def __init__(self):
+        self.path_length = sys.maxsize
+        self.running_threads = []
+
+    def start_find_length_of_shortest_path_to_win(self, field, fields_to_win):
+        self.find_length_of_shortest_path_to_win(field, fields_to_win, 0)
+
+    def find_length_of_shortest_path_to_win(self, field, fields_to_win, current_path_length):
+        # TODO: CURRENTLY THIS DOES NOT ALWAYS RETURN THE SHORTEST WAY!!!
+        # But we accept this currently because is is a fastly running algorithm
+        if current_path_length > 32:
+            return
+        if field in fields_to_win:
+            self.path_length = min(self.path_length, current_path_length)
+            return
+        neighbour_fields = field.neighbour_fields
+        for neighbour_field in neighbour_fields:
+            new_thread = threading.Thread(
+                target=self.find_length_of_shortest_path_to_win,
+                args=(neighbour_field, fields_to_win, current_path_length+1)
+            )
+            self.running_threads.append(new_thread)
+            new_thread.start()
+
+
+class PathFinderDijkstra:
+    """Class that finds the length of the shortest way to winning.
+    """
+    def __init__(self, start_field, other_fields, gameboard):
+        self.gameboard = gameboard
+        self.start_field = start_field
+        self.other_fields = other_fields
+        self.fields_visited = []
+        self.cost_table = {}
+
+        for field in other_fields:
+            if field == start_field:
+                self.add_or_update_node_to_cost_table(field, 0, field)
+            else:
+                self.add_or_update_node_to_cost_table(field, sys.maxsize, None)
+        self.calculate_path_lengths(start_field)
+
+    def calculate_path_lengths(self, field):
+        # self.print_fields(None)
+        self.print_fields(field)
+        neighbour_fields = field.neighbour_fields
+        next_field = None
+        for neighbour_field in neighbour_fields:
+            current_path_length_to_field = self.cost_table[field]["path_length"]
+            for neighbour_neighbour_field in neighbour_field.neighbour_fields:
+                current_path_length_to_neighbour_field = self.cost_table[neighbour_neighbour_field]["path_length"]
+                current_path_length_to_field = min(current_path_length_to_field, current_path_length_to_neighbour_field)
+            if neighbour_field not in self.fields_visited:
+                current_path_length_to_neighbour_field = self.cost_table[neighbour_field]["path_length"]
+                self.add_or_update_node_to_cost_table(neighbour_field,
+                     min(current_path_length_to_neighbour_field, current_path_length_to_field+1), field)
+                next_field = neighbour_field
+        if next_field is None:
+            next_field = self.get_unvisited_field_with_shortest_path()
+        self.fields_visited.append(field)
+        if len(self.fields_visited) < len(self.other_fields):
+            self.calculate_path_lengths(next_field)
+
+    def add_or_update_node_to_cost_table(self, field, path_length, predecessor):
+        self.cost_table[field] = {
+            "path_length": path_length, "predecessor": predecessor
+        }
+
+    def get_unvisited_field_with_shortest_path(self):
+        shortest_path = sys.maxsize
+        the_field_with_shortest_path = None
+        for field in self.cost_table:
+            if field not in self.fields_visited:
+                fields_path_length = self.cost_table[field]["path_length"]
+                if fields_path_length < shortest_path:
+                    shortest_path = fields_path_length
+                    the_field_with_shortest_path = field
+        return the_field_with_shortest_path
+
+    def get_shortest_path_to_win(self, fields_to_win):
+        path_length = sys.maxsize
+        for field in fields_to_win:
+            current_path_length_to_field = self.cost_table[field]["path_length"]
+            path_length = min(path_length, current_path_length_to_field)
+        return path_length
+
+    def print_fields(self, highlight_field):
+        """Use this for debugging to print the game board"""
+        for row in range(self.gameboard.amount_fields):
+            for col in range(self.gameboard.amount_fields):
+                current_field = self.gameboard.getFieldByColAndRow(col, row)
+                field_right = self.gameboard.getFieldByColAndRow(col + 1, row)
+
+                # if current_field in self.fields_visited:
+                #     field_marker = "X"
+                # elif current_field == highlight_field:
+                #     field_marker = "?"
+                # else:
+                #     field_marker = "0"
+                field_marker = self.cost_table[current_field]["path_length"]
+                if field_marker > 99:
+                    field_marker = "#"
+                if current_field == highlight_field:
+                    field_marker = "?"
+                # if current_field.player is not None:
+                #     field_marker = current_field.player.user.name[0]
+                if field_right in current_field.neighbour_fields:
+                    print(f"{str(field_marker).zfill(2)}---", end="")
+                else:
+                    print(f"{str(field_marker).zfill(2)}   ", end="")
+            print()
+            for col in range(self.gameboard.amount_fields):
+                current_field = self.gameboard.getFieldByColAndRow(col, row)
+                field_bottom = self.gameboard.getFieldByColAndRow(col, row + 1)
+                if field_bottom in current_field.neighbour_fields:
+                    print("|    ", end="")
+                else:
+                    print("     ", end="")
+            print()
