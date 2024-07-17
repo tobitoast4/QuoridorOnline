@@ -50,10 +50,6 @@ class Game:
             if self.get_current_player().amount_walls_left <= 0:
                 raise QuoridorOnlineGameError("You do not have any more walls left")
         new_wall = wall.Wall(user_id, col_start, row_start, col_end, row_end, self.game_board)
-        path_checker = PathChecker()
-        if not path_checker.check_if_path_to_win_exists_for_all_players(self.game_board.players):
-            new_wall.remove_wall_from_field()
-            raise QuoridorOnlineGameError("Wall could not be placed as it would block a player from winning")
         # if creating a wall did not throw an exception, decrease the amount of walls the player has
         if not skip_user_check:
             self.get_current_player().amount_walls_left -= 1
@@ -83,25 +79,26 @@ class Game:
                     pass
         return amount_of_walls
 
-    def get_length_of_shortest_path_to_win(self):
-        current_player = self.get_current_player()
-        # shortest_path = sys.maxsize
-        # for _ in range(3):
-        #     path_finder = PathFinder()
-        #     path_finder.start_find_length_of_shortest_path_to_win(current_player.field, current_player.win_option_fields)
-        #     for my_thread in path_finder.running_threads:
-        #         my_thread.join()
-        #     shortest_path = min(path_finder.path_length, shortest_path)
-        # path_finder = PathFinder2()
-        # path_finder.start_find_length_of_shortest_path_to_win(current_player.field, current_player.win_option_fields)
-        # for my_thread in path_finder.running_threads:
-        #     my_thread.join()
-        path_finder = PathFinderDijkstra(current_player.field, self.game_board.fields, self.game_board)
-        shortest_path = path_finder.get_shortest_path_to_win(current_player.win_option_fields)
+    def get_game_score(self):
+        walls_0 = self.get_current_player().amount_walls_left
+        way_0 = self.get_length_of_shortest_path_to_win(self.get_current_player())
+        walls_e = self._get_next_player().amount_walls_left
+        way_e = self.get_length_of_shortest_path_to_win(self._get_next_player())
+        return walls_0 - way_0 - walls_e + way_e
+
+    def get_length_of_shortest_path_to_win(self, player):
+        path_finder = PathFinderDijkstra(player.field, self.game_board.fields)
+        shortest_path = path_finder.get_shortest_path_to_win(player.win_option_fields)
         return shortest_path
 
     def get_current_player(self):
         return self.game_board.players[self.its_this_players_turn]
+
+    def _get_next_player(self):
+        next_turn = self.its_this_players_turn = 1
+        if next_turn >= len(self.game_board.players):
+            next_turn = 0
+        return self.game_board.players[next_turn]
 
     def _next_players_turn(self):
         self.its_this_players_turn += 1
@@ -124,45 +121,6 @@ class Game:
             "time": utils.get_current_time(),
             "game_board": self.game_board.__json__(),
         })
-
-
-class PathChecker:
-    """Class that checks that a wall does not block any player
-       completely off from winning.
-
-       # TODO: PROBLEM THAT COULD OCCUR:
-       A problem that could currently happen, is that there is a path,
-       but check_if_path_to_win_exists_for_all_players() returns False.
-       This could happen, if a field that need a way to win would contains
-       is already visited by another recursion loop.
-    """
-    def __init__(self):
-        self.path_found = None
-        self.fields_visited = None
-
-    def check_if_path_to_win_exists_for_all_players(self, players):
-        for player in players:
-            self.path_found = False
-            self.fields_visited = []
-            self._check_if_path_to_win_exists(player.field, player.win_option_fields)
-            if self.path_found == False:  # after check_if_path_to_win_exists() this should be set
-                return False              # to true if there is a path
-        return True
-
-    def _check_if_path_to_win_exists(self, field, fields_to_win):
-        # Returns true if there is at least one path from field to one of
-        # the fields in fields_to_win. Otherwise returns false.
-        if field in self.fields_visited:
-            return
-        if field in fields_to_win:
-            self.path_found = True
-            return
-        if self.path_found:
-            return
-        self.fields_visited.append(field)
-        neighbour_fields = field.neighbour_fields
-        for neighbour_field in neighbour_fields:
-            self._check_if_path_to_win_exists(neighbour_field, fields_to_win)
 
 
 class PathFinder:
@@ -232,8 +190,7 @@ class PathFinder2:
 class PathFinderDijkstra:
     """Class that finds the length of the shortest way to winning.
     """
-    def __init__(self, start_field, other_fields, gameboard):
-        self.gameboard = gameboard
+    def __init__(self, start_field, other_fields):
         self.start_field = start_field
         self.other_fields = other_fields
         self.fields_visited = []
@@ -247,8 +204,6 @@ class PathFinderDijkstra:
         self.calculate_path_lengths(start_field)
 
     def calculate_path_lengths(self, field):
-        # self.print_fields(None)
-        self.print_fields(field)
         neighbour_fields = field.neighbour_fields
         next_field = None
         for neighbour_field in neighbour_fields:
@@ -278,7 +233,7 @@ class PathFinderDijkstra:
         for field in self.cost_table:
             if field not in self.fields_visited:
                 fields_path_length = self.cost_table[field]["path_length"]
-                if fields_path_length < shortest_path:
+                if fields_path_length <= shortest_path:
                     shortest_path = fields_path_length
                     the_field_with_shortest_path = field
         return the_field_with_shortest_path
@@ -289,37 +244,3 @@ class PathFinderDijkstra:
             current_path_length_to_field = self.cost_table[field]["path_length"]
             path_length = min(path_length, current_path_length_to_field)
         return path_length
-
-    def print_fields(self, highlight_field):
-        """Use this for debugging to print the game board"""
-        for row in range(self.gameboard.amount_fields):
-            for col in range(self.gameboard.amount_fields):
-                current_field = self.gameboard.getFieldByColAndRow(col, row)
-                field_right = self.gameboard.getFieldByColAndRow(col + 1, row)
-
-                # if current_field in self.fields_visited:
-                #     field_marker = "X"
-                # elif current_field == highlight_field:
-                #     field_marker = "?"
-                # else:
-                #     field_marker = "0"
-                field_marker = self.cost_table[current_field]["path_length"]
-                if field_marker > 99:
-                    field_marker = "#"
-                if current_field == highlight_field:
-                    field_marker = "?"
-                # if current_field.player is not None:
-                #     field_marker = current_field.player.user.name[0]
-                if field_right in current_field.neighbour_fields:
-                    print(f"{str(field_marker).zfill(2)}---", end="")
-                else:
-                    print(f"{str(field_marker).zfill(2)}   ", end="")
-            print()
-            for col in range(self.gameboard.amount_fields):
-                current_field = self.gameboard.getFieldByColAndRow(col, row)
-                field_bottom = self.gameboard.getFieldByColAndRow(col, row + 1)
-                if field_bottom in current_field.neighbour_fields:
-                    print("|    ", end="")
-                else:
-                    print("     ", end="")
-            print()
