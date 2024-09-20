@@ -4,4 +4,3 @@ flask_login
 filelock~=3.13.1
 gunicorn
 pandas
-uWSGI==2.0.26
