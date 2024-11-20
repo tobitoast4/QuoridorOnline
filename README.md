@@ -4,7 +4,7 @@
 
 This repository contains an online version of the game Quoridor.
 The game can be played on a single PC as well as online on multiple (up to 4 players) without any registration needed.
-See [website](https://quoridoronline.pythonanywhere.com/).
+See [QuoridorOnline](https://quoridoronline.com/).
 
 
 ## Run the app locally
