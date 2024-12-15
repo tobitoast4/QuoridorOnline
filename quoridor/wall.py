@@ -3,8 +3,12 @@ import math
 
 
 class Wall:
-    def __init__(self, player_id, col_start, row_start, col_end, row_end, game_board):
-        """Walls can be placed like this:
+    def __init__(self, player_id, col_start, row_start, col_end, row_end, game_board, place_wall=True):
+        """Creates and places a wall on the given game_board, EXCEPT if place_wall is set to False.
+           place_wall=False may be used to check if a wall can be placed at a certain location
+           without actually placing it.
+
+        Walls can be placed like this:
         Wall is placed vertically:
                           ->  col_start=0.5, row_start=0, col_end=0.5, row_end=1
           field (0, 0)
@@ -43,7 +47,13 @@ class Wall:
         self.game_board = game_board
         if game_board.is_new_wall_overlapping_old_walls(self):
             raise QuoridorOnlineGameError(error_msg)
-        self.remove_links_between_fields()
+        if place_wall:
+            self.remove_links_between_fields()
+            game_board.walls.append(self)
+        path_checker = PathChecker()
+        if not path_checker.check_if_path_to_win_exists_for_all_players(self.game_board.players):
+            self.remove_wall_from_field()
+            raise QuoridorOnlineGameError("Wall could not be placed as it would block a player from winning")
 
     def remove_links_between_fields(self):
         if self.col_start == self.col_end:  # wall is vertical
@@ -137,3 +147,43 @@ class Wall:
                 "row": self.row_end,
             },
         }
+
+
+class PathChecker:
+    """Class that checks that a wall does not block any player
+       completely off from winning.
+
+       # TODO: PROBLEM THAT COULD OCCUR:
+       # TODO: Use Dijkstra
+       A problem that could currently happen, is that there is a path,
+       but check_if_path_to_win_exists_for_all_players() returns False.
+       This could happen, if a field that need a way to win would contains
+       is already visited by another recursion loop.
+    """
+    def __init__(self):
+        self.path_found = None
+        self.fields_visited = None
+
+    def check_if_path_to_win_exists_for_all_players(self, players):
+        for player in players:
+            self.path_found = False
+            self.fields_visited = []
+            self._check_if_path_to_win_exists(player.field, player.win_option_fields)
+            if self.path_found == False:  # after check_if_path_to_win_exists() this should be set
+                return False              # to true if there is a path
+        return True
+
+    def _check_if_path_to_win_exists(self, field, fields_to_win):
+        # Returns true if there is at least one path from field to one of
+        # the fields in fields_to_win. Otherwise returns false.
+        if field in self.fields_visited:
+            return
+        if field in fields_to_win:
+            self.path_found = True
+            return
+        if self.path_found:
+            return
+        self.fields_visited.append(field)
+        neighbour_fields = field.neighbour_fields
+        for neighbour_field in neighbour_fields:
+            self._check_if_path_to_win_exists(neighbour_field, fields_to_win)

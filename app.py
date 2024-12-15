@@ -4,9 +4,10 @@ from flask_login import login_user, LoginManager, login_required, logout_user, c
 from werkzeug.exceptions import HTTPException
 import os, json
 
-import user
+from quoridor.artificial_player import move_simulator
 import lobby as lobby_manager
 import utils
+import user
 
 import time
 import pandas as pd
@@ -18,14 +19,14 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
-@app.errorhandler(Exception)
-def handle_exception(e):
-    # pass through HTTP errors
-    if isinstance(e, HTTPException):
-        return e
-    if isinstance(e, json.decoder.JSONDecodeError):
-        return {"error": f"JSONDecodeError: {str(e)}"}, 500
-    return {"error": str(e)}, 500
+# @app.errorhandler(Exception)
+# def handle_exception(e):
+#     # pass through HTTP errors
+#     if isinstance(e, HTTPException):
+#         return e
+#     if isinstance(e, json.decoder.JSONDecodeError):
+#         return {"error": f"JSONDecodeError: {str(e)}"}, 500
+#     return {"error": str(e)}, 500
 
 
 @login_manager.user_loader
@@ -233,6 +234,20 @@ def change_color():
         "color": new_color
     }
 
+
+@app.route("/get_amount_of_moves/<string:lobby_id>", methods=['GET'])
+def get_amount_of_moves(lobby_id):
+    the_lobby = lobby_manager.get_lobby(lobby_id)
+    current_player = the_lobby.game.get_current_player()
+    move_options = len(current_player.getMoveOptions())  # TODO create a method that returns a number already
+    ms = move_simulator.MoveSimulator(the_lobby.game)
+    the_lobby.game = ms.get_best_game()
+    the_lobby.write_lobby()
+    return {
+        "player": current_player.user.name,
+        # "amount": the_lobby.game.get_amount_of_moves(),
+        # "shortest_path_to_win": the_lobby.game.get_length_of_shortest_path_to_win()
+    }
 
 def log_in_user():
     if "user_id" in session:
