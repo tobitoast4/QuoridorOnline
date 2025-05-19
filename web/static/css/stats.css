@@ -1,0 +1,92 @@
+.stats-container {
+    position: fixed; 
+    width: 100%; 
+    bottom: 0rem;
+}
+
+.stats-grid {    
+    display: grid;
+    grid-auto-flow: column;
+}
+
+.two-col-grid {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-column-gap: 0;
+    grid-row-gap: 0;
+}
+
+.left-buttons-container {
+    width: 100%;
+    text-align:
+    left;
+    display: flex;
+    flex-flow: column;
+}
+.left-buttons-container-child-1 {
+    order: 2;
+}
+.left-buttons-container-child-2 {
+    order: 1;
+}
+
+.right-buttons-pair-container {
+    display: inline;
+}
+
+@media screen and (min-width: 768px) {
+    .left-buttons-container {
+        display: flex;
+        flex-flow: row nowrap;
+    }
+    .left-buttons-container-child-1 {
+        order: 1;
+    }
+    .left-buttons-container-child-2 {
+        order: 2;
+    }
+
+    .right-buttons-pair-container {
+        display: flex;
+    }
+}
+
+.stats-padding {
+    padding: 0 10%;
+}
+
+@media screen and (min-width: 992px) {
+    .stats-padding {
+        padding: 0 20%;
+    }
+}
+
+@media screen and (min-width: 1600px) {
+    .stats-padding {
+        padding: 0 30%;
+    }
+}
+
+/* font-size, width and height are set in setButtonSizes(value) */
+.control-button {
+    border: 1px solid #bbf7d0;
+    background-color: #fff;
+    padding: 18px;
+    border-radius: 500px;
+    box-shadow: 0 1px 2px 0 rgba(0,0,0,0.1), 0 5px 50px 0 rgba(0,0,0,0.1);
+}
+
+.control-button:hover {
+    border: 1px solid gray;
+    cursor: pointer;
+}
+
+.control-button-active, .control-button-active:hover {
+    border: 1px solid white;
+    background-color: #bbf7d0;
+    padding: 18px;
+    border-radius: 500px;
+    box-shadow: 0 6px 8px 0 rgba(0,0,0,0.1), 0 17px 50px 0 rgba(0,0,0,0.1);
+    font-size: 16px;
+    cursor: pointer;
+}

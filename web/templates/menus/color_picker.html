@@ -1,0 +1,6 @@
+<div id="color-picker" class="color-picker-container">
+    {% for color in colors %}
+        <div class="color-picker-color" style="background-color: {{ color }}" onclick="updateColor('{{ color }}')"></div>
+    {% endfor %}
+    <i id="color-picker-icon" class="fa fa-arrows" style="font-size: 24px; margin: 4px 0 6px 2px" aria-hidden="true"></i>
+</div>

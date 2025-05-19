@@ -1,0 +1,51 @@
+{% extends "layouts/layout.html" %}
+{% block body %}
+{% load static %}
+<script src="{% static 'js/query_server.js' %}"></script>
+<script>
+    server_url = "{{ server_url }}";
+</script>
+<div>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <h1 class="font-effect-outline font-moul-white-big">QuoridorOnline</h1>
+    <br/>
+    <br/>
+    <div class="text-box">
+        <a href="/lobby" class="btn btn-white btn-animate">new lobby</a>
+    </div>
+    <br/>
+    <div class="text-box">
+        <a href="#" onclick="getRandomPublicLobby()" class="btn btn-white btn-animate">Join random</a>
+    </div>
+    <br/>
+    <br/>
+    <div class="text-box">
+        <a href="/local?amount_players=2" class="btn btn-white btn-animate">Play on this PC</a>
+    </div>
+    <br/>
+    <div class="text-box">
+        <a href="/how-to-play" class="btn btn-white btn-animate">How to play</a>
+    </div>
+    <br/>
+    <div class="text-box">
+        <a href="/about" class="btn btn-white btn-animate">About</a>
+    </div>
+
+    <div style="position: absolute; bottom: 16px; left: 16px; font-size: 12px">
+        <a href="/privacy_policy">Privacy Policy</a>
+    </div>
+</div>
+
+<!--this is the animated background-->
+<div style="text-align: left; margin: 0; position: fixed; top: 0px; left: 0px; z-index: -1;">
+    <canvas style=""></canvas>
+    <script src="{% static 'js/background_canvas.js' %}"></script>
+</div>
+
+<!--Script to allow ads on this side (see https://www.google.com/adsense/new/u/1/pub-6524991249344915/privacymessaging/ad_blocking)-->
+<script async src="https://fundingchoicesmessages.google.com/i/pub-6524991249344915?ers=1" nonce="6hNA8myYtrHvrJYKRD3WmA"></script><script nonce="6hNA8myYtrHvrJYKRD3WmA">(function() {function signalGooglefcPresent() {if (!window.frames['googlefcPresent']) {if (document.body) {const iframe = document.createElement('iframe'); iframe.style = 'width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;'; iframe.style.display = 'none'; iframe.name = 'googlefcPresent'; document.body.appendChild(iframe);} else {setTimeout(signalGooglefcPresent, 0);}}}signalGooglefcPresent();})();</script>
+
+{% endblock %}

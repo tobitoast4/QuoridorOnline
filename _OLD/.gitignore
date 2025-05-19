@@ -1,6 +1,5 @@
 /.idea
 /venv
-/_OLD/venv
 /data
 *.pyc
 .vscode/settings.json

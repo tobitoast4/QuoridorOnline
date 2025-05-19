@@ -1,0 +1,136 @@
+{% extends "layouts/layout.html" %}
+{% block body %}
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/lobby.css' %}">
+<link rel="stylesheet" href="{% static 'css/color_picker.css' %}">
+<!--use jQuery UI for draggable color picker-->
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
+
+<div>
+    <a href="/" style="text-decoration: none">
+        <h1 class="font-effect-outline font-moul-white-big">QuoridorOnline</h1>
+    </a>
+    <h2>LOBBY</h2>
+    <br/>
+    <br/>
+    You
+    <div class="element-box" style="display: flex; align-items: center;">
+        <input value="{{ user.username }}"
+               id="input-players-name"
+               type="text"
+               style="width: 100%; border: none; font-size: 16px; font-weight: 600; word-wrap: anywhere;">
+        <!-- <div style="font-size: 11px">Name not saved yet</div>-->
+        <div id="players-color" class="color-of-user" style="background-color: {{ user.color }}" onclick="openColorPicker()"></div>
+        <button title="Save name" class="inline-button" id="button_update_player_name">
+            <i id="button_update_player_name_icon" class="fa fa-floppy-o" aria-hidden="true"></i>
+        </button>
+    </div>
+    <script>
+        $("#input-players-name").keydown(function() {
+            $("#button_update_player_name").attr("style", "border: 1px solid green;");
+            $("#button_update_player_name_icon").attr("style", "color: green;");
+        });
+    </script>
+
+    <div style="">
+        {% include 'menus/color_picker.html' %}
+    </div>
+    <script src="{% static 'js/color_picker.js' %}"></script>
+
+    <br/>
+    <br/>
+    Share this link with your friends
+    <div class="element-box" style="display: flex; align-items: center;">
+        <div id="link-to-lobby" style="width: 100%; word-wrap: anywhere;"></div>
+        <button title="Copy" class="inline-button" onclick="copy_to_clipboard()" style="display: inline-block;">
+            <i class="fa fa-files-o" aria-hidden="true"></i>
+        </button>
+    </div>
+    <br/>
+    <br/>
+    List of players in lobby
+    <div class="element-box" style="padding: 25px;">
+        <div id="list_of_players">
+            <!-- display loading until players are loaded-->
+            <div style="margin: auto;" class="loader"></div>
+        </div>
+    </div>
+    <br/>
+    <div class="text-box">
+        <a href="#" onclick="startGameAsync()" class="btn btn-white btn-animate">Start game</a>
+    </div>
+    <br/>
+    <br/>
+    <div class="text-box">
+        <a id="change-lobby-visibility-button" href="javascript:void(0);" onclick="changeVisibility()" class="btn btn-white btn-animate">
+            {% if lobby.is_private %}
+                <i class="fa fa-lock" aria-hidden="true"></i>
+            {% else %}
+                <i class="fa fa-globe" aria-hidden="true"></i>
+            {% endif %}
+        </a>
+    </div>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    Amount of walls per player
+    <div style="text-align: center">
+        <div style="display:inline-block;">
+            <a id="decrease-amount-walls-button" href="javascript:void(0);" onclick="changeAmountOfWalls(-1)" class="btn btn-white btn-animate">
+                <i class="fa fa-minus" aria-hidden="true"></i>
+            </a>
+            <a id="current-amount-of-walls-per-player" style="padding: 10px">10</a>
+            <a id="increase-amount-walls-button" href="javascript:void(0);" onclick="changeAmountOfWalls(1)" class="btn btn-white btn-animate">
+                <i class="fa fa-plus" aria-hidden="true"></i>
+            </a>
+        </div>
+    </div>
+    <br/>
+</div>
+
+<!--this is the animated background-->
+<div style="text-align: left; margin: 0; position: fixed; top: 0px; left: 0px; z-index: -1;">
+    <canvas style=""></canvas>
+    <script src="{% static 'js/background_canvas.js' %}"></script>
+</div>
+
+<script src="{% static 'js/query_server.js' %}"></script>
+
+<script>
+    server_url = "{{ request.scheme }}://{{ request.get_host }}/";
+    current_lobby_id = "{{ lobby.id }}";
+    this_player_id = "{{ user.id }}";
+    this_player_name = "{{ user.username }}";
+    this_player_color = "{{ user.color }}";
+
+    let lobby_link = server_url + "lobby/" + current_lobby_id;
+    $('#link-to-lobby').html("" + lobby_link);
+
+    function copy_to_clipboard() {
+        navigator.clipboard.writeText(lobby_link);
+        showNotify("success", "", "Copied to clipboard", 2);
+    }
+
+    document.getElementById("button_update_player_name").onclick=async() => {
+        await updatePlayerName();
+    };
+
+    getLobbyAsync();
+    let intervalID = setInterval(() => { // see https://rapidapi.com/guides/api-requests-intervals
+        getLobbyAsync();
+    }, 500);
+</script>
+<script>
+    function changeAmountOfWalls(diff) {
+        let current_amount_of_walls_per_player = $('#current-amount-of-walls-per-player').html();
+        current_amount_of_walls_per_player = parseInt(current_amount_of_walls_per_player);
+        changeAmountOfWallsPerPlayer(current_amount_of_walls_per_player+diff);
+    }
+</script>
+
+<!--Script to allow ads on this side (see https://www.google.com/adsense/new/u/1/pub-6524991249344915/privacymessaging/ad_blocking)-->
+<script async src="https://fundingchoicesmessages.google.com/i/pub-6524991249344915?ers=1" nonce="6hNA8myYtrHvrJYKRD3WmA"></script><script nonce="6hNA8myYtrHvrJYKRD3WmA">(function() {function signalGooglefcPresent() {if (!window.frames['googlefcPresent']) {if (document.body) {const iframe = document.createElement('iframe'); iframe.style = 'width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;'; iframe.style.display = 'none'; iframe.name = 'googlefcPresent'; document.body.appendChild(iframe);} else {setTimeout(signalGooglefcPresent, 0);}}}signalGooglefcPresent();})();</script>
+
+{% endblock %}

@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="google-adsense-account" content="ca-pub-6524991249344915">
+        <link rel="shortcut icon" href="{% static 'fav_icon_64x64.png' %}">
+<!--        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />-->
+        <title>QuoridorOnline</title>
+        <meta name="description" content="Play Quoridor online with friends or with other people all around the world.">
+
+        <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+        <!-- <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> --> <!-- use this for production -->
+
+        <link rel="stylesheet" href="{% static 'css/notify.css' %}">
+        <link rel="stylesheet" href="{% static 'css/buttons.css' %}">
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <script src="{% static 'js/notify.js' %}"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <!-- Find FontAwesome4 here: https://fontawesome.com/v4/icons/-->
+
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Moul&effect=outline">
+    </head>
+    <body>
+        {% block body %}
+        {% endblock %}
+
+        <div style="width: 100%;">
+            <div id="notify-holder" class="notify-container"></div>
+        </div>
+
+        <div>
+            {% if messages %}
+                {% for message in messages %}
+                    <script>
+                        showNotify("error", "", "{{ message }}", 6);
+                    </script>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </body>
+</html>
