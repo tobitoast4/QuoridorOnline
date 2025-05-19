@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="google-adsense-account" content="ca-pub-6524991249344915">
+        <link rel="shortcut icon" href="{{ url_for('static', filename='fav_icon_64x64.png') }}">
+<!--        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />-->
+        <title>QuoridorOnline</title>
+        <meta name="description" content="Play Quoridor online with friends or with other people all around the world.">
+
+        <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+        <!-- <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> --> <!-- use this for production -->
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/notify.css' )}}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/buttons.css' )}}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css' )}}">
+        <script src="{{ url_for('static', filename='js/notify.js' )}}"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <!-- Find FontAwesome4 here: https://fontawesome.com/v4/icons/-->
+
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Moul&effect=outline">
+    </head>
+    <body>
+        {% block body %}
+        {% endblock %}
+
+        <div style="width: 100%;">
+            <div id="notify-holder" class="notify-container"></div>
+        </div>
+
+        <div>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% set printed_messages = [] %}
+                    {% for message in messages %}
+                        {% if message not in printed_messages %}
+                            <script>
+                                showNotify("error", "", "{{ message }}", 6);
+                            </script>
+                            {% set _ = printed_messages.append(message) %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+    </body>
+</html>
