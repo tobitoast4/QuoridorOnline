@@ -12,6 +12,8 @@ class GameUserSerializer(serializers.ModelSerializer):
 class GamePlayerSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField()
     game_user = GameUserSerializer(required=False)
+    # serialize only the UUID of the lobby
+    lobby = serializers.PrimaryKeyRelatedField(read_only=True)
     class Meta:
         model = models.GamePlayer
         fields = "__all__"
