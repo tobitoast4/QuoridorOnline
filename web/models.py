@@ -19,17 +19,17 @@ class GamePlayer(models.Model):
 class Lobby(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid6.uuid8, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(GamePlayer, related_name='created_by', null=True, blank=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey(GameUser, related_name='created_by', null=True, blank=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(GamePlayer, related_name='owner', null=True, blank=True, on_delete=models.SET_NULL)
     amount_of_walls_per_player = models.IntegerField(default=10)
     is_private = models.BooleanField(default=True)
     game = models.TextField(blank=True, null=True)
 
-    def start_game(self):
-        # random.shuffle(self.players)
-        # next_lobby = create_new_lobby(self.lobby_owner)  # creates a new lobby which will be used if players
-        #                                                  # click 'Play again' after the current game
-        self.game = Game(self.players, self.amount_of_walls_per_player, next_lobby.lobby_id)
+    # def start_game(self):
+    #     # random.shuffle(self.players)
+    #     # next_lobby = create_new_lobby(self.lobby_owner)  # creates a new lobby which will be used if players
+    #     #                                                  # click 'Play again' after the current game
+    #     print()
 
     def change_visibility(self):
         if self.is_private:
@@ -54,10 +54,3 @@ class Lobby(models.Model):
                 "game_data": self.game.game_data
             }
         return self_as_dict
-
-    def write_lobby(self):
-        lobby_id = self.lobby_id
-        file_path = os.path.join(DATA_DIR, f"{lobby_id}.json")
-        with FileLock(f"{file_path}.lock"):
-            with open(file_path, "w") as f:
-                json.dump(self.to_json(), f, indent=4)

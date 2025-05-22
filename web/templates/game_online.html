@@ -136,8 +136,8 @@
 <script src="{% static 'js/query_server.js' %}"></script>
 
 <script>
-    server_url = "{{ server_url }}";
-    current_lobby_id = "{{ lobby.lobby_id }}";
+    server_url = "{{ request.scheme }}://{{ request.get_host }}/";
+    current_lobby_id = "{{ lobby.id }}";
     this_player_id = "{{ user.id }}";
     players_action_state = STATE_PLACE_PLAYER;
     createPlayers();
@@ -146,7 +146,7 @@
         if (players_action_state != 2) {
             updateGame();
         }
-    }, 300);
+    }, 600);
 </script>
 
 <div id="game_over_overlay" style="display: none">

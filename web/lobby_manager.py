@@ -59,6 +59,14 @@ def read_lobby(lobby_id):
     return None
 
 
+def write_lobby(self):
+    lobby_id = self.lobby_id
+    file_path = os.path.join(DATA_DIR, f"{lobby_id}.json")
+    with FileLock(f"{file_path}.lock"):
+        with open(file_path, "w") as f:
+            json.dump(self.to_json(), f, indent=4)
+
+
 def get_lobby(lobby_id):
     lobby_as_dict = read_lobby(lobby_id)
     if lobby_as_dict:
@@ -108,7 +116,6 @@ def check_players_last_seen_time(lobby):
         if utils.get_current_time() - player.last_seen > PLAYER_TIME_OUT_TIME:
             players_to_delete.append(player)
     for player in players_to_delete:
-        print(f"Delete player: {player.id}")
         if lobby.owner == player:
             lobby.owner = None
         player.delete()

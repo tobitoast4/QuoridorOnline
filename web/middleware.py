@@ -1,6 +1,7 @@
 # game/middleware.py
 
 from django.utils.deprecation import MiddlewareMixin
+from django.middleware.csrf import get_token
 from django.contrib.auth import get_user_model
 from uuid import UUID
 from web import utils
@@ -28,4 +29,6 @@ class AnonymousGameUserMiddleware(MiddlewareMixin):
             user.set_unusable_password()
             user.save()
             request.session["anonymous_user_id"] = str(user.id)
+            
+        get_token(request)  # ensures users have a crsf token
         request.user = user

@@ -10,4 +10,11 @@ urlpatterns = [
     path("lobby", views.lobby),
     path("lobby/<lobby_id>", views.lobby),
     path("get_lobby/<lobby_id>", views.get_lobby),
+    path("start_game/<lobby_id>", views.start_game),
+    path("game/<lobby_id>", views.game),
+    path("get_game_data/<lobby_id>", views.get_game_data),
+    path("game_move_player/<lobby_id>", views.game_move_player),
+    path("game_place_wall/<lobby_id>", views.game_place_wall),
+
+    path("change_lobby_visibility/<lobby_id>", views.change_lobby_visibility),
 ]

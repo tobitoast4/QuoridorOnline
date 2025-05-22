@@ -5,11 +5,14 @@ from web.quoridor.wall import *
 
 
 class GameBoard:
-    def __init__(self, users, amount_walls: int, skip_user_check=False):
-        if (len(users) < 2 or len(users) > 4) and not skip_user_check:
+    def __init__(self, gameplayers, amount_walls: int, skip_user_check=False):
+        if not skip_user_check and (gameplayers.count() < 2 or gameplayers.count() > 4):
             raise QuoridorOnlineGameError("Allowed amount of players are 2, 3 or 4.")
         self.amount_fields = 9
-        self.players = [Player(the_user, amount_walls) for the_user in users]
+        if skip_user_check:
+            self.players = []
+        else:
+            self.players = [QouridorPlayer(gameplayer, amount_walls) for gameplayer in gameplayers.iterator()]
         self.fields = []
         self.walls = []
         self.create_fields()

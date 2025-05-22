@@ -1,10 +1,11 @@
 from web.errors import QuoridorOnlineGameError
+from web.serialize import GamePlayerSerializer
 import web.quoridor.field as field
 
 
-class Player:
-    def __init__(self, the_user, amount_walls: int):
-        self.user = the_user
+class QouridorPlayer:
+    def __init__(self, gameplayer, amount_walls: int):
+        self.gameplayer = gameplayer
         self.amount_walls_left = amount_walls
         self.field = None
         self.start_option_fields = []
@@ -56,9 +57,10 @@ class Player:
         return move_option_fields
 
     def __json__(self, initial=False):
+        serializer = GamePlayerSerializer(self.gameplayer)
         if initial:
             return {
-                "user": self.user.__json__(),
+                "user": serializer.data,
                 "amount_walls_left": self.amount_walls_left,
                 "start_option_fields": [f.__json__() for f in self.start_option_fields],
                 "win_option_fields": [f.__json__() for f in self.win_option_fields]
@@ -68,7 +70,7 @@ class Player:
             if self.field is not None:
                 field_json = self.field.__json__()
             return {
-                "user": self.user.__json__(),
+                "user": serializer.data,
                 "field": field_json,
                 "amount_walls_left": self.amount_walls_left,
                 "move_options": [f.__json__() for f in self.getMoveOptions()],

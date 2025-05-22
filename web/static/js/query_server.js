@@ -50,6 +50,7 @@ async function getGameDataAsync() {
         var response = await fetch(server_url + "get_game_data/" + current_lobby_id, {
             method: 'GET',
             headers: {
+                'X-CSRFToken': getCookie("csrftoken", ""),
                 'Content-Type': 'application/json',
             }
         });
@@ -67,6 +68,7 @@ async function movePlayerAsync(player_id, new_field_col_num, new_field_row_num) 
         var response = await fetch(server_url + "game_move_player/" + current_lobby_id, {
             method: 'POST',
             headers: {
+                'X-CSRFToken': getCookie("csrftoken", ""),
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -88,6 +90,7 @@ async function placeWallAsync(player_id, col_start, row_start, col_end, row_end)
         var response = await fetch(server_url + "game_place_wall/" + current_lobby_id, {
             method: 'POST',
             headers: {
+                'X-CSRFToken': getCookie("csrftoken", ""),
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -112,10 +115,10 @@ async function createPlayers() {
     var players_json = initial_setup_json["players"];
     for (var p = 0; p < players_json.length; p++) {
         var player_json = players_json[p];
-        var player = new Player(player_json["user"]["id"],
-                                player_json["user"]["name"],
-                                player_json["amount_walls_left"],
-                                player_json["user"]["color"],);
+        var player = new Player(player_json.user.game_user.id,
+                                player_json.user.game_user.username,
+                                player_json.amount_walls_left,
+                                player_json.user.color,);
 
         // Add start_ and win_option_fields
         for (var i = 0; i < player_json["start_option_fields"].length; i++) {
@@ -176,7 +179,7 @@ async function updateGame(round_diff=0, play_audio=true) {
         players_json.forEach(player_json => {
             let players_field = player_json["field"];
             if (players_field != null) {
-                this.updatePlayer(player_json["user"]["id"],
+                this.updatePlayer(player_json.user.game_user.id,
                                   players_field,
                                   player_json["amount_walls_left"],
                                   player_json["move_options"]);
@@ -249,12 +252,9 @@ async function startGameAsync() {
         var response = await fetch(server_url + "start_game/" + current_lobby_id, {
             method: 'POST',
             headers: {
+                'X-CSRFToken': getCookie("csrftoken", ""),
                 'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                "user_id": this_player_id,
-                "user_name": this_player_name,
-            })
+            }
         });
         var data = await response.json();
         throwOnError(data);
@@ -268,6 +268,7 @@ async function changeVisibility() {
         var response = await fetch(server_url + "change_lobby_visibility/" + current_lobby_id, {
             method: 'POST',
             headers: {
+                'X-CSRFToken': getCookie("csrftoken", ""),
                 'Content-Type': 'application/json'
             }
         });
@@ -286,6 +287,7 @@ async function changeAmountOfWallsPerPlayer(new_amount) {
         var response = await fetch(server_url + "change_amount_of_walls_per_player/" + current_lobby_id, {
             method: 'POST',
             headers: {
+                'X-CSRFToken': getCookie("csrftoken", ""),
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -304,6 +306,7 @@ async function getRandomPublicLobby() {
         var response = await fetch(server_url + "get_random_lobby", {
             method: 'GET',
             headers: {
+                'X-CSRFToken': getCookie("csrftoken", ""),
                 'Content-Type': 'application/json'
             }
         });
@@ -322,6 +325,7 @@ async function getLobbyAsync() {
         var response = await fetch(server_url + "get_lobby/" + current_lobby_id, {
             method: 'GET',
             headers: {
+                'X-CSRFToken': getCookie("csrftoken", ""),
                 'Content-Type': 'application/json'
             }
         });
@@ -330,7 +334,7 @@ async function getLobbyAsync() {
         var status = response.status;
         if (status == 200) {
             if (data.lobby.game) {
-                window.location.replace(data.game);
+                window.location.replace(server_url + data.lobby.game);
             } else {
                 var lobby_owner_id = data.lobby.owner.id;
                 var list_of_players = $('#list_of_players');
@@ -372,6 +376,7 @@ async function updatePlayerName() {
         var response = await fetch(server_url + "rename_player", {
             method: 'POST',
             headers: {
+                'X-CSRFToken': getCookie("csrftoken", ""),
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({

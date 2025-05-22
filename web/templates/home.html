@@ -3,7 +3,7 @@
 {% load static %}
 <script src="{% static 'js/query_server.js' %}"></script>
 <script>
-    server_url = "{{ server_url }}";
+    server_url = "{{ request.scheme }}://{{ request.get_host }}/";
 </script>
 <div>
     <br/>

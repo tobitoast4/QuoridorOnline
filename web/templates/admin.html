@@ -65,7 +65,7 @@
 
 
     <script>
-        server_url = "{{ server_url }}";
+        server_url = "{{ request.scheme }}://{{ request.get_host }}/";
         var lobbies_in_group = {{ lobbies_in_group | tojson }};
         var labels_as_str = {{ labels | tojson }};
         var data = {{ data | tojson }};
