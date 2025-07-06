@@ -15,6 +15,8 @@ urlpatterns = [
     path("get_game_data/<lobby_id>", views.get_game_data),
     path("game_move_player/<lobby_id>", views.game_move_player),
     path("game_place_wall/<lobby_id>", views.game_place_wall),
-
+    path("rename_player", views.rename_player),
+    path("change_color", views.change_color),
     path("change_lobby_visibility/<lobby_id>", views.change_lobby_visibility),
+    path("change_amount_of_walls_per_player/<lobby_id>", views.change_amount_of_walls_per_player),
 ]

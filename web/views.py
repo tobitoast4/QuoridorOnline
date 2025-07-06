@@ -116,12 +116,54 @@ def game_place_wall(request, lobby_id=None):
 
 @api_view(['POST'])
 def change_lobby_visibility(request, lobby_id=None):
-    the_lobby = lobby_manager.get_lobby(lobby_id)
-    if session['user_id'] != the_lobby.lobby_owner.id:
-        return {"error": "Only the lobby owner can change the visibility"}
-    the_lobby.change_visibility()
-    the_lobby.write_lobby()
+    the_lobby = models.Lobby.objects.get(id=lobby_id)
     if the_lobby.is_private:
-        return {"status": "Lobby visibility successfully changed to: private"}, 200
+        the_lobby.is_private = False
+        the_lobby.save()
+        return Response({"status": "Lobby visibility successfully changed to: private"}, 200)
     else:
-        return {"status": "Lobby visibility successfully changed to: public"}, 200
+        the_lobby.is_private = True
+        the_lobby.save()
+        return Response({"status": "Lobby visibility successfully changed to: public"}, 200)
+
+@api_view(['POST'])
+def change_amount_of_walls_per_player(request, lobby_id=None):
+    the_lobby = models.Lobby.objects.get(id=lobby_id)
+    if request.user.id != the_lobby.owner.game_user.id:
+        raise PermissionError("Only the lobby owner can change the amount of walls per player")
+    if the_lobby.game is not None:
+        raise PermissionError("You can not change the amount of walls per player when the game is already running")
+    new_amount = request.data.get("new_amount")
+    the_lobby.amount_of_walls_per_player = new_amount
+    the_lobby.save()
+    return Response({
+        "status": "ok",
+        "amount_of_walls_per_player": new_amount
+    }, 200)
+
+@api_view(['POST'])
+def rename_player(request):
+    new_user_name = request.data.get("new_user_name")
+    if new_user_name == "":
+        raise ValueError("User name can not be empty")
+    if len(new_user_name) > 64:
+        raise ValueError("User name is too long")
+    # TODO: XSS Check
+    request.user.username = new_user_name
+    request.user.save()
+    return Response({"status": f"Player name successfully changed to {new_user_name}"}, 200)
+
+@api_view(['POST'])
+def change_color(request):
+    lobby_id = request.data.get("lobby_id")
+    new_color = request.data.get("new_color")
+    gameplayer = request.user.gameplayer_set.filter(lobby__id=lobby_id).first()
+    # TODO: XSS Check
+    gameplayer.color = new_color
+    gameplayer.save()
+    request.user.color = new_color
+    request.user.save()
+    return Response({
+        "status": f"Color successfully updated",
+        "color": new_color
+    }, 200)

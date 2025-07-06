@@ -354,14 +354,14 @@ async function getLobbyAsync() {
                     }
                 });
 
-                if (data["is_private"]) {
+                if (data.lobby.is_private) {
                     $("#change-lobby-visibility-button").html('<i class="fa fa-lock" aria-hidden="true"></i>');
                 } else {
                     $("#change-lobby-visibility-button").html('<i class="fa fa-globe" aria-hidden="true"></i>');
                 }
 
                 // update amount_of_walls_per_player
-                $('#current-amount-of-walls-per-player').html(data["amount_of_walls_per_player"]);
+                $('#current-amount-of-walls-per-player').html(data.lobby.amount_of_walls_per_player);
             }
         }
     } catch (error) {
@@ -380,8 +380,6 @@ async function updatePlayerName() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                "lobby_id": current_lobby_id,
-                "user_id": this_player_id,
                 "new_user_name": new_player_name
             })
         });
@@ -400,11 +398,11 @@ async function updateColor(new_color) {
         var response = await fetch(server_url + "change_color", {
             method: 'POST',
             headers: {
+                'X-CSRFToken': getCookie("csrftoken", ""),
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 "lobby_id": current_lobby_id,
-                "user_id": this_player_id,
                 "new_color": new_color
             })
         });
