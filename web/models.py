@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from web import utils
+from web.errors import QuoridorOnlineGameError
 import uuid6, time
 
 
@@ -25,17 +26,12 @@ class Lobby(models.Model):
     is_private = models.BooleanField(default=True)
     game = models.TextField(blank=True, null=True)
 
-    # def start_game(self):
-    #     # random.shuffle(self.players)
-    #     # next_lobby = create_new_lobby(self.lobby_owner)  # creates a new lobby which will be used if players
-    #     #                                                  # click 'Play again' after the current game
-    #     print()
-
-    def change_visibility(self):
+    def toggle_visibility(self):
         if self.is_private:
             self.is_private = False
         else:
             self.is_private = True
+        self.save()
 
     def change_amount_of_walls_of_players(self, new_amount: int):
         if new_amount <= 0:
@@ -44,6 +40,7 @@ class Lobby(models.Model):
             raise QuoridorOnlineGameError("The amount of walls per player can not be higher than 99")
         else:
             self.amount_of_walls_per_player = new_amount
+            self.save()
 
     def to_json(self):
         self_as_dict = vars(self).copy()

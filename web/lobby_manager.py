@@ -50,65 +50,13 @@ def create_lobby_from_json(lobby_as_dict):
     return new_lobby
 
 
-def read_lobby(lobby_id):
-    file_location = os.path.join(DATA_DIR, f"{lobby_id}.json")
-    if os.path.isfile(file_location):
-        with open(file_location) as f:
-            lobby_as_dict = json.load(f)
-            return lobby_as_dict
-    return None
-
-
-def write_lobby(self):
-    lobby_id = self.lobby_id
-    file_path = os.path.join(DATA_DIR, f"{lobby_id}.json")
-    with FileLock(f"{file_path}.lock"):
-        with open(file_path, "w") as f:
-            json.dump(self.to_json(), f, indent=4)
-
-
-def get_lobby(lobby_id):
-    lobby_as_dict = read_lobby(lobby_id)
-    if lobby_as_dict:
-        return create_lobby_from_json(lobby_as_dict)
-    return None
-
-
 def get_random_public_lobby():
     """Actually gets the first in the list"""
-    for file in os.listdir(DATA_DIR):
-        file_location = os.path.join(DATA_DIR, file)
-        if os.path.isfile(file_location):
-            with open(file_location) as f:
-                try:
-                    lobby_as_dict = json.load(f)
-                except:
-                    continue
-                if lobby_as_dict["is_private"] == False and lobby_as_dict["game"] is None:
-                    return create_lobby_from_json(lobby_as_dict)
+    lobbies = models.Lobby.objects.filter(is_private=False)
+    if lobbies.count() >= 1:
+        return lobbies.first()  # TODO: Return random
     raise QuoridorOnlineGameError("Could not find any public lobby :(<br/>"
                                   "Try again later or create your own one")
-
-
-def update_player_name_in_lobby(lobby_id, user_id, new_user_name):
-    the_lobby = get_lobby(lobby_id)
-    for p in range(len(the_lobby.players)):
-        player = the_lobby.players[p]
-        if player.id == user_id:
-            player.name = new_user_name
-            break
-    the_lobby.write_lobby()
-
-
-def update_color_of_player_in_lobby(lobby_id, user_id, new_color):
-    the_lobby = get_lobby(lobby_id)
-    for p in range(len(the_lobby.players)):
-        player = the_lobby.players[p]
-        if player.id == user_id:
-            player.color = new_color
-            break
-    the_lobby.write_lobby()
-
 
 def check_players_last_seen_time(lobby):
     players_to_delete = []

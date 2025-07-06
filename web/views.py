@@ -117,13 +117,10 @@ def game_place_wall(request, lobby_id=None):
 @api_view(['POST'])
 def change_lobby_visibility(request, lobby_id=None):
     the_lobby = models.Lobby.objects.get(id=lobby_id)
+    the_lobby.toggle_visibility()
     if the_lobby.is_private:
-        the_lobby.is_private = False
-        the_lobby.save()
         return Response({"status": "Lobby visibility successfully changed to: private"}, 200)
     else:
-        the_lobby.is_private = True
-        the_lobby.save()
         return Response({"status": "Lobby visibility successfully changed to: public"}, 200)
 
 @api_view(['POST'])
@@ -134,8 +131,7 @@ def change_amount_of_walls_per_player(request, lobby_id=None):
     if the_lobby.game is not None:
         raise PermissionError("You can not change the amount of walls per player when the game is already running")
     new_amount = request.data.get("new_amount")
-    the_lobby.amount_of_walls_per_player = new_amount
-    the_lobby.save()
+    the_lobby.change_amount_of_walls_of_players(new_amount)
     return Response({
         "status": "ok",
         "amount_of_walls_per_player": new_amount
