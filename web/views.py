@@ -15,7 +15,7 @@ def home(request):
     return render(request, 'home.html')
 
 def local(request):
-    amount_players = request.args.get('amount_players', default=2, type=int)
+    amount_players = int(request.GET.get("amount_players", 2))
     context = {"amount_players": amount_players}
     return render(request, 'game_local.html', context)
 
