@@ -8,7 +8,7 @@
     <a href="/" style="text-decoration: none">
         <h1 class="font-effect-outline font-moul-white-big">QuoridorOnline</h1>
     </a>
-    <h2>LOGIN</h2>
+    <h2>REGISTER</h2>
     <br/>
     <br/>
     {% if messages %}
@@ -19,13 +19,23 @@
         </div>
         <br/>
     {% endif %}
-    <form method="post" action="{% url 'login' %}">
+    <form method="post" action="{% url 'register' %}">
         {% csrf_token %}
         Username
         <div class="element-box" style="display: flex; align-items: center; ">
             <input name="username"
                    id="input-players-name"
                    type="text"
+                   value="{{ username|default:user.username }}"
+                   style="width: 100%; border: none; font-size: 16px; font-weight: 600; word-wrap: anywhere; height: 3rem;">
+        </div>
+        <br/>
+        <br/>
+        Email
+        <div class="element-box" style="display: flex; align-items: center; ">
+            <input name="email"
+                   id="input-players-email"
+                   type="email"
                    style="width: 100%; border: none; font-size: 16px; font-weight: 600; word-wrap: anywhere; height: 3rem;">
         </div>
         <br/>
@@ -37,14 +47,23 @@
                    type="password"
                    style="width: 100%; border: none; font-size: 16px; font-weight: 600; word-wrap: anywhere; height: 3rem;">
             <button type="button" title="Toggle password visibility" class="inline-button" onclick="togglePasswordVisibility()" style="display: inline-block;">
-                <i id="password-toggle-icon" class="fa fa-eye" aria-hidden="true"></i>
+                <i class="password-toggle-icon fa fa-eye" aria-hidden="true"></i>
             </button>
+        </div>
+        <br/>
+        <br/>
+        Repeat password
+        <div class="element-box" style="display: flex; align-items: center; ">
+            <input name="repeat_password"
+                   id="input-players-repeat-password"
+                   type="password"
+                   style="width: 100%; border: none; font-size: 16px; font-weight: 600; word-wrap: anywhere; height: 3rem;">
         </div>
         <br/>
         <br/>
         
         <div class="text-box">
-            <button type="submit" class="btn btn-white btn-animate">Login</button>
+            <button type="submit" class="btn btn-white btn-animate">Register</button>
         </div>
 
     </form>
@@ -52,22 +71,28 @@
 </div>
 
 <div style="position: absolute; bottom: 16px; left: 0; width: 100%; text-align: center; font-size: 0.95rem;">
-    Don't have an account? <a href="{% url 'register' %}">Register here</a>
+    Already registered? <a href="{% url 'login' %}">Login here</a>
 </div>
 
 
 <script>
     function togglePasswordVisibility() {
-        const passwordInput = document.getElementById('input-players-password');
-        const icon = document.getElementById('password-toggle-icon');
-        if (!passwordInput) {
+        const passwordInputs = document.querySelectorAll('#input-players-password, #input-players-repeat-password');
+        if (!passwordInputs.length) {
             return;
         }
 
-        const isPassword = passwordInput.type === 'password';
-        passwordInput.type = isPassword ? 'text' : 'password';
-        icon.className = isPassword ? 'fa fa-eye-slash' : 'fa fa-eye';
-        icon.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+        const isPassword = passwordInputs[0].type === 'password';
+        passwordInputs.forEach(input => {
+            if (input) {
+                input.type = isPassword ? 'text' : 'password';
+            }
+        });
+
+        document.querySelectorAll('.password-toggle-icon').forEach(icon => {
+            icon.className = isPassword ? 'password-toggle-icon fa fa-eye-slash' : 'password-toggle-icon fa fa-eye';
+            icon.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+        });
     }
 </script>
 <!--this is the animated background-->

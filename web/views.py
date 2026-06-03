@@ -26,6 +26,43 @@ def login(request):
         return render(request, 'login.html', {'username': username})
     return render(request, 'login.html')
 
+def register(request):
+    username = ""
+    email = ""
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+        repeat_password = request.POST.get('repeat_password', '')
+        current_user_pk = getattr(request.user, 'pk', None)
+
+        if username == "":
+            messages.error(request, 'Username cannot be empty.')
+        elif email == "":
+            messages.error(request, 'Email cannot be empty.')
+        elif password == "":
+            messages.error(request, 'Password cannot be empty.')
+        elif password != repeat_password:
+            messages.error(request, 'Passwords do not match.')
+        elif models.GameUser.objects.filter(username=username).exclude(pk=current_user_pk).exists():
+            messages.error(request, 'Username is already taken.')
+        elif models.GameUser.objects.filter(email=email).exclude(pk=current_user_pk).exists():
+            messages.error(request, 'Email is already taken.')
+        else:
+            user = request.user
+            if getattr(user, 'is_guest', False):
+                user.username = username
+                user.email = email
+                user.set_password(password)
+                user.is_guest = False
+                user.save()
+                auth_login(request, user)
+                messages.success(request, 'Registration successful.')
+                return redirect('/')
+            messages.error(request, 'Registration can only be completed for guest users.')
+
+    return render(request, 'register.html', {'username': username})
+
 def logout_user(request):
     logout(request)
     messages.success(request, "You have been successfully logged out.")
