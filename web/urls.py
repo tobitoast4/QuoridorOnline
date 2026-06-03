@@ -10,6 +10,7 @@ urlpatterns = [
     path("lobby", views.lobby),
     path("lobby/<lobby_id>", views.lobby),
     path("get_lobby/<lobby_id>", views.get_lobby),
+    path("get_random_lobby", views.get_random_lobby),
     path("start_game/<lobby_id>", views.start_game),
     path("game/<lobby_id>", views.game),
     path("get_game_data/<lobby_id>", views.get_game_data),
@@ -19,4 +20,11 @@ urlpatterns = [
     path("change_color", views.change_color),
     path("change_lobby_visibility/<lobby_id>", views.change_lobby_visibility),
     path("change_amount_of_walls_per_player/<lobby_id>", views.change_amount_of_walls_per_player),
+
+
+    path("dashboard", views.dashboard),
+    # path("get_lobby_json", views.get_lobby_json),
+
+    
+    path("logout", views.logout_user),
 ]

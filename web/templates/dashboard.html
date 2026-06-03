@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,16 +14,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Moul&effect=outline">
-    <script src="{{ url_for('static', filename='js/json-viewer.js' )}}"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/admin.css' )}}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/json-viewer.css' )}}">
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+    <link rel="stylesheet" href="{% static 'css/json-viewer.css' %}">
+    <link rel="stylesheet" href="{% static 'js/json-viewer.js' %}">
 </head>
 <body>
     <div id="navbar">
         <h2>Navigation</h2>
         <ul>
             <li><a href="/">Home</a></li>
-            <li><a href="/admin">Dashboard</a></li>
+            <li><a href="/dashboard">Dashboard</a></li>
             <li><a href="#">Settings</a></li>
         </ul>
     </div>
@@ -63,13 +64,6 @@
         <div style="height: 50rem"></div>
     </div>
 
-
-    <script>
-        server_url = "{{ request.scheme }}://{{ request.get_host }}/";
-        var lobbies_in_group = {{ lobbies_in_group | tojson }};
-        var labels_as_str = {{ labels | tojson }};
-        var data = {{ data | tojson }};
-    </script>
-    <script src="{{ url_for('static', filename='js/admin.js' )}}"></script>
+    <!-- <link rel="stylesheet" href="{% static 'js/admin.js' %}"> -->
 </body>
 </html>

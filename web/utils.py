@@ -2,6 +2,8 @@ import random
 import time
 import uuid
 import json
+from pathlib import Path
+import json
 
 COLORS = ["red", "orange", "#FFE600", "#199A19", "blue", "#4A0080", "#EE81EE"]
 
@@ -35,6 +37,29 @@ def get_random_color():
     # colors = ["red", "blue", "green", "black", "deepPink", "orangeRed"]
     return COLORS[random.randint(0, len(COLORS)-1)]
 
+
+def delete_json_files_without_game():
+    """Deletes all JSON files in the specified folder that do not contain a 'game' key."""
+    # Ordner mit den JSON-Dateien
+    folder = Path("/pfad/zum/ordner")
+
+    for json_file in folder.glob("*.json"):
+        try:
+            with open(json_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            if data.get("game") is None:
+                print(f"Lösche {json_file.name}")
+                json_file.unlink()
+
+                # Zugehörige .lock-Datei löschen
+                lock_file = json_file.with_suffix(".json.lock")
+                if lock_file.exists():
+                    print(f"Lösche {lock_file.name}")
+                    lock_file.unlink()
+
+        except Exception as e:
+            print(f"Fehler bei {json_file.name}: {e}")
 
 # #send email
 # import smtplib

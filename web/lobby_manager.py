@@ -13,11 +13,11 @@ PLAYER_TIME_OUT_TIME = 2  # how long (in sec) is the player allowed to not poll 
 
 def get_random_public_lobby():
     """Actually gets the first in the list"""
-    lobbies = models.Lobby.objects.filter(is_private=False)
+    lobbies = models.Lobby.objects.filter(is_private=False, game=None)
     if lobbies.count() >= 1:
         return lobbies.first()  # TODO: Return random
-    raise QuoridorOnlineGameError("Could not find any public lobby :(<br/>"
-                                  "Try again later or create your own one")
+    else:
+        return None
 
 def check_players_last_seen_time(lobby):
     players_to_delete = []

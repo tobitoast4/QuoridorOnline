@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth import logout
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -10,6 +12,10 @@ from web.quoridor import game as quoridor_game
 from web.quoridor import deserialize as quoridor_deserialize
 import json
 
+
+def logout_user(request):
+    logout(request)
+    return redirect("/")
 
 def home(request):
     return render(request, 'home.html')
@@ -63,6 +69,13 @@ def get_lobby(request, lobby_id=None):
     else:
         messages.add_message(request, messages.ERROR, f"The lobby with id {lobby_id} does not exist.")
         return redirect("/")
+
+@api_view(['GET'])
+def get_random_lobby(request):
+    the_lobby = lobby_manager.get_random_public_lobby()
+    if the_lobby is None:
+        return Response({"error": "Could not find any public lobby :(<br/>Try again later or create your own one"}, 200)
+    return Response({"lobby_url": f"/lobby/{the_lobby.id}"}, 200)
     
 @api_view(['POST'])
 def start_game(request, lobby_id=None):
@@ -163,3 +176,17 @@ def change_color(request):
         "status": f"Color successfully updated",
         "color": new_color
     }, 200)
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def dashboard(request):
+    data = []
+    for lobby in models.Lobby.objects.order_by('-created_at').iterator():
+        data.append({
+            "lobby_id": lobby.id,
+            "time_created": lobby.created_at,
+            "amount_players": lobby.gameplayer_set.count()
+        })
+
+    context = {"lobbies": data}
+    return render(request, 'dashboard.html', context)

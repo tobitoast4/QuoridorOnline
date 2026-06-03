@@ -312,6 +312,9 @@ async function getRandomPublicLobby() {
         });
         var data = await response.json();
         throwOnError(data);
+        if (data.hasOwnProperty("error")) {
+            showNotify("error", "", data["error"], 6);
+        }
         if (data.hasOwnProperty("lobby_url")) {
             window.location.replace(data["lobby_url"]);
         }
