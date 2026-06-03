@@ -21,7 +21,7 @@ class Game:
         }
         self._append_game_data()
 
-    def move_player(self, user_id, new_field_col, new_field_row):
+    def move_player(self, user_id, lobby, new_field_col, new_field_row):
         """Can be used to move a player."""
         if self._get_current_player().gameplayer.game_user.id != user_id:
             raise QuoridorOnlineGameError("It's not your turn currently")
@@ -35,6 +35,8 @@ class Game:
             result = player.move_to_field(new_field)
             if result is not None:
                 self.state = STATE_PLAYER_DID_WIN
+                lobby.winner = player.gameplayer
+                lobby.save()
         self._next_players_turn()
 
     def place_wall(self, user_id, col_start, row_start, col_end, row_end, skip_user_check=False):

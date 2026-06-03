@@ -1,0 +1,95 @@
+{% extends "layouts/layout.html" %}
+{% block body %}
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/account.css' %}">
+
+<div>
+    <a href="/" style="text-decoration: none">
+        <h1 class="font-effect-outline font-moul-white-big">QuoridorOnline</h1>
+    </a>
+    <h2>Account</h2>
+    <br/>
+    <div class="element-box-container">
+        <div style="display: flex; gap: 0.5rem; margin: 0 5%; align-items: flex-start;">
+            <div style="flex: 2;">
+                <div class="element-box" style="margin-bottom: 1rem;">
+                    <div style="height: 3rem; display: flex; align-items: center;">
+                        <strong style="margin-right: 0.5rem;">USERNAME:</strong>
+                        <span style="font-weight:700">{{ user.username }}</span>
+                    </div>
+                </div>
+                <div class="element-box">
+                    <div style="height: 3rem; display: flex; align-items: center;">
+                        <strong style="margin-right: 0.5rem;">EMAIL:</strong>
+                        <span style="font-weight:700">{{ user.email }}</span>
+                    </div>
+                </div>
+                <div class="element-box" style="margin-top: 1rem;">
+                    <div style="height: 3rem; display: flex; align-items: center;">
+                        <strong style="margin-right: 0.5rem;">REGISTERED:</strong>
+                        <span style="font-weight:700">{% if user.date_joined %}{{ user.date_joined|date:"d.m.Y" }}{% else %}n/a{% endif %}</span>
+                    </div>
+                </div>
+                <br/>
+                <div class="element-box" style="margin-top: 1rem;">
+                    <div style="height: 3rem; display: flex; align-items: center;">
+                        <strong style="margin-right: 0.5rem;">GAMES PLAYED:</strong>
+                        <span style="font-weight:700">{{ user.games_played }}</span>
+                    </div>
+                </div>
+                <div class="element-box" style="margin-top: 1rem;">
+                    <div style="height: 3rem; display: flex; align-items: center;">
+                        <strong style="margin-right: 0.5rem;">GAMES WON:</strong>
+                        <span style="font-weight:700">{{ user.games_won }}</span>
+                    </div>
+                </div>
+            </div>
+            <div style="flex: 3;">
+                <div class="element-box" style="min-height: 180px; display: flex; align-items: flex-start; justify-content: flex-start; padding: 2rem 1.6rem;">
+                    <div style="width:100%;">
+                        <h3 style="margin-top:0; margin-bottom:0.5rem;">Last 10 Games</h3>
+                        {% if recent_games %}
+                            <ul style="list-style:none; padding:0; margin:0;">
+                                {% for g in recent_games %}
+                                    <li style="padding:0.5rem 0; border-bottom: 1px solid rgba(0,0,0,0.06); display:flex; justify-content:space-between; align-items:center;">
+                                        <div>
+                                            <div style="font-weight:700;">{{ g.name }}</div>
+                                            <div style="color:#666; font-size:0.9rem;">{% if g.played_at %}{{ g.played_at|date:"d.m.Y H:i" }}{% else %}unbekannt{% endif %}</div>
+                                        </div>
+                                        <div style="text-align:right; font-size:0.9rem; color:#333;">
+                                            {% if g.winner == user %}
+                                                <div style="display:flex; gap:0.3rem; margin-bottom:0.3rem">
+                                                    <span title="Won" style="margin-left: auto; width:1.2rem; height:1.2rem; background:#4CAF50; border-radius:50%; 
+                                                     display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:0.8rem;">✓</span>
+                                                </div>
+                                            {% elif g.winner and g.winner != user %}
+                                                <div style="display:flex; align-items:right; gap:0.3rem; margin-bottom:0.3rem;">
+                                                    <span title="Lost" style="margin-left: auto; width:1.2rem; height:1.2rem; background:#f44336; border-radius:50%; 
+                                                     display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:0.8rem;">✕</span>
+                                                </div>
+                                            {% endif %}
+                                            {% if g.url %}
+                                                <div><a href="{{ g.url }}" >Ansehen</a></div>
+                                            {% endif %}
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <div style="color:#666;">Keine kürzlichen Spiele gefunden.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--this is the animated background-->
+<div style="text-align: left; margin: 0; position: fixed; top: 0px; left: 0px; z-index: -1;">
+    <canvas style=""></canvas>
+    <script src="{% static 'js/background_canvas.js' %}"></script>
+</div>
+
+{% endblock %}

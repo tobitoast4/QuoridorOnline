@@ -9,6 +9,11 @@
     <br/>
     <div style="width: 100%; text-align: right;">
         {% if user.is_authenticated and not user.is_guest %}
+            <a href="{% url 'account' %}">
+                <button title="Account" class="inline-button" style="margin-right: 0.5rem;">
+                    <i class="fa fa-user" aria-hidden="true"></i>
+                </button>
+            </a>
             <a href="{% url 'logout' %}">
                 <button title="Logout" class="inline-button" style="margin-right: 1rem;">
                     <i class="fa fa-sign-out" aria-hidden="true"></i>

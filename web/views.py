@@ -71,6 +71,30 @@ def logout_user(request):
 def home(request):
     return render(request, 'home.html')
 
+def account(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    # Collect recent games where the user participated (lobbies with a game)
+    recent_games = []
+    try:
+        games_played = models.GamePlayer.objects.filter(game_user=request.user, lobby__game__isnull=False) \
+                                       .select_related('lobby').order_by('-lobby__created_at')[:10]
+        for gp in games_played:
+            lobby = gp.lobby
+            if lobby is None:
+                continue
+            recent_games.append({
+                'name': f"Match {lobby.id}",
+                'played_at': lobby.created_at,
+                'winner': lobby.winner.game_user if lobby.winner else None,
+                'url': f"/game/{lobby.id}"
+            })
+    except Exception:
+        recent_games = []
+
+    return render(request, 'account.html', {'user': request.user, 'recent_games': recent_games})
+
 def local(request):
     amount_players = int(request.GET.get("amount_players", 2))
     context = {"amount_players": amount_players}
@@ -157,7 +181,7 @@ def game_move_player(request, lobby_id=None):
     the_lobby = models.Lobby.objects.get(pk=lobby_id)
     the_game_json = json.loads(the_lobby.game)
     the_game = quoridor_deserialize.create_game_from_json(the_game_json)
-    the_game.move_player(request.user.id,
+    the_game.move_player(request.user.id, the_lobby, 
                          request.data.get("new_field_col_num"),
                          request.data.get("new_field_row_num"))
     the_lobby.game = json.dumps(the_game.game_data, cls=utils.UUIDEncoder)

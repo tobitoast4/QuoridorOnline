@@ -25,6 +25,7 @@ class Lobby(models.Model):
     amount_of_walls_per_player = models.IntegerField(default=10)
     is_private = models.BooleanField(default=True)
     game = models.TextField(blank=True, null=True)
+    winner = models.ForeignKey(GamePlayer, related_name='winner', null=True, blank=True, on_delete=models.SET_NULL)
 
     def toggle_visibility(self):
         if self.is_private:
