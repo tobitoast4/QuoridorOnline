@@ -11,40 +11,42 @@
     <h2>Account</h2>
     <br/>
     <div class="element-box-container">
-        <div style="display: flex; gap: 0.5rem; margin: 0 5%; align-items: flex-start;">
+        <div class="element-box-container-flex">
             <div style="flex: 2;">
                 <div class="element-box" style="margin-bottom: 1rem;">
                     <div style="height: 3rem; display: flex; align-items: center;">
                         <strong style="margin-right: 0.5rem;">USERNAME:</strong>
-                        <span style="font-weight:700">{{ user.username }}</span>
+                        <span style="font-weight:700; margin-left: auto;">{{ user.username }}</span>
                     </div>
                 </div>
                 <div class="element-box">
                     <div style="height: 3rem; display: flex; align-items: center;">
                         <strong style="margin-right: 0.5rem;">EMAIL:</strong>
-                        <span style="font-weight:700">{{ user.email }}</span>
+                        <span style="font-weight:700; margin-left: auto;">{{ user.email }}</span>
                     </div>
                 </div>
                 <div class="element-box" style="margin-top: 1rem;">
                     <div style="height: 3rem; display: flex; align-items: center;">
                         <strong style="margin-right: 0.5rem;">REGISTERED:</strong>
-                        <span style="font-weight:700">{% if user.date_joined %}{{ user.date_joined|date:"d.m.Y" }}{% else %}n/a{% endif %}</span>
+                        <span style="font-weight:700; margin-left: auto;">{% if user.date_joined %}{{ user.date_joined|date:"d.m.Y" }}{% else %}n/a{% endif %}</span>
                     </div>
                 </div>
                 <br/>
                 <div class="element-box" style="margin-top: 1rem;">
                     <div style="height: 3rem; display: flex; align-items: center;">
                         <strong style="margin-right: 0.5rem;">GAMES PLAYED:</strong>
-                        <span style="font-weight:700">{{ user.games_played }}</span>
+                        <span style="font-weight:700; margin-left: auto;">{{ games_played }}</span>
                     </div>
                 </div>
                 <div class="element-box" style="margin-top: 1rem;">
                     <div style="height: 3rem; display: flex; align-items: center;">
                         <strong style="margin-right: 0.5rem;">GAMES WON:</strong>
-                        <span style="font-weight:700">{{ user.games_won }}</span>
+                        <span style="font-weight:700; margin-left: auto;">{{ games_won }}</span>
                     </div>
                 </div>
             </div>
+            <br/>
+            <br/>
             <div style="flex: 3;">
                 <div class="element-box" style="min-height: 180px; display: flex; align-items: flex-start; justify-content: flex-start; padding: 2rem 1.6rem;">
                     <div style="width:100%;">

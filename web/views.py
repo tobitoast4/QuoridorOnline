@@ -75,6 +75,14 @@ def account(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
+    # Calculate games played and won (all time)
+    try:
+        games_played_count = models.GamePlayer.objects.filter(game_user=request.user, lobby__game__isnull=False).count()
+        games_won_count = models.Lobby.objects.filter(game__isnull=False, winner__game_user=request.user).count()
+    except Exception:
+        games_played_count = 0
+        games_won_count = 0
+
     # Collect recent games where the user participated (lobbies with a game)
     recent_games = []
     try:
@@ -93,7 +101,14 @@ def account(request):
     except Exception:
         recent_games = []
 
-    return render(request, 'account.html', {'user': request.user, 'recent_games': recent_games})
+    context = {
+        'user': request.user,
+        'recent_games': recent_games,
+        'games_played': games_played_count,
+        'games_won': games_won_count
+    }
+    return render(request, 'account.html', context)
+
 
 def local(request):
     amount_players = int(request.GET.get("amount_players", 2))

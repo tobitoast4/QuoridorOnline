@@ -3,7 +3,17 @@
     margin-right: 1%;
 }
 
+.element-box-container-flex { 
+    display: inline-block;
+}
+
+
 @media screen and (min-width: 768px) {
+    
+    .element-box-container-flex { 
+        display: flex;
+    }
+
     .element-box-container {
         margin-left: 5%;
         margin-right: 5%;
