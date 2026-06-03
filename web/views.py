@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import user_passes_test
-from django.contrib.auth import logout
+from django.contrib.auth import authenticate, login as auth_login, logout
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -13,8 +13,22 @@ from web.quoridor import deserialize as quoridor_deserialize
 import json
 
 
+
+def login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            auth_login(request, user)
+            return redirect('/')
+        messages.error(request, 'Username or password wrong.')
+        return render(request, 'login.html', {'username': username})
+    return render(request, 'login.html')
+
 def logout_user(request):
     logout(request)
+    messages.success(request, "You have been successfully logged out.")
     return redirect("/")
 
 def home(request):

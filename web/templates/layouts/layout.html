@@ -35,7 +35,8 @@
             {% if messages %}
                 {% for message in messages %}
                     <script>
-                        showNotify("error", "", "{{ message }}", 6);
+                        const notifyType = "{{ message.tags|default:'success' }}" === 'success' ? 'success' : 'error';
+                        showNotify(notifyType, "", "{{ message|escapejs }}", 6);
                     </script>
                 {% endfor %}
             {% endif %}

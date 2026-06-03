@@ -26,5 +26,6 @@ urlpatterns = [
     # path("get_lobby_json", views.get_lobby_json),
 
     
-    path("logout", views.logout_user),
+    path("logout", views.logout_user, name="logout"),
+    path("login", views.login, name="login"),
 ]
