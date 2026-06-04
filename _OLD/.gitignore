@@ -1,6 +1,0 @@
-/.idea
-/venv
-/data
-*.pyc
-.vscode/settings.json
-local/.vscode/settings.json
