@@ -5,9 +5,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Count
 from django.db.models.functions import TruncDate
-from datetime import timedelta
+from datetime import datetime, timedelta
 
-from web import lobby_manager, models
+from web import models
 from dashboard import serialize
 
 
@@ -46,9 +46,9 @@ def dashboard(request):
         "labels": [],
         "data": []
     }
-    if first_lobby_date and last_lobby_date:
+    if first_lobby_date:
         current_date = first_lobby_date.date()
-        end_date = last_lobby_date.date()
+        end_date = datetime.today().date()
         
         while current_date <= end_date:
             count = lobbies_count_dict.get(current_date, 0)
