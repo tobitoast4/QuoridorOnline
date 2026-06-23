@@ -1,7 +1,8 @@
-//var lobbies_in_group = undefined;
-//var labels_as_str = undefined;
-//var data = undefined;
+// var lobbies_in_group = undefined;
+// var labels_as_str = undefined;
+// var data = undefined;
 var labels = [];
+
 // convert labels from string (e.g. "2024-02-23") to Date object)
 for (let i = 0; i < labels_as_str.length; i++) {
     labels.push(new Date(labels_as_str[i]));
@@ -13,29 +14,64 @@ let currently_list_of_lobbies = null;
 var jsonViewer = new JSONViewer();
 document.querySelector("#selected_game_json_container").appendChild(jsonViewer.getContainer());
 
+if (typeof ChartZoom !== 'undefined') {
+    Chart.register(ChartZoom);
+}
+
 const ctx = document.getElementById("lineChart").getContext("2d");
 const lineChart = new Chart(ctx, {
-    type: "bar",
+    type: "line",
     data: {
-    labels: labels,
-    datasets: [
+        labels: labels,
+        datasets: [
             {
                 label: "Amount of games",
                 data: data,
+                fill: false,
+                tension: 0.25,
+                pointRadius: 1,
+                pointHoverRadius: 5
             },
         ],
     },
     options: {
+        responsive: true,
         scales: {
             x: {
                 type: "time",
+                time: {
+                    unit: "day"
+                }
             }
         },
         plugins: {
+            zoom: {
+                pan: {
+                    enabled: true,
+                    mode: 'x',
+                    modifierKey: null,
+                    threshold: 10
+                },
+                zoom: {
+                    wheel: {
+                        enabled: true
+                    },
+                    pinch: {
+                        enabled: true
+                    },
+                    mode: 'x'
+                }
+            },
             tooltip: {
                 enabled: false
             }
         }
+    }
+});
+
+document.getElementById('resetZoomBtn').addEventListener('click', function() {
+    if (typeof lineChart.resetZoom === 'function') {
+        lineChart.resetZoom();
     }
 });
 
@@ -50,7 +86,7 @@ document.getElementById("lineChart").addEventListener("click", function(event) {
         let date = label.toISOString();
         let date_formatted = date.substring(0, date.indexOf('T'));
 
-        currently_list_of_lobbies = lobbies_in_group[date_formatted];
+        currently_list_of_lobbies = lobbies.filter(lobby => lobby.time_created.startsWith(date_formatted));
         fillTableListOfGames();
     }
 });
@@ -74,7 +110,7 @@ function fillTableListOfGames() {
         if (!isNaN(lobby.amount_players)) {
             link_to_game = `
                 <td>
-                    <a href='${server_url}game/${lobby.lobby_id}' target='_blank' style='color: black'>
+                    <a href='/game/${lobby.lobby_id}' target='_blank' style='color: black'>
                         <i class="fa fa-external-link" aria-hidden="true"></i>
                     </a>
                 </td>
@@ -105,25 +141,19 @@ async function getLobbyJson(lobby_id) {
     fillTableListOfGames();  // to remove the old selected color
     $('#row-' + lobby_id).attr("style", "background-color: #D6EEEE");
     try {
-        var response = await fetch(server_url + "get_lobby_json/" + lobby_id, {
+        var response = await fetch("/get_lobby/" + lobby_id, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
             }
         });
         var data = await response.json();
-        jsonViewer.showJSON(data);
+        jsonViewer.showJSON(data["lobby"]);
     } catch (error) {
         console.log(error);
     }
 }
 
 // Initially show all games in the list
-let list_of_all_lobbies = [];
-Object.entries(lobbies_in_group).forEach(([k,value]) => {
-    value.forEach((lobby) => {
-        list_of_all_lobbies.push(lobby);
-    });
-});
-currently_list_of_lobbies = list_of_all_lobbies;
+currently_list_of_lobbies = lobbies;
 fillTableListOfGames();
