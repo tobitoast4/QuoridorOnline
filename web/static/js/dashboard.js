@@ -14,10 +14,6 @@ let currently_list_of_lobbies = null;
 var jsonViewer = new JSONViewer();
 document.querySelector("#selected_game_json_container").appendChild(jsonViewer.getContainer());
 
-if (typeof ChartZoom !== 'undefined') {
-    Chart.register(ChartZoom);
-}
-
 const ctx = document.getElementById("lineChart").getContext("2d");
 const lineChart = new Chart(ctx, {
     type: "line",
@@ -48,8 +44,6 @@ const lineChart = new Chart(ctx, {
             zoom: {
                 pan: {
                     enabled: true,
-                    mode: 'x',
-                    modifierKey: null,
                     threshold: 10
                 },
                 zoom: {
@@ -59,11 +53,18 @@ const lineChart = new Chart(ctx, {
                     pinch: {
                         enabled: true
                     },
+                    drag: {
+                        enabled: true,
+                        backgroundColor: 'rgba(225,225,225,0.15)',
+                        borderColor: 'rgba(225,225,225,0.4)',
+                        threshold: 10,
+                        mode: 'x'
+                    },
                     mode: 'x'
-                }
+                },
             },
             tooltip: {
-                enabled: false
+                enabled: true
             }
         }
     }
