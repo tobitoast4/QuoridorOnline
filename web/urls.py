@@ -20,11 +20,6 @@ urlpatterns = [
     path("change_color", views.change_color),
     path("change_lobby_visibility/<lobby_id>", views.change_lobby_visibility),
     path("change_amount_of_walls_per_player/<lobby_id>", views.change_amount_of_walls_per_player),
-
-
-    path("dashboard", views.dashboard),
-    # path("get_lobby_json", views.get_lobby_json),
-
     
     path("logout", views.logout_user, name="logout"),
     path("account", views.account, name="account"),
