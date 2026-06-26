@@ -1,0 +1,77 @@
+{% extends "layouts/game_layout.html" %}
+{% block body %}
+{% load static %}
+<style>
+    body {
+        margin: 0;
+        background-color: white;
+        overscroll-behavior: contain;
+    }
+</style>
+
+<div class="header-container" id="game-header">
+    <h3 id="players_turn" style="text-align: center; margin: 10px 0;">Place the first player</h3>
+</div>
+
+<canvas></canvas>
+
+<div class="stats-container">
+    <div style="width: 100%; text-align: left; display: flex;">
+        <div style="margin: 16px">
+            <button id="button-sound-mute" onclick="toggleAudio()" class="control-button"></button>
+        </div>
+        <div style="margin: 16px">
+            <button id="button-place-walls" onclick="changePlayState()" class="control-button">
+                Place<br/>wall
+            </button>
+        </div>
+    </div>
+    <div id="game-stats" style="background-color: #bbf7d0;">
+        <div class="stats-padding">
+            <div id="stats_grid" class="stats-grid">
+                <!-- the stats of the players will be placed here (e.g. the remaining walls) (see /js/stats.js) -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="width: 100%;">
+    <div id="notify-holder" class="notify-container"></div>
+</div>
+
+<script src="{% static 'js/header.js' %}"></script>
+<script src="{% static 'js/stats.js' %}"></script>
+<script src="{% static 'js/notify.js' %}"></script>
+<script src="{% static 'js/game_local.js' %}"></script>
+<script src="{% static 'js/settings.js' %}"></script>
+
+<script>
+    var amount_players = {{ amount_players }};
+    if (amount_players > 4 || amount_players < 2) {
+        showNotify("error", "", "Allowed amount of players are 2, 3 or 4.", 6);
+    }
+    var players_names = ["Green", "Red", "Blue", "Purple"];
+
+    var players_start_option_fields = [];
+    players_start_option_fields.push(getFieldsByColOrRow(null, 0));
+    players_start_option_fields.push(getFieldsByColOrRow(null, game_board.amount_fields-1));
+    players_start_option_fields.push(getFieldsByColOrRow(0, null));
+    players_start_option_fields.push(getFieldsByColOrRow(game_board.amount_fields-1, null));
+    var players_win_option_fields = [];
+    players_win_option_fields.push(getFieldsByColOrRow(null, game_board.amount_fields-1));
+    players_win_option_fields.push(getFieldsByColOrRow(null, 0));
+    players_win_option_fields.push(getFieldsByColOrRow(game_board.amount_fields-1, null));
+    players_win_option_fields.push(getFieldsByColOrRow(0, null));
+
+    for (let i = 0; i < amount_players; i++) {
+        let player_name = players_names[i];
+        player = new Player(player_name, player_name.toLowerCase());
+        player.start_option_fields = players_start_option_fields[i];
+        player.win_option_fields = players_win_option_fields[i];
+        players.push(player);
+    }
+    players_action_state = STATE_PLACE_PLAYER;
+
+    refreshPlayerStats();
+</script>
+{% endblock %}

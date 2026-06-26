@@ -1,6 +1,4 @@
-flask~=3.0.0
-werkzeug~=3.0.1
-flask_login
-filelock~=3.13.1
-gunicorn
-pandas
+django==5.2.1
+djangorestframework==3.16.0
+uuid6==2024.7.10
+uwsgi==2.0.31

@@ -1,5 +1,6 @@
 /.idea
 /venv
+/old_games
 /data
 *.pyc
 .vscode/settings.json
