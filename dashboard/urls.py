@@ -1,7 +1,7 @@
-from django.urls import path
+from django.urls import re_path
 from . import views
 
 urlpatterns = [
-    path('', views.dashboard, name='dashboard'),
-    path("get_lobby/<lobby_id>", views.get_lobby),
+    re_path(r'^/?$', views.dashboard, name='dashboard'),
+    re_path(r'^get_lobby/(?P<lobby_id>[^/]+)/?$', views.get_lobby, name='get_lobby'),
 ]
