@@ -36,7 +36,7 @@ def dashboard(request):
         lobbies.append({
             "lobby_id": lobby.id,
             "time_created": lobby.created_at,
-            "amount_players": lobby.gameplayer_set.count(),
+            "amount_players": lobby.gameplayer_set.count() if lobby.game != None else "NaN",
             "game": True if lobby.game else None
         })
 
