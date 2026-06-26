@@ -11,37 +11,49 @@ from web import models
 from dashboard import serialize
 
 
+def parse_date_filter(value):
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, '%Y-%m-%d').date()
+    except ValueError:
+        return None
+
+
 @user_passes_test(lambda u: u.is_superuser)
 def dashboard(request):
+    date_from = parse_date_filter(request.GET.get('date_from'))
+    date_to = parse_date_filter(request.GET.get('date_to'))
+
+    lobbies_queryset = models.Lobby.objects.all()
+    if date_from:
+        lobbies_queryset = lobbies_queryset.filter(created_at__date__gte=date_from)
+    if date_to:
+        lobbies_queryset = lobbies_queryset.filter(created_at__date__lte=date_to)
+
     lobbies = []
-    for lobby in models.Lobby.objects.order_by('-created_at').iterator():
+    for lobby in lobbies_queryset.order_by('-created_at').iterator():
         lobbies.append({
             "lobby_id": lobby.id,
             "time_created": lobby.created_at,
             "amount_players": lobby.gameplayer_set.count(),
             "amount_of_walls_per_player": lobby.amount_of_walls_per_player
         })
-    
-    first_lobby = models.Lobby.objects.order_by('created_at').first()
-    last_lobby = models.Lobby.objects.order_by('-created_at').first()
-    
+
+    first_lobby = lobbies_queryset.order_by('created_at').first()
     first_lobby_date = first_lobby.created_at if first_lobby else None
-    last_lobby_date = last_lobby.created_at if last_lobby else None
-    
-    # Lobbies pro Tag zählen
-    lobbies_per_day_query = models.Lobby.objects.annotate(
+
+    lobbies_per_day_query = lobbies_queryset.annotate(
         date=TruncDate('created_at')
     ).values('date').annotate(
         count=Count('id')
     ).order_by('date')
-    
-    # Dict mit Counts erstellen
+
     lobbies_count_dict = {
         item['date']: item['count']
         for item in lobbies_per_day_query
     }
-    
-    # Alle Tage zwischen erstem und letztem Lobby generieren
+
     lobbies_count_per_day = {
         "labels": [],
         "data": []
@@ -49,7 +61,7 @@ def dashboard(request):
     if first_lobby_date:
         current_date = first_lobby_date.date()
         end_date = datetime.today().date()
-        
+
         while current_date <= end_date:
             count = lobbies_count_dict.get(current_date, 0)
             lobbies_count_per_day["labels"].append(current_date.strftime('%Y-%m-%d'))
@@ -58,7 +70,9 @@ def dashboard(request):
 
     context = {
         "lobbies": lobbies,
-        "lobbies_count_per_day": lobbies_count_per_day
+        "lobbies_count_per_day": lobbies_count_per_day,
+        "date_from": date_from,
+        "date_to": date_to,
     }
     return render(request, 'dashboard.html', context)
 

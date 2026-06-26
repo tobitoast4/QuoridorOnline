@@ -52,8 +52,39 @@
             </div>
             <div style="width: 100%">
                 <div class="widget">
-                    <h2 style="display: inline-block">List of lobbies</h2>
-                    <h2 id="amount_of_lobbies_in_list" style="display: inline-block"></h2>
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px;">
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <h2 style="display:inline-block; margin:0;">List of lobbies</h2>
+                            <h2 id="amount_of_lobbies_in_list" style="display:inline-block; margin:0;"></h2>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <span for="lobbyLimitSelect">Show maximum</span>
+                            <select id="lobbyLimitSelect" style="padding:4px 8px;">
+                                <option value="">----</option>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="35">35</option>
+                                <option value="100">100</option>
+                            </select>
+                            <span>entries</span>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+                        <button type="button" class="time-range-btn" data-range="today" onclick="reloadDashboardWithDateOffset(0)">Today</button>
+                        <button type="button" class="time-range-btn" data-range="7" onclick="reloadDashboardWithDateOffset(7)">Last 7 Days</button>
+                        <button type="button" class="time-range-btn" data-range="30" onclick="reloadDashboardWithDateOffset(30)">Last 30 Days</button>
+                        <button type="button" class="time-range-btn" data-range="365" onclick="reloadDashboardWithDateOffset(365)">Last 365 Days</button>
+                        <button type="button" class="time-range-btn" data-range="365" onclick="reloadDashboardWithDateOffset(null)">All</button>
+                    </div>
+<!-- 
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; align-items:center;">
+                        <label style="font-weight:600;">From <input type="date" id="dateFromInput" value="{{ date_from|default_if_none:'' }}" style="padding:4px 8px;"></label>
+                        <label style="font-weight:600;">To <input type="date" id="dateToInput" value="{{ date_to|default_if_none:'' }}" style="padding:4px 8px;"></label>
+                        <button id="applyDateFilterBtn" type="button">Search</button>
+                        <button id="resetDateFilterBtn" type="button">Reset</button>
+                    </div> -->
+
                     <div id="list_of_games_container">
                         Click one day to see the lobbies
                     </div>

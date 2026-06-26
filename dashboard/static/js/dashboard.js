@@ -14,6 +14,16 @@ let currently_list_of_lobbies = null;
 var jsonViewer = new JSONViewer();
 document.querySelector("#selected_game_json_container").appendChild(jsonViewer.getContainer());
 
+const lobbyLimitSelect = document.getElementById('lobbyLimitSelect');
+let currentPageSize = new URLSearchParams(window.location.search).get('page_size');
+if (currentPageSize) {
+    lobbyLimitSelect.value = currentPageSize;
+}
+
+lobbyLimitSelect.addEventListener('change', function() {
+    setPageSize(this.value);
+});
+
 const ctx = document.getElementById("lineChart").getContext("2d");
 const lineChart = new Chart(ctx, {
     type: "line",
@@ -106,8 +116,14 @@ function fillTableListOfGames() {
         </table>
     `);
     let table_body = $(`<tbody></tbody>`)
+    let i = 0;
     currently_list_of_lobbies.forEach((lobby) => {
-    let link_to_game = "<td></td>";
+        if (currentPageSize && i > currentPageSize) {
+            return;
+        }
+        i++;
+
+        let link_to_game = "<td></td>";
         if (!isNaN(lobby.amount_players)) {
             link_to_game = `
                 <td>
@@ -154,6 +170,43 @@ async function getLobbyJson(lobby_id) {
         console.log(error);
     }
 }
+
+function reloadDashboardWithDateOffset(daysBack) {
+    var url = new URL(window.location);
+
+    if (daysBack === null) {
+        url.searchParams.delete('date_from');
+        window.location.href = url;
+        return;
+    }
+
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() - daysBack);
+
+    const year = targetDate.getFullYear();
+    const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const day = String(targetDate.getDate()).padStart(2, '0');
+    const formattedDate = `${year}-${month}-${day}`;
+
+    url.searchParams.set('date_from', formattedDate);
+    window.location.href = url;
+}
+
+function setPageSize(pageSize) {
+    var url = new URL(window.location);
+
+    if (pageSize == "") {
+        url.searchParams.delete('page_size');
+        currentPageSize = pageSize;
+    } else {
+        url.searchParams.set('page_size', pageSize);
+        currentPageSize = pageSize;
+    }
+    history.pushState({}, "", url);
+
+    fillTableListOfGames();
+}
+
 
 // Initially show all games in the list
 currently_list_of_lobbies = lobbies;
