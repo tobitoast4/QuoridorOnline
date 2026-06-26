@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="{% static 'css/json-viewer.css' %}">
     <script src="{% static 'js/json-viewer.js' %}"></script>
     <script src="{% static 'js/utils.js' %}"></script>
+    <script src="{% static 'js/settings.js' %}"></script>
 </head>
 <body>
     <div id="navbar">
@@ -47,6 +48,7 @@
                     <canvas id="lineChart" width="400" height="200"></canvas>
                     <div style="margin-top: 10px; display: flex; gap: 10px; align-items: center;">
                         <button id="resetZoomBtn" type="button">Reset Zoom</button>
+                        <button id="resetZoomBtn" type="button" onclick="deleteEmptyLobbies()">Clear empty lobbies</button>
                     </div>
                 </div>
             </div>
@@ -111,5 +113,8 @@
         var data = lobbies_count_per_day["data"];
     </script>
     <script src="{% static 'js/dashboard.js' %}"></script>
+    <script>
+        server_url = "{{ request.scheme }}://{{ request.get_host }}/";
+    </script>
 </body>
 </html>

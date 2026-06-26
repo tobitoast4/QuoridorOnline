@@ -76,7 +76,7 @@ def dashboard(request):
     }
     return render(request, 'dashboard.html', context)
 
-@user_passes_test(lambda u: u.is_superuser) # TODO !!
+@user_passes_test(lambda u: u.is_superuser)
 @api_view(['GET'])
 def get_lobby(request, lobby_id=None):
     if lobby_id is None:
@@ -89,3 +89,13 @@ def get_lobby(request, lobby_id=None):
         serializer = serialize.LobbySerializer(the_lobby)
         json_data = serializer.data
         return Response({"lobby": json_data}, 200)
+
+
+@user_passes_test(lambda u: u.is_superuser)
+@api_view(['DELETE'])
+def delete_empty_lobbies(request):
+    lobbies_to_delete = models.Lobby.objects.filter(game__isnull=True).exclude(game="")
+    deleted_count = lobbies_to_delete.count()
+    lobbies_to_delete.delete()
+    return Response({"deleted": deleted_count}, 200)
+

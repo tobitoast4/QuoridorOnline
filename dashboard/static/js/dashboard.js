@@ -1,6 +1,4 @@
-// var lobbies_in_group = undefined;
-// var labels_as_str = undefined;
-// var data = undefined;
+var server_url = null;
 var labels = [];
 
 // convert labels from string (e.g. "2024-02-23") to Date object)
@@ -205,6 +203,23 @@ function setPageSize(pageSize) {
     history.pushState({}, "", url);
 
     fillTableListOfGames();
+}
+
+async function deleteEmptyLobbies() {
+    try {
+        var response = await fetch(server_url + "dashboard/delete_empty_lobbies/" , {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie("csrftoken", ""),
+                'Content-Type': 'application/json',
+            }
+        });
+        await response.json();
+    } catch (error) {
+        console.log(error);
+    }
+
+    window.location = window.location;
 }
 
 
