@@ -37,7 +37,7 @@ def dashboard(request):
             "lobby_id": lobby.id,
             "time_created": lobby.created_at,
             "amount_players": lobby.gameplayer_set.count(),
-            "amount_of_walls_per_player": lobby.amount_of_walls_per_player
+            "game": True if lobby.game else None
         })
 
     first_lobby = lobbies_queryset.order_by('created_at').first()

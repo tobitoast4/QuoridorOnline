@@ -124,7 +124,7 @@ function fillTableListOfGames() {
         i++;
 
         let link_to_game = "<td></td>";
-        if (!isNaN(lobby.amount_players)) {
+        if (lobby.game) {
             link_to_game = `
                 <td>
                     <a href='/game/${lobby.lobby_id}' target='_blank' style='color: black'>
