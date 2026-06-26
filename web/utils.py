@@ -122,6 +122,7 @@ def create_lobby_from_json(payload: Dict[str, Any]):
             game=game_json,
             created_at=datetime.fromtimestamp(created_at) if created_at is not None else None,
         )
+    
 
     owner_user = None
     if owner_uuid in player_records:

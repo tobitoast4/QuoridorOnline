@@ -13,7 +13,7 @@ class WebConfig(AppConfig):
         from . import models
         from web.utils import create_lobby_from_json
 
-        # return
+        return
         for datei in Path("old_games").iterdir():
             if datei.is_file():
                 # try:
