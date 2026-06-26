@@ -11,14 +11,6 @@
     <h2>LOGIN</h2>
     <br/>
     <br/>
-    {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-                <div class="message {{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        </div>
-        <br/>
-    {% endif %}
     <form method="post" action="{% url 'login' %}">
         {% csrf_token %}
         Username
