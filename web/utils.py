@@ -68,36 +68,24 @@ def delete_json_files_without_game():
             print(f"Fehler bei {json_file.name}: {e}")
 
 
-# #send email
-# import smtplib
-# from email.mime.multipart import MIMEMultipart
-# from email.mime.text import MIMEText
-# server = smtplib.SMTP('smtp.ionos.de', 587)
-#
-# name="Tobi" #You need to fill the name here
-# server.connect('smtp.ionos.de', 587)
-# server.starttls()
-# server.ehlo()
-# server.login("support@quoridoronline.com", "A16...")
-# TOADDR = "tobi.zillmann@gmail.com"
-# FromADDR = "support@quoridoronline.com"
-# msg = MIMEMultipart('alternative')
-# msg['Subject'] = "email subject here"
-# msg['From'] = FromADDR
-# msg['To'] = f"{TOADDR},support@quoridoronline.com"
-# #The below is email body
-# html = """\
-#             <html>
-#               <body>
-#                 <p><span style="color: rgb(0,0,0);">Dear {0},</span></p>
-#                <p>
-#                   your email body
-#                 </p>
-#                 <p>Kind Regards,<br />
-#                 Your name ....
-#                 </p>
-#                 </body>
-#             </html>
-#             """.format(name.split()[0])
-# msg.attach(MIMEText(html, 'html'))
-# server.sendmail(FromADDR, TOADDR, msg.as_string())
+#send email
+import smtplib, os
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+smtp = smtplib.SMTP('smtp.ionos.de', 587)
+
+def send_email(content):
+    name="Tobi" #You need to fill the name here
+    smtp.connect('smtp.ionos.de', 587)
+    smtp.starttls()
+    smtp.ehlo()
+    password = os.getenv("IONOS_PASSWORD")
+    if password is None:
+        return
+    smtp.login("support@quoridoronline.com", password)
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = "email subject here"
+    msg['From'] = "support@quoridoronline.com"
+    msg['To'] = "tobi83301@gmail.com"
+    msg.set_content("Hallo, das ist eine Test-E-Mail.")
+    smtp.send_message(msg)
