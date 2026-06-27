@@ -23,7 +23,7 @@ class Lobby(models.Model):
     created_by = models.ForeignKey(GameUser, related_name='created_by', null=True, blank=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(GamePlayer, related_name='owner', null=True, blank=True, on_delete=models.SET_NULL)
     amount_of_walls_per_player = models.IntegerField(default=10)
-    is_private = models.BooleanField(default=True)
+    is_private = models.BooleanField(default=False)
     game = models.TextField(blank=True, null=True)
     winner = models.ForeignKey(GamePlayer, related_name='winner', null=True, blank=True, on_delete=models.SET_NULL)
 
