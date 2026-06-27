@@ -84,8 +84,8 @@ def send_email(content):
         return
     smtp.login("support@quoridoronline.com", password)
     msg = MIMEMultipart('alternative')
-    msg['Subject'] = "email subject here"
+    msg['Subject'] = "NEW LOBBY"
     msg['From'] = "support@quoridoronline.com"
     msg['To'] = "tobi83301@gmail.com"
-    msg.set_content("Hallo, das ist eine Test-E-Mail.")
+    msg.attach(MIMEText(content, "plain"))
     smtp.send_message(msg)
