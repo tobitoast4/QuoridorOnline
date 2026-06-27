@@ -68,24 +68,25 @@ def delete_json_files_without_game():
             print(f"Fehler bei {json_file.name}: {e}")
 
 
-#send email
 import smtplib, os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 smtp = smtplib.SMTP('smtp.ionos.de', 587)
 
 def send_email(content):
-    name="Tobi" #You need to fill the name here
-    smtp.connect('smtp.ionos.de', 587)
-    smtp.starttls()
-    smtp.ehlo()
-    password = os.getenv("IONOS_PASSWORD")
-    if password is None:
-        return
-    smtp.login("support@quoridoronline.com", password)
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = "NEW LOBBY"
-    msg['From'] = "support@quoridoronline.com"
-    msg['To'] = "tobi83301@gmail.com"
-    msg.attach(MIMEText(content, "plain"))
-    smtp.send_message(msg)
+    try:
+        smtp.connect('smtp.ionos.de', 587)
+        smtp.starttls()
+        smtp.ehlo()
+        password = os.getenv("IONOS_PASSWORD")
+        if password is None:
+            return
+        smtp.login("support@quoridoronline.com", password)
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = "NEW LOBBY"
+        msg['From'] = "support@quoridoronline.com"
+        msg['To'] = "tobi83301@gmail.com"
+        msg.attach(MIMEText(content, "plain"))
+        smtp.send_message(msg)
+    except Exception as e:
+        print(f"Error sending email: {e}")
