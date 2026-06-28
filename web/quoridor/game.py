@@ -13,6 +13,7 @@ class Game:
         self.game_board = game_board.GameBoard(gameplayers, amount_walls, skip_user_check)
         self.state = STATE_PLACING_PLAYERS
         self.its_this_players_turn = 0
+        self.surrenderes_players = []
         self.turn = 0
         self.game_data = {
             "next_lobby_id": next_lobby_id,
@@ -20,6 +21,21 @@ class Game:
             "game": []
         }
         self._append_game_data()
+
+    def surrender(self, user_id, lobby):
+        """Can be used to surrender from the game."""
+        if self._get_current_player().gameplayer.game_user.id != user_id:
+            raise QuoridorOnlineGameError("It's not your turn currently")
+        player = self._get_player_of_user(user_id)
+        self.surrenderes_players.append(player)
+        if len(self.surrenderes_players) == len(self.game_board.players)-1:
+            self.state = STATE_PLAYER_DID_WIN
+            for player in self.game_board.players:
+                if player not in self.surrenderes_players:
+                    lobby.winner = player.gameplayer
+                    lobby.save()
+                    break
+        self._next_players_turn()
 
     def move_player(self, user_id, lobby, new_field_col, new_field_row):
         """Can be used to move a player."""
@@ -71,7 +87,11 @@ class Game:
         return None
 
     def _get_current_player(self):
-        return self.game_board.players[self.its_this_players_turn]
+        player = self.game_board.players[self.its_this_players_turn]
+        if player in self.surrenderes_players:
+            self._next_players_turn()
+            return self._get_current_player()
+        return player
 
     def _append_game_data(self):
         self.game_data["game"].append({

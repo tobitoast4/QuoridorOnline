@@ -109,6 +109,26 @@ async function placeWallAsync(player_id, col_start, row_start, col_end, row_end)
     }
 }
 
+async function surrenderAsync() {
+    try {
+        var response = await fetch(server_url + "game_surrender/" + current_lobby_id, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie("csrftoken", ""),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                "user_id": this_player_id
+            })
+        });
+        data = await response.json();
+        throwOnError(data);
+    } catch (error) {
+        showNewError(error);
+        updateGame(round_diff=1);  // when user views previous rounds and fails to surrender
+    }
+}
+
 async function createPlayers() {
     var game_data = await getGameDataAsync();
     var initial_setup_json = game_data["initial_setup"]; //TODO: Use the amount fields property??
