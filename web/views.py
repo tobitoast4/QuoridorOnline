@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login as auth_login, logout
 from django.http import HttpResponse, FileResponse
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.contrib import messages
 
@@ -145,6 +146,7 @@ def lobby(request, lobby_id=None):
         return render(request, "lobby.html", context)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_lobby(request, lobby_id=None):
     if lobby_id is None:
         messages.add_message(request, messages.ERROR, f"The lobby with id {lobby_id} does not exist.")
