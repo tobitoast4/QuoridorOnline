@@ -110,8 +110,12 @@ function toggleAudio() {
 }
 
 function playAudio() {
-    let audio_level = getSliderValue("audio");
-    var audio = new Audio('/static/res/' + getCookie(cookie_name_audio_file, ""));
-    audio.volume = (audio_level / 100);
-    audio.play();
+    try {
+        let audio_level = getSliderValue("audio");
+        var audio = new Audio('/static/res/' + getCookie(cookie_name_audio_file, ""));
+        audio.volume = (audio_level / 100);
+        audio.play();
+    } catch (error) {
+        if (error instanceof NotAllowedError) { }
+    }
 }
