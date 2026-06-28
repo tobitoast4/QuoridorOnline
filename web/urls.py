@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('', views.home, name='home'),
+    re_path(r'^ads.txt', views.ads_txt, name='ads_txt'),
     re_path(r'^local/?$', views.local, name='local'),
     re_path(r'^how-to-play/?$', views.how_to_play, name='how_to_play'),
     re_path(r'^about/?$', views.about, name='about'),

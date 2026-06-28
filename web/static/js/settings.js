@@ -5,7 +5,7 @@ let button_size_value = getSliderValue("buttonsize");
 setButtonSizes(button_size_value);
 
 // initially set audio file
-setCookie(cookie_name_audio_file, "normal_clack.wav");
+setCookie(cookie_name_audio_file, "blob.wav");
 
 
 function setCookie(cookie_name, value) {

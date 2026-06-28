@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login as auth_login, logout
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib import messages
@@ -269,3 +269,10 @@ def change_color(request):
         "status": f"Color successfully updated",
         "color": new_color
     }, 200)
+
+
+def ads_txt(request):
+    return FileResponse(
+        open("web/static/ads.txt", "rb"),
+        content_type="text/plain"
+    )
