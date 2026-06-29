@@ -27,6 +27,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-secret-key")
 DEBUG = os.getenv("DJANGO_DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = ['*']
+X_FRAME_OPTIONS = "ALLOWALL"
 
 AUTH_USER_MODEL = 'web.GameUser'
 
