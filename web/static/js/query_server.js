@@ -385,11 +385,11 @@ async function getLobbyAsync() {
             if (data.lobby.game) {
                 window.location.replace(server_url + data.lobby.game);
             } else {
-                var lobby_owner_id = data.lobby.owner.id;
+                var lobby_owner_id = data.lobby.owner.game_user.id;
                 var list_of_players = $('#list_of_players');
                 list_of_players.empty();
                 data.lobby.gameplayer_set.forEach(player => {
-                    if (player.id == lobby_owner_id) {
+                    if (player.game_user.id == lobby_owner_id) {
                         list_of_players.append("<div style='display: flex; padding: 10px 0; word-wrap: anywhere;'>" +
                                                     "<div class='color-of-user-in-list' style='background-color: " + player.color + "'></div>" +
                                                     player.game_user.username +
