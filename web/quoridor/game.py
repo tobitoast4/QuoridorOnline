@@ -26,8 +26,8 @@ class Game:
         if self._get_current_player().gameplayer.game_user.id != user_id:
             raise QuoridorOnlineGameError("It's not your turn currently")
         player = self._get_player_of_user(user_id)
-        if player.gameplayer.has_surrendered:
-            raise QuoridorOnlineGameError("You have surrendered already")
+        # if player.gameplayer.has_surrendered:
+        #     raise QuoridorOnlineGameError("You have surrendered already")
         player.remove_from_field()  # a surrendered player should not block other players
         player.gameplayer.has_surrendered = True
         player.gameplayer.save()
@@ -44,8 +44,8 @@ class Game:
         if self._get_current_player().gameplayer.game_user.id != user_id:
             raise QuoridorOnlineGameError("It's not your turn currently")
         player = self._get_player_of_user(user_id)
-        if player.gameplayer.has_surrendered:
-            raise QuoridorOnlineGameError("You have surrendered already")
+        # if player.gameplayer.has_surrendered:
+        #     raise QuoridorOnlineGameError("You have surrendered already")
         new_field = self.game_board.getFieldByColAndRow(new_field_col, new_field_row)
         if self.state == STATE_PLACING_PLAYERS:
             player.move_to_field(new_field, True)
@@ -67,8 +67,8 @@ class Game:
             if self._get_current_player().amount_walls_left <= 0:
                 raise QuoridorOnlineGameError("You do not have any more walls left")
         player = self._get_player_of_user(user_id)
-        if player.gameplayer.has_surrendered:
-            raise QuoridorOnlineGameError("You have surrendered already")
+        # if player.gameplayer.has_surrendered:
+        #     raise QuoridorOnlineGameError("You have surrendered already")
         new_wall = wall.Wall(user_id, col_start, row_start, col_end, row_end, self.game_board)
         self.game_board.walls.append(new_wall)
         path_checker = PathChecker()
