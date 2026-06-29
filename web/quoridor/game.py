@@ -129,11 +129,12 @@ class PathChecker:
 
     def check_if_path_to_win_exists_for_all_players(self, players):
         for player in players:
-            self.path_found = False
-            self.fields_visited = []
-            self.check_if_path_to_win_exists(player.field, player.win_option_fields)
-            if self.path_found == False:  # after check_if_path_to_win_exists() this should be set
-                return False              # to true if there is a path
+            if not player.gameplayer.has_surrendered:
+                self.path_found = False
+                self.fields_visited = []
+                self.check_if_path_to_win_exists(player.field, player.win_option_fields)
+                if self.path_found == False:  # after check_if_path_to_win_exists() this should be set
+                    return False              # to true if there is a path
         return True
 
     def check_if_path_to_win_exists(self, field, fields_to_win):
