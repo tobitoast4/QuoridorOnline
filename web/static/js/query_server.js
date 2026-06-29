@@ -60,7 +60,7 @@ async function getGameDataAsync() {
         showNewError(error);
     }
 
-    return data_to_be_returned;
+    return data_to_be_returned["lobby"];
 }
 
 async function movePlayerAsync(player_id, new_field_col_num, new_field_row_num) {
@@ -109,8 +109,29 @@ async function placeWallAsync(player_id, col_start, row_start, col_end, row_end)
     }
 }
 
+async function surrenderAsync() {
+    try {
+        var response = await fetch(server_url + "game_surrender/" + current_lobby_id, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie("csrftoken", ""),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                "user_id": this_player_id
+            })
+        });
+        data = await response.json();
+        throwOnError(data);
+    } catch (error) {
+        showNewError(error);
+        updateGame(round_diff=1);  // when user views previous rounds and fails to surrender
+    }
+}
+
 async function createPlayers() {
-    var game_data = await getGameDataAsync();
+    var complete_game_data = await getGameDataAsync();
+    let game_data = complete_game_data["game"];
     var initial_setup_json = game_data["initial_setup"]; //TODO: Use the amount fields property??
     var players_json = initial_setup_json["players"];
     for (var p = 0; p < players_json.length; p++) {
@@ -118,7 +139,7 @@ async function createPlayers() {
         var player = new Player(player_json.user.game_user.id,
                                 player_json.user.game_user.username,
                                 player_json.amount_walls_left,
-                                player_json.user.color,);
+                                player_json.user.color);
 
         // Add start_ and win_option_fields
         for (var i = 0; i < player_json["start_option_fields"].length; i++) {
@@ -149,10 +170,11 @@ async function updateGame(round_diff=0, play_audio=true) {
     // use round_diff=3 to actively load the round before last round
     // ......
     let new_complete_game_data = await getGameDataAsync();
-    let fetched_game_data_is_new = JSON.stringify(new_complete_game_data) != JSON.stringify(complete_game_data);
+    let new_game_data = new_complete_game_data["game"];
+    let fetched_game_data_is_new = JSON.stringify(new_game_data) != JSON.stringify(complete_game_data);
 
     if (next_lobby_id == null){
-        next_lobby_id = new_complete_game_data["next_lobby_id"];
+        next_lobby_id = new_game_data["next_lobby_id"];
     }
     if (fetched_game_data_is_new) {
         current_round_diff = 0;  // defined in game_online.js
@@ -162,7 +184,7 @@ async function updateGame(round_diff=0, play_audio=true) {
         if (play_audio) {
             playAudio();
         }
-        complete_game_data = new_complete_game_data;
+        complete_game_data = new_game_data;
         game_data = complete_game_data["game"];
 
         if (round_diff <= 1) {
@@ -199,12 +221,14 @@ async function updateGame(round_diff=0, play_audio=true) {
             players_action_state = current_game_data["state"];
             its_this_players_turn = current_game_data["its_this_players_turn"];
             if (players_action_state == 2) {
-                let last_players_turn = its_this_players_turn - 1;
-                if (last_players_turn < 0) {
-                    last_players_turn = players.length - 1;
+                if (new_complete_game_data.winner != null) {
+                    let winner = new_complete_game_data.winner;
+                    let colored_name = $(`
+                        <span class="font-effect-outline" style="font-weight: 100; color: ${winner.color}">${winner.game_user.username}</span>
+                    `);
+                    console.log(winner);
+                    updatePlayerWonTheGame(colored_name);
                 }
-                last_player = players[last_players_turn];
-                updatePlayerWonTheGame(last_player.name);
             } else {
                 player = players[its_this_players_turn];
                 updatePlayersTurnInstruction(player);

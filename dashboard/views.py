@@ -7,8 +7,7 @@ from django.db.models import Count
 from django.db.models.functions import TruncDate
 from datetime import datetime, timedelta
 
-from web import models
-from dashboard import serialize
+from web import models, serialize
 
 
 def parse_date_filter(value):
@@ -75,20 +74,6 @@ def dashboard(request):
         "date_to": date_to,
     }
     return render(request, 'dashboard.html', context)
-
-@user_passes_test(lambda u: u.is_superuser)
-@api_view(['GET'])
-def get_lobby(request, lobby_id=None):
-    if lobby_id is None:
-        return Response({"error": "No lobby ID provided"}, 400)
-    else:
-        try:
-            the_lobby = models.Lobby.objects.get(id=lobby_id)
-        except models.Lobby.DoesNotExist:
-            return Response({"error": "Lobby not found"}, 404)
-        serializer = serialize.LobbySerializer(the_lobby)
-        json_data = serializer.data
-        return Response({"lobby": json_data}, 200)
 
 
 @user_passes_test(lambda u: u.is_superuser)

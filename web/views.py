@@ -14,6 +14,7 @@ from web import serialize
 from web import utils, lobby_manager
 from web.quoridor import game as quoridor_game
 from web.quoridor import deserialize as quoridor_deserialize
+import dashboard.views
 
 
 
@@ -191,10 +192,16 @@ def game(request, lobby_id=None):
 
 @api_view(['GET'])
 def get_game_data(request, lobby_id=None):
-    the_lobby = models.Lobby.objects.get(pk=lobby_id)
-    # if the_lobby is None:
-    #     return {"error": f"The lobby with id {lobby_id} does not exist."}, 502
-    return Response(json.loads(the_lobby.game), 200)
+    if lobby_id is None:
+        return Response({"error": "No lobby ID provided"}, 400)
+    else:
+        try:
+            the_lobby = models.Lobby.objects.get(id=lobby_id)
+        except models.Lobby.DoesNotExist:
+            return Response({"error": "Lobby not found"}, 404)
+        serializer = serialize.LobbySerializer(the_lobby)
+        json_data = serializer.data
+        return Response({"lobby": json_data}, 200)
 
 @api_view(['POST'])
 def game_move_player(request, lobby_id=None):
@@ -221,6 +228,16 @@ def game_place_wall(request, lobby_id=None):
     the_lobby.game = json.dumps(the_game.game_data, cls=utils.UUIDEncoder)
     the_lobby.save()
     return Response({"status": "wall placed"}, 200)
+
+@api_view(['POST'])
+def game_surrender(request, lobby_id=None):
+    the_lobby = models.Lobby.objects.get(pk=lobby_id)
+    the_game_json = json.loads(the_lobby.game)
+    the_game = quoridor_deserialize.create_game_from_json(the_game_json)
+    the_game.surrender(request.user.id, the_lobby)
+    the_lobby.game = json.dumps(the_game.game_data, cls=utils.UUIDEncoder)
+    the_lobby.save()
+    return Response({"status": "player surrendered"}, 200)
 
 @api_view(['POST'])
 def change_lobby_visibility(request, lobby_id=None):
@@ -252,7 +269,7 @@ def rename_player(request):
         raise ValueError("User name can not be empty")
     if len(new_user_name) > 64:
         raise ValueError("User name is too long")
-    # TODO: XSS Check
+    # TODO: XSS Check  # TODO player name unique
     request.user.username = new_user_name
     request.user.save()
     return Response({"status": f"Player name successfully changed to {new_user_name}"}, 200)

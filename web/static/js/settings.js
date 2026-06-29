@@ -58,7 +58,7 @@ function setButtonSizes(value) {
     // set button sizes initially
     // value should be something between 0 and 150
     ["button-inspect-previous-round", "button-inspect-next-round", "button-inspect-current-round",
-    "button-place-walls", "button-settings", "button-toggle-wall-color"].forEach(button_id => {
+    "button-place-walls", "button-settings", "button-toggle-wall-color", "button-surrender"].forEach(button_id => {
         const initial_button_size = 81;
         const initial_font_size = 16;
         const initial_icon_size = 32;
