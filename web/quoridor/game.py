@@ -32,10 +32,10 @@ class Game:
         player.gameplayer.has_surrendered = True
         player.gameplayer.save()
         # List of players who have not surrendered yet
-        surrendered_players = [p for p in self.game_board.players if not p.gameplayer.has_surrendered]
-        if len(surrendered_players) == 1:
+        not_surrendered_players = [p for p in self.game_board.players if not p.gameplayer.has_surrendered]
+        if len(not_surrendered_players) == 1:
             self.state = STATE_PLAYER_DID_WIN
-            lobby.winner = player.gameplayer
+            lobby.winner = not_surrendered_players[0].gameplayer
             lobby.save()
         self._next_players_turn()
 
@@ -92,7 +92,7 @@ class Game:
 
     def _get_player_of_user(self, user_id):
         for player in self.game_board.players:
-            if player.gameplayer.game_user.id == user_id:
+            if str(player.gameplayer.game_user.id) == str(user_id):
                 return player
         return None
 
