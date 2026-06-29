@@ -205,7 +205,7 @@ async function updateGame(round_diff=0, play_audio=true) {
             console.log(players_field);
             if (players_field == null) {
                 if (player_json.user.has_surrendered) {
-                    this.removePlayer(player_json.user.game_user.id);
+                    this.removePlayer(player_json.user.game_user.id, player_json.user);
                 }
             } else {
                 this.updatePlayer(player_json.user.game_user.id,
@@ -233,7 +233,6 @@ async function updateGame(round_diff=0, play_audio=true) {
                     let colored_name = $(`
                         <span class="font-effect-outline" style="font-weight: 100; color: ${winner.color}">${winner.game_user.username}</span>
                     `);
-                    console.log(winner);
                     updatePlayerWonTheGame(colored_name);
                 }
             } else {
@@ -273,13 +272,17 @@ function updatePlayer(player_id, players_field, amount_walls_left, move_options)
     }
 }
 
-function removePlayer(player_id) {
+function removePlayer(player_id, player) {
     // get the correct player in the game
     for (var p = 0; p < players.length; p++) {
         var the_player = players[p];
         if (the_player.player_id == player_id && the_player.field != null) {
             the_player.field.player = null;
             the_player.field = null;
+            let colored_name = `
+                <span class="font-effect-outline" style="font-weight: 100; color: ${player.color}">${player.game_user.username}</span>
+            `;
+            showNotify("info", "", colored_name + " has surrendered", 6);
             break;
         }
     }

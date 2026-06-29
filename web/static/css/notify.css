@@ -38,6 +38,9 @@
 .alert.error {
     background-color: #f44336;
 }
+.alert.info {
+    background-color: #456986;
+}
 
 .close-btn {
     margin-left: 15px;
