@@ -192,11 +192,16 @@ def game(request, lobby_id=None):
 
 @api_view(['GET'])
 def get_game_data(request, lobby_id=None):
-    return dashboard.views.get_lobby_json(request, lobby_id)
-    the_lobby = models.Lobby.objects.get(pk=lobby_id)
-    # if the_lobby is None:
-    #     return {"error": f"The lobby with id {lobby_id} does not exist."}, 502
-    return Response(json.loads(the_lobby.game), 200)
+    if lobby_id is None:
+        return Response({"error": "No lobby ID provided"}, 400)
+    else:
+        try:
+            the_lobby = models.Lobby.objects.get(id=lobby_id)
+        except models.Lobby.DoesNotExist:
+            return Response({"error": "Lobby not found"}, 404)
+        serializer = serialize.LobbySerializer(the_lobby)
+        json_data = serializer.data
+        return Response({"lobby": json_data}, 200)
 
 @api_view(['POST'])
 def game_move_player(request, lobby_id=None):

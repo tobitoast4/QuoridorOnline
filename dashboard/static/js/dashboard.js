@@ -156,7 +156,7 @@ async function getLobbyJson(lobby_id) {
     fillTableListOfGames();  // to remove the old selected color
     $('#row-' + lobby_id).attr("style", "background-color: #D6EEEE");
     try {
-        var response = await fetch("/dashboard/get_lobby/" + lobby_id, {
+        var response = await fetch("/get_game_data/" + lobby_id, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'

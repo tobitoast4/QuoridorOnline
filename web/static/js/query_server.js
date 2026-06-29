@@ -139,7 +139,7 @@ async function createPlayers() {
         var player = new Player(player_json.user.game_user.id,
                                 player_json.user.game_user.username,
                                 player_json.amount_walls_left,
-                                player_json.user.color,);
+                                player_json.user.color);
 
         // Add start_ and win_option_fields
         for (var i = 0; i < player_json["start_option_fields"].length; i++) {
@@ -224,7 +224,7 @@ async function updateGame(round_diff=0, play_audio=true) {
                 if (new_complete_game_data.winner != null) {
                     let winner = new_complete_game_data.winner;
                     let colored_name = $(`
-                        <span class="font-effect-outline" style="font-weight: 100; color: ${winner.color}">${winner.username}</span>
+                        <span class="font-effect-outline" style="font-weight: 100; color: ${winner.color}">${winner.game_user.username}</span>
                     `);
                     console.log(winner);
                     updatePlayerWonTheGame(colored_name);
