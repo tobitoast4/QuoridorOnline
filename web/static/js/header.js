@@ -10,10 +10,10 @@ function updatePlayersTurnInstruction(player){
 }
 
 function updatePlayerWonTheGame(player_name){
-    $('#players_turn').html("" + player_name + " won the game!");
+    $('#players_turn').empty().append(player_name.clone()).append(" won the game!");
 
     $('#game_over_overlay').removeAttr("style");
-    $('#game_over_overlay_text').text("" + player_name + " won the game!");
+    $('#game_over_overlay_text').empty().append(player_name.clone()).append(" won the game!");
 }
 
 function closeGameOverScreen(){
