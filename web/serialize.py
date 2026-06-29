@@ -15,7 +15,7 @@ class GamePlayerSerializer(serializers.ModelSerializer):
     game_user = GameUserSerializer(required=False)
     class Meta:
         model = models.GamePlayer
-        fields = ["id", "game_user", "color"]
+        exclude = ["lobby", "last_seen"]
         depth = 1
 
     # def to_representation(self, instance):

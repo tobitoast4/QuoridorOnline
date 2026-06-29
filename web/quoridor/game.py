@@ -13,7 +13,6 @@ class Game:
         self.game_board = game_board.GameBoard(gameplayers, amount_walls, skip_user_check)
         self.state = STATE_PLACING_PLAYERS
         self.its_this_players_turn = 0
-        self.surrenderes_players = []
         self.turn = 0
         self.game_data = {
             "next_lobby_id": next_lobby_id,
@@ -27,14 +26,15 @@ class Game:
         if self._get_current_player().gameplayer.game_user.id != user_id:
             raise QuoridorOnlineGameError("It's not your turn currently")
         player = self._get_player_of_user(user_id)
-        self.surrenderes_players.append(player)
-        if len(self.surrenderes_players) == len(self.game_board.players)-1:
+        player.remove_from_field()  # a surrendered player should not block other players
+        player.gameplayer.has_surrendered = True
+        player.gameplayer.save()
+        # List of players who have not surrendered yet
+        surrendered_players = [p for p in self.game_board.players if not p.gameplayer.has_surrendered]
+        if len(surrendered_players) == 1:
             self.state = STATE_PLAYER_DID_WIN
-            for player in self.game_board.players:
-                if player not in self.surrenderes_players:
-                    lobby.winner = player.gameplayer
-                    lobby.save()
-                    break
+            lobby.winner = player.gameplayer
+            lobby.save()
         self._next_players_turn()
 
     def move_player(self, user_id, lobby, new_field_col, new_field_row):
@@ -78,6 +78,9 @@ class Game:
         if self.its_this_players_turn >= len(self.game_board.players):
             self.its_this_players_turn = 0
             self.turn += 1
+        player = self.game_board.players[self.its_this_players_turn]
+        if player.gameplayer.has_surrendered:
+            self._next_players_turn()  # skip this player, as he has surrendered
         self._append_game_data()
 
     def _get_player_of_user(self, user_id):
@@ -88,7 +91,7 @@ class Game:
 
     def _get_current_player(self):
         player = self.game_board.players[self.its_this_players_turn]
-        if player in self.surrenderes_players:
+        if player.gameplayer.has_surrendered:
             self._next_players_turn()
             return self._get_current_player()
         return player

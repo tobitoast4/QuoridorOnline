@@ -139,7 +139,8 @@ async function createPlayers() {
         var player = new Player(player_json.user.game_user.id,
                                 player_json.user.game_user.username,
                                 player_json.amount_walls_left,
-                                player_json.user.color);
+                                player_json.user.color, 
+                                player_json.user.has_surrendered);
 
         // Add start_ and win_option_fields
         for (var i = 0; i < player_json["start_option_fields"].length; i++) {
@@ -200,7 +201,13 @@ async function updateGame(round_diff=0, play_audio=true) {
         let players_json = current_game_data.game_board.players;
         players_json.forEach(player_json => {
             let players_field = player_json["field"];
-            if (players_field != null) {
+            console.log(player_json.user.game_user.username + " has surrendered: " + player_json.user.has_surrendered);
+            console.log(players_field);
+            if (players_field == null) {
+                if (player_json.user.has_surrendered) {
+                    this.removePlayer(player_json.user.game_user.id);
+                }
+            } else {
                 this.updatePlayer(player_json.user.game_user.id,
                                   players_field,
                                   player_json["amount_walls_left"],
@@ -261,6 +268,18 @@ function updatePlayer(player_id, players_field, amount_walls_left, move_options)
                 new_move_options.push(field);
             });
             the_player.move_option_fields = new_move_options;
+            break;
+        }
+    }
+}
+
+function removePlayer(player_id) {
+    // get the correct player in the game
+    for (var p = 0; p < players.length; p++) {
+        var the_player = players[p];
+        if (the_player.player_id == player_id && the_player.field != null) {
+            the_player.field.player = null;
+            the_player.field = null;
             break;
         }
     }

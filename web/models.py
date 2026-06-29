@@ -16,6 +16,7 @@ class GamePlayer(models.Model):
     lobby = models.ForeignKey('Lobby', null=True, blank=True, on_delete=models.CASCADE)
     color = models.CharField(max_length=15, default=utils.get_random_color)
     last_seen = models.IntegerField(default=time.time)
+    has_surrendered = models.BooleanField(default=False)
 
 class Lobby(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid6.uuid8, editable=False)

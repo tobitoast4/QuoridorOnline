@@ -74,7 +74,7 @@ document.addEventListener("mousemove", function(event) {
 
 document.addEventListener("mouseup", function(event) {
     if (!is_overlay_menu_open) {
-        current_player = players[its_this_players_turn];
+        current_player = currentPlayer();
         if (players_action_state == STATE_PLACE_PLAYER) {
             field_clicked = getFieldByCoordinates(event.x + window.scrollX, event.y + window.scrollY);
             if (field_clicked != null) {
@@ -193,7 +193,7 @@ function Field(x, y, col_num, row_num) {
     }
 }
 
-function Player(player_id, name, amount_walls_left, color) {
+function Player(player_id, name, amount_walls_left, color, has_surrendered) {
     this.player_id = player_id;
     this.name = name;
     this.color = color;
@@ -203,6 +203,7 @@ function Player(player_id, name, amount_walls_left, color) {
     this.start_option_fields = [];  // the fields this player is allowed to start from needs to reach for win
     this.win_option_fields = [];  // the fields this player needs to reach for win
     this.move_option_fields = [];  // the fields this player can move to in the next round
+    this.has_surrendered = has_surrendered;
 
     this.draw = function() {
         if (this.field != null) {  // if player is not placed yet, dont draw it
@@ -447,11 +448,16 @@ function viewPreviousOrNextGameRound(round_diff) {
 function itsLoggedInPlayersTurn(field, fields_to_win) {
     // Indicates if the currently logged in player is at turn.
     // Returns ture if yes, false if no.
-    if (this_player_id == players[its_this_players_turn].player_id) {  // it's the other players turn
+    if (this_player_id == currentPlayer().player_id) {  // it's the other players turn
         return true;
     } else {
         return false;
     }
+}
+
+function currentPlayer() {
+    player = players[its_this_players_turn];
+    return player;
 }
 
 
@@ -531,11 +537,11 @@ function animate(){
             last_wall.wall.drawOnHover();
         } else if (players_action_state == STATE_PLACE_PLAYER) {
             if (itsLoggedInPlayersTurn() && current_round_diff == 0) {
-                players[its_this_players_turn].drawMoveOptions(true);
+                currentPlayer().drawMoveOptions(true);
             }
         } else if (players_action_state != STATE_PLAYER_DID_WIN) {
             if (itsLoggedInPlayersTurn() && current_round_diff == 0) {
-                players[its_this_players_turn].drawMoveOptions();
+                currentPlayer().drawMoveOptions();
             }
         }
     }

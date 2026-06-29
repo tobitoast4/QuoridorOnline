@@ -30,6 +30,12 @@ class QouridorPlayer:
         self.field = new_field
         if new_field in self.win_option_fields:
             return self  # THE PLAYER DID WIN! (Maybe return something different here?)
+        
+    def remove_from_field(self):
+        """Removes the player from their current field."""
+        if self.field is not None:
+            self.field.player = None
+            self.field = None
 
     def getMoveOptions(self):
         """Gets the move option fields for the player at their current position respecting other players.
