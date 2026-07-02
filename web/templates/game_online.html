@@ -139,22 +139,23 @@
 <script src="{% static 'js/notify.js' %}"></script>
 <script src="{% static 'js/settings.js' %}"></script>
 <script src="{% static 'js/game_online.js' %}"></script>
+<!-- <script src="{% static 'js/websocket_client.js' %}"></script> -->
 
-<script src="{% static 'js/query_server.js' %}"></script>
 
 <script>
-    server_url = "{{ request.scheme }}://{{ request.get_host }}/";
-    current_lobby_id = "{{ lobby.id }}";
-    this_player_id = "{{ user.id }}";
-    players_action_state = STATE_PLACE_PLAYER;
-    createPlayers();
+    var server_url = "{{ request.scheme }}://{{ request.get_host }}/";
+    var current_lobby_id = "{{ lobby.id }}";
+    var this_player_id = "{{ user.id }}";
+    // players_action_state = STATE_PLACE_PLAYER;
+    // createPlayers();
 
-    let intervalID = setInterval(() => { // see https://rapidapi.com/guides/api-requests-intervals
-        if (players_action_state != 2) {
-            updateGame();
-        }
-    }, 600);
+    // let intervalID = setInterval(() => { // see https://rapidapi.com/guides/api-requests-intervals
+    //     if (players_action_state != 2) {
+    //         updateGame();
+    //     }
+    // }, 600);
 </script>
+<script src="{% static 'js/query_server.js' %}"></script>
 
 <div id="game_over_overlay" style="display: none">
     {% include 'menus/game_over.html' %}

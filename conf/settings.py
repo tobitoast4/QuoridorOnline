@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'web.apps.WebConfig',
-    'dashboard.apps.DashboardConfig'
+    'dashboard.apps.DashboardConfig',
+    'channels'
 ]
 
 MIDDLEWARE = [
@@ -77,6 +78,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'conf.wsgi.application'
+ASGI_APPLICATION = "conf.asgi.application"
 
 
 # Database
@@ -133,3 +135,26 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "web.errors.custom_exception_handler",
 }
+
+# Django Channels Configuration
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [
+                ('127.0.0.1', 6379),  # Lokal: Redis auf Port 6379
+                # Für Production: os.getenv('REDIS_URL', 'redis://127.0.0.1:6379')
+            ],
+            'capacity': 1500,
+            'expiry': 10,
+        },
+    }
+}
+
+# Fallback für Entwicklung ohne Redis (nur in-memory)
+if os.getenv('DJANGO_DEBUG', 'True') == 'True' and not os.getenv('USE_REDIS'):
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer'
+        }
+    }

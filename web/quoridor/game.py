@@ -5,7 +5,7 @@ from web import utils
 
 STATE_PLACING_PLAYERS = -1
 STATE_PLAYING = 0
-STATE_PLAYER_DID_WIN = 2
+STATE_PLAYER_DID_WIN = 2  # TODO: Remove this state
 
 
 class Game:
@@ -23,7 +23,7 @@ class Game:
 
     def surrender(self, user_id, lobby):
         """Can be used to surrender from the game."""
-        if self._get_current_player().gameplayer.game_user.id != user_id:
+        if str(self._get_current_player().gameplayer.game_user.id) != user_id:
             raise QuoridorOnlineGameError("It's not your turn currently")
         player = self._get_player_of_user(user_id)
         # if player.gameplayer.has_surrendered:
@@ -41,7 +41,8 @@ class Game:
 
     def move_player(self, user_id, lobby, new_field_col, new_field_row):
         """Can be used to move a player."""
-        if self._get_current_player().gameplayer.game_user.id != user_id:
+        if str(self._get_current_player().gameplayer.game_user.id) != user_id:
+            print(str(self._get_current_player().gameplayer.game_user.id), user_id)
             raise QuoridorOnlineGameError("It's not your turn currently")
         player = self._get_player_of_user(user_id)
         # if player.gameplayer.has_surrendered:
@@ -62,7 +63,7 @@ class Game:
     def place_wall(self, user_id, col_start, row_start, col_end, row_end, skip_user_check=False):
         """Can be used to place a wall."""
         if not skip_user_check:
-            if self._get_current_player().gameplayer.game_user.id != user_id:
+            if str(self._get_current_player().gameplayer.game_user.id) != user_id:
                 raise QuoridorOnlineGameError("It's not your turn currently")
             if self._get_current_player().amount_walls_left <= 0:
                 raise QuoridorOnlineGameError("You do not have any more walls left")

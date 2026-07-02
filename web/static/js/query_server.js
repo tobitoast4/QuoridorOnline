@@ -1,13 +1,13 @@
-var server_url = null;
-var current_lobby_id = null;
+var gameClient = null;
+// var server_url = null;
+// var current_lobby_id = null;
 var next_lobby_id = null;
 var this_player_id = null;
-var this_player_name = null;
-var this_player_color = null;
 var complete_game_data = null;
 
 var clear_last_error_msg_started = false;
 var last_error_msg = null;
+var players_created = false;
 
 function throwOnError(json_obj) {
     // If there is the key "error" in a json_obj, show the value.
@@ -44,93 +44,21 @@ function showNewError(error) {
 // Methods for the game
 // ####################
 
-async function getGameDataAsync() {
-    var data_to_be_returned = null;
-    try {
-        var response = await fetch(server_url + "get_game_data/" + current_lobby_id, {
-            method: 'GET',
-            headers: {
-                'X-CSRFToken': getCookie("csrftoken", ""),
-                'Content-Type': 'application/json',
-            }
-        });
-        data_to_be_returned = await response.json();
-        throwOnError(data_to_be_returned);
-    } catch (error) {
-        showNewError(error);
-    }
-
-    return data_to_be_returned["lobby"];
-}
 
 async function movePlayerAsync(player_id, new_field_col_num, new_field_row_num) {
-    try {
-        var response = await fetch(server_url + "game_move_player/" + current_lobby_id, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie("csrftoken", ""),
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                "user_id": player_id,
-                "new_field_col_num": new_field_col_num,
-                "new_field_row_num": new_field_row_num,
-            })
-        });
-        data = await response.json();
-        throwOnError(data);
-    } catch (error) {
-        showNewError(error);
-        updateGame(round_diff=1);  // when user views previous rounds and fails to move
-    }
+    gameClient.sendMove(player_id, new_field_col_num, new_field_row_num);
 }
 
 async function placeWallAsync(player_id, col_start, row_start, col_end, row_end) {
-    try {
-        var response = await fetch(server_url + "game_place_wall/" + current_lobby_id, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie("csrftoken", ""),
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                "user_id": player_id,
-                "col_start" : col_start,
-                "row_start" : row_start,
-                "col_end" : col_end,
-                "row_end" : row_end
-            })
-        });
-        data = await response.json();
-        throwOnError(data);
-    } catch (error) {
-        showNewError(error);
-        updateGame(round_diff=1);  // when user views previous rounds and fails to place a wall
-    }
+    gameClient.sendWall(player_id, col_start, row_start, col_end, row_end);
 }
 
 async function surrenderAsync() {
-    try {
-        var response = await fetch(server_url + "game_surrender/" + current_lobby_id, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie("csrftoken", ""),
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                "user_id": this_player_id
-            })
-        });
-        data = await response.json();
-        throwOnError(data);
-    } catch (error) {
-        showNewError(error);
-        updateGame(round_diff=1);  // when user views previous rounds and fails to surrender
-    }
+    gameClient.sendSurrender(this_player_id);
 }
 
 async function createPlayers() {
-    var complete_game_data = await getGameDataAsync();
+    // var complete_game_data = await getGameDataAsync();
     let game_data = complete_game_data["game"];
     var initial_setup_json = game_data["initial_setup"]; //TODO: Use the amount fields property??
     var players_json = initial_setup_json["players"];
@@ -162,21 +90,25 @@ async function createPlayers() {
 
     last_wall.wall = new Wall(getPlayerById(this_player_id));
     refreshPlayerStats();
+    players_created = true;
 }
 
-async function updateGame(round_diff=0, play_audio=true) {
+async function updateGame(round_diff=0, play_audio=true, fetched_game_data_is_new=true) {
     // use round_diff=0 to not update the game if game_data did not change (this is usually called by the polling loop)
     // use round_diff=1 to actively load the current round
     // use round_diff=2 to actively load the last round
     // use round_diff=3 to actively load the round before last round
     // ......
-    let new_complete_game_data = await getGameDataAsync();
-    let new_game_data = new_complete_game_data["game"];
-    let fetched_game_data_is_new = JSON.stringify(new_game_data) != JSON.stringify(complete_game_data);
+    // let new_complete_game_data = await getGameDataAsync();
+    // let new_game_data = new_complete_game_data["game"];
+    // let fetched_game_data_is_new = JSON.stringify(new_game_data) != JSON.stringify(complete_game_data);
+    let game_data = complete_game_data.game;
+    let game = game_data.game;
+    let next_lobby_id = game_data["next_lobby_id"];
 
-    if (next_lobby_id == null){
-        next_lobby_id = new_game_data["next_lobby_id"];
-    }
+    // if (next_lobby_id == null){
+    //     next_lobby_id = new_game_data["next_lobby_id"];
+    // }
     if (fetched_game_data_is_new) {
         current_round_diff = 0;  // defined in game_online.js
     }
@@ -185,24 +117,21 @@ async function updateGame(round_diff=0, play_audio=true) {
         if (play_audio) {
             playAudio();
         }
-        complete_game_data = new_game_data;
-        game_data = complete_game_data["game"];
+        // complete_game_data = new_game_data;
 
         if (round_diff <= 1) {
             round_diff = 1;
         }
-        if (round_diff > game_data.length) {
-            round_diff = game_data.length;
+        if (round_diff > game.length) {
+            round_diff = game.length;
         }
 
-        let current_game_data = game_data[game_data.length - round_diff];
+        let current_round = game[game.length - round_diff];
 
         // update players
-        let players_json = current_game_data.game_board.players;
+        let players_json = current_round.game_board.players;
         players_json.forEach(player_json => {
             let players_field = player_json["field"];
-            console.log(player_json.user.game_user.username + " has surrendered: " + player_json.user.has_surrendered);
-            console.log(players_field);
             if (players_field == null) {
                 if (player_json.user.has_surrendered) {
                     this.removePlayer(player_json.user.game_user.id, player_json.user);
@@ -216,7 +145,7 @@ async function updateGame(round_diff=0, play_audio=true) {
         });
 
         // update walls
-        let walls_json = current_game_data.game_board.walls;
+        let walls_json = current_round.game_board.walls;
         walls = [];  // remove all existing walls
         walls_json.forEach(wall_json => {
             let start = wall_json["start"];
@@ -225,16 +154,14 @@ async function updateGame(round_diff=0, play_audio=true) {
         });
 
         if (round_diff <= 1) {
-            players_action_state = current_game_data["state"];
-            its_this_players_turn = current_game_data["its_this_players_turn"];
-            if (players_action_state == 2) {
-                if (new_complete_game_data.winner != null) {
-                    let winner = new_complete_game_data.winner;
-                    let colored_name = $(`
-                        <span class="font-effect-outline" style="font-weight: 100; color: ${winner.color}">${winner.game_user.username}</span>
-                    `);
-                    updatePlayerWonTheGame(colored_name);
-                }
+            players_action_state = current_round["state"];
+            its_this_players_turn = current_round["its_this_players_turn"];
+            if (complete_game_data.winner != null) {
+                let winner = complete_game_data.winner;
+                let colored_name = $(`
+                    <span class="font-effect-outline" style="font-weight: 100; color: ${winner.color}">${winner.game_user.username}</span>
+                `);
+                updatePlayerWonTheGame(colored_name);
             } else {
                 player = players[its_this_players_turn];
                 updatePlayersTurnInstruction(player);
@@ -463,3 +390,191 @@ async function updateColor(new_color) {
         showNewError(error);
     }
 }
+
+
+class GameWebSocketClient {
+    constructor(lobbyId) {
+        this.lobbyId = lobbyId;
+        this.ws = null;
+        this.reconnectAttempts = 0;
+        this.maxReconnectAttempts = 5;
+        this.reconnectDelay = 1500;
+
+        // Event Callbacks
+        this.handlers = {
+            'connect': [],
+            'disconnect': [],
+            'game_move': [],
+            'place_wall': [],
+            'game_state': [],
+            'chat_message': [],
+            'player_connected': [],
+            'error': [],
+        };
+    }
+
+    connect() {
+        // Protokoll automatisch wählen (wss:// für HTTPS, ws:// für HTTP)
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const url = `${protocol}//${window.location.host}/ws/game/${this.lobbyId}/`;
+        
+        this.ws = new WebSocket(url);
+
+        this.ws.onopen = () => this.onOpen();
+        this.ws.onmessage = (event) => this.onMessage(event);
+        this.ws.onerror = (error) => this.onError(error);
+        this.ws.onclose = () => this.onClose();
+    }
+
+    onOpen() {
+        console.log('WebSocket connected');
+        this.reconnectAttempts = 0;
+        this.emit('connect');
+    }
+
+    onMessage(event) {
+        try {
+            const data = JSON.parse(event.data);
+            
+            // Event Handler
+            if (data.type && this.handlers[data.type]) {
+                this.handlers[data.type].forEach(handler => handler(data));
+            }
+        } catch (error) {
+            console.error('Error parsing message:', error);
+            this.emit('error', { message: 'Invalid message from server' });
+        }
+    }
+
+    onError(error) {
+        console.error('WebSocket error:', error);
+        this.emit('error', { message: 'Connection error' });
+    }
+
+    onClose() {
+        console.log('WebSocket disconnected');
+        this.emit('disconnect');
+        
+        // Attempt to reconnect
+        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+            this.reconnectAttempts++;
+            console.log(`Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+            setTimeout(() => this.connect(), this.reconnectDelay);
+        } else {
+            console.error('Maximum reconnect attempts exceeded');
+            this.emit('error', { message: 'Could not connect to server' });
+        }
+    }
+
+    sendMove(player_id, new_field_col_num, new_field_row_num) {
+        this.send({
+            type: 'game_move',
+            message: {
+                "user_id": player_id,
+                "new_field_col_num": new_field_col_num,
+                "new_field_row_num": new_field_row_num,
+            },
+        });
+    }
+
+    sendWall(player_id, col_start, row_start, col_end, row_end) {
+        this.send({
+            type: 'place_wall',
+            message: {
+                "user_id": player_id,
+                "col_start" : col_start,
+                "row_start" : row_start,
+                "col_end" : col_end,
+                "row_end" : row_end
+            },
+        });
+    }
+
+    sendSurrender(player_id) {
+        this.send({
+            type: 'surrender',
+            message: {
+                "user_id": player_id
+            },
+        });
+    }
+
+    // sendChatMessage(message) {
+    //     this.send({
+    //         type: 'chat_message',
+    //         message: message,
+    //     });
+    // }
+
+    requestGameState() {
+        this.send({
+            type: 'game_state_request',
+        });
+    }
+
+    /** Generic message*/
+    send(data) {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.ws.send(JSON.stringify(data));
+        } else {
+            console.error('WebSocket not connected');
+            this.emit('error', { message: 'Not connected to server' });
+        }
+    }
+
+    /**
+     * Event-Handler registrieren
+     */
+    on(event, handler) {
+        if (this.handlers[event]) {
+            this.handlers[event].push(handler);
+        }
+    }
+
+    /**
+     * Event-Handler entfernen
+     */
+    off(event, handler) {
+        if (this.handlers[event]) {
+            this.handlers[event] = this.handlers[event].filter(h => h !== handler);
+        }
+    }
+
+    /**
+     * Event auslösen
+     */
+    emit(event, data = {}) {
+        if (this.handlers[event]) {
+            this.handlers[event].forEach(handler => handler(data));
+        }
+    }
+
+    /**
+     * Verbindung trennen
+     */
+    disconnect() {
+        if (this.ws) {
+            this.ws.close();
+        }
+    }
+}
+
+
+gameClient = new GameWebSocketClient(current_lobby_id);
+gameClient.connect();
+gameClient.on('connect', () => {
+    gameClient.requestGameState();  // get initial game state when connected
+});
+
+gameClient.on('game_state', (data) => {
+    complete_game_data = data.message;
+    if (!players_created) {
+        createPlayers();
+        next_lobby_id = complete_game_data.game.next_lobby_id;
+    }
+    updateGame(round_diff=0, play_audio=true, fetched_game_data_is_new=true);
+});
+
+gameClient.on('error', (data) => {
+    showNotify("error", "", data.message, 6);
+});
