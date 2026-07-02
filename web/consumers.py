@@ -11,6 +11,7 @@ from web.quoridor import deserialize as quoridor_deserialize
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
+
 class GameConsumer(AsyncWebsocketConsumer):
     """
     WebSocket consumer für Echtzeit-Spielkommunikation.

@@ -203,41 +203,6 @@ def get_game_data(request, lobby_id=None):
         json_data = serializer.data
         return Response({"lobby": json_data}, 200)
 
-@api_view(['POST'])
-def game_move_player(request, lobby_id=None):
-    the_lobby = models.Lobby.objects.get(pk=lobby_id)
-    the_game_json = json.loads(the_lobby.game)
-    the_game = quoridor_deserialize.create_game_from_json(the_game_json)
-    the_game.move_player(request.user.id, the_lobby, 
-                         request.data.get("new_field_col_num"),
-                         request.data.get("new_field_row_num"))
-    the_lobby.game = json.dumps(the_game.game_data, cls=utils.UUIDEncoder)
-    the_lobby.save()
-    return Response({"status": "player moved"}, 200)
-
-@api_view(['POST'])
-def game_place_wall(request, lobby_id=None):
-    the_lobby = models.Lobby.objects.get(pk=lobby_id)
-    the_game_json = json.loads(the_lobby.game)
-    the_game = quoridor_deserialize.create_game_from_json(the_game_json)
-    the_game.place_wall(request.user.id,
-                        request.data.get("col_start"),
-                        request.data.get("row_start"),
-                        request.data.get("col_end"),
-                        request.data.get("row_end"))
-    the_lobby.game = json.dumps(the_game.game_data, cls=utils.UUIDEncoder)
-    the_lobby.save()
-    return Response({"status": "wall placed"}, 200)
-
-@api_view(['POST'])
-def game_surrender(request, lobby_id=None):
-    the_lobby = models.Lobby.objects.get(pk=lobby_id)
-    the_game_json = json.loads(the_lobby.game)
-    the_game = quoridor_deserialize.create_game_from_json(the_game_json)
-    the_game.surrender(request.user.id, the_lobby)
-    the_lobby.game = json.dumps(the_game.game_data, cls=utils.UUIDEncoder)
-    the_lobby.save()
-    return Response({"status": "player surrendered"}, 200)
 
 @api_view(['POST'])
 def change_lobby_visibility(request, lobby_id=None):
