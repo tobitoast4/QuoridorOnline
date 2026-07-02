@@ -267,6 +267,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             user_id = self.scope["session"].get("anonymous_user_id")
         user = User.objects.get(pk=user_id)
         return {
+            'color': user.color,  # TODO: Color should be fetched from the GamePlayer model, not the User model
             'username': user.username,
             'user_id': user_id
         }
@@ -299,12 +300,19 @@ class GameConsumer(AsyncWebsocketConsumer):
         logger.info(f"Player {user_info['username']} connected to lobby {self.lobby_id}")
 
     async def disconnect(self, close_code):
-        """WebSocket-Verbindung trennen."""
         user_info = await self.get_user_info()
         
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
+        )
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'player_disconnected',
+                'username': user_info['username'],
+                'color': user_info['color']
+            }
         )
         logger.info(f"Player {user_info['username']} disconnected from lobby {self.lobby_id}")
 
@@ -467,4 +475,12 @@ class GameConsumer(AsyncWebsocketConsumer):
             'type': 'player_connected',
             'user_id': event['user_id'],
             'username': event['username'],
+        }))
+
+    async def player_disconnected(self, event):
+        # Required as we have group_send(... 'type': 'player_disconnected',
+        await self.send(text_data=json.dumps({
+            'type': 'player_disconnected',
+            'username': event['username'],
+            'color': event['color'],
         }))

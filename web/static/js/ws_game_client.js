@@ -1,4 +1,4 @@
-var lobbyClient = null;
+var gameClient = null;
 var next_lobby_id = null;
 var complete_game_data = null;
 var current_round_diff = 0;
@@ -9,15 +9,15 @@ var players_created = false;
 
 
 async function movePlayerAsync(player_id, new_field_col_num, new_field_row_num) {
-    lobbyClient.sendMove(player_id, new_field_col_num, new_field_row_num);
+    gameClient.sendMove(player_id, new_field_col_num, new_field_row_num);
 }
 
 async function placeWallAsync(player_id, col_start, row_start, col_end, row_end) {
-    lobbyClient.sendWall(player_id, col_start, row_start, col_end, row_end);
+    gameClient.sendWall(player_id, col_start, row_start, col_end, row_end);
 }
 
 async function surrenderAsync() {
-    lobbyClient.sendSurrender();
+    gameClient.sendSurrender();
 }
 
 async function createPlayers() {
@@ -174,7 +174,7 @@ function removePlayer(player_id, player) {
 
 
 
-class LobbyWebSocketClient {
+class GameWebSocketClient {
     constructor(lobbyId) {
         this.lobbyId = lobbyId;
         this.ws = null;
@@ -185,7 +185,7 @@ class LobbyWebSocketClient {
         // Event Callbacks
         this.handlers = {
             'connect': [],
-            'disconnect': [],
+            'player_disconnected': [],
             'game_state': [],
             'error': [],
         };
@@ -336,13 +336,13 @@ class LobbyWebSocketClient {
 }
 
 
-lobbyClient = new LobbyWebSocketClient(current_lobby_id);
-lobbyClient.connect();
-lobbyClient.on('connect', () => {
-    lobbyClient.requestGameState();  // get initial game state when connected
+gameClient = new GameWebSocketClient(current_lobby_id);
+gameClient.connect();
+gameClient.on('connect', () => {
+    gameClient.requestGameState();  // get initial game state when connected
 });
 
-lobbyClient.on('game_state', (data) => {
+gameClient.on('game_state', (data) => {
     complete_game_data = data.message;
     if (!players_created) {
         createPlayers();
@@ -351,6 +351,13 @@ lobbyClient.on('game_state', (data) => {
     updateGame(round_diff=0, play_audio=true, fetched_game_data_is_new=true);
 });
 
-lobbyClient.on('error', (data) => {
+gameClient.on('player_disconnected', (data) => {
+    let colored_name = `
+        <span class="font-effect-outline" style="font-weight: 100; color: ${data.color}">${data.username}</span>
+    `;
+    showNotify("info", "", colored_name + " has disconnected", 6);
+});
+
+gameClient.on('error', (data) => {
     showNotify("error", "", data.message, 6);
 });

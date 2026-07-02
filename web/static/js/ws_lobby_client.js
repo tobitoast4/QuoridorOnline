@@ -1,4 +1,4 @@
-var lobbyClient = null;
+var gameClient = null;
 var next_lobby_id = null;
 var complete_game_data = null;
 
@@ -8,15 +8,15 @@ var complete_game_data = null;
 // ####################
 
 async function startGameAsync() {
-    lobbyClient.sendStartGame();
+    gameClient.sendStartGame();
 }
 
 async function changeVisibility() {
-    lobbyClient.changeVisibility();
+    gameClient.changeVisibility();
 }
 
 async function changeAmountOfWallsPerPlayer(new_amount) {
-    lobbyClient.changeAmountOfWallsPerPlayer(new_amount);
+    gameClient.changeAmountOfWallsPerPlayer(new_amount);
 }
 
 async function getRandomPublicLobby() {
@@ -43,13 +43,13 @@ async function getRandomPublicLobby() {
 
 async function updatePlayerName() {
     let new_player_name = $('#input-players-name').val();
-    lobbyClient.renamePlayer(new_player_name);
+    gameClient.renamePlayer(new_player_name);
     $("#button_update_player_name").removeAttr("style");
     $("#button_update_player_name_icon").removeAttr("style");
 }
 
 async function updateColor(new_color) {
-    lobbyClient.changeColor(new_color);
+    gameClient.changeColor(new_color);
 }
 
 
@@ -204,13 +204,13 @@ class LobbyWebSocketClient {
 }
 
 
-lobbyClient = new LobbyWebSocketClient(current_lobby_id);
-lobbyClient.connect();
-lobbyClient.on('connect', () => {
-    lobbyClient.requestLobbyState();  // get initial lobby state when connected
+gameClient = new LobbyWebSocketClient(current_lobby_id);
+gameClient.connect();
+gameClient.on('connect', () => {
+    gameClient.requestLobbyState();  // get initial lobby state when connected
 });
 
-lobbyClient.on('lobby_state', (data) => {
+gameClient.on('lobby_state', (data) => {
     lobby_data = data.message;
 
     if (lobby_data.game) {
@@ -245,6 +245,6 @@ lobbyClient.on('lobby_state', (data) => {
     }
 });
 
-lobbyClient.on('error', (data) => {
+gameClient.on('error', (data) => {
     showNotify("error", "", data.message, 6);
 });
