@@ -179,8 +179,8 @@ class GameWebSocketClient {
         this.lobbyId = lobbyId;
         this.ws = null;
         this.reconnectAttempts = 0;
-        this.maxReconnectAttempts = 5;
-        this.reconnectDelay = 1500;
+        this.maxReconnectAttempts = 3;
+        this.reconnectDelay = 2000;
 
         // Event Callbacks
         this.handlers = {
@@ -226,18 +226,18 @@ class GameWebSocketClient {
 
     onError(error) {
         console.error('WebSocket error:', error);
-        this.emit('error', { message: 'Connection error' });
     }
 
     onClose() {
-        console.log('WebSocket disconnected');
         this.emit('disconnect');
         
         // Attempt to reconnect
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
             this.reconnectAttempts++;
-            showNotify("error", "", `Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`, 6);
-            setTimeout(() => this.connect(), this.reconnectDelay);
+            setTimeout(() => {
+                showNotify("error", "", `Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`, 10);
+                setTimeout(() => this.connect(), this.reconnectDelay);
+            }, 2 * this.reconnectDelay);  // initial delay before showing the notification and attempting to reconnect
         } else {
             console.error('Maximum reconnect attempts exceeded');
             this.emit('error', { message: 'Could not connect to server' });
