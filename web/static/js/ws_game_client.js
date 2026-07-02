@@ -1,4 +1,4 @@
-var gameClient = null;
+var lobbyClient = null;
 var next_lobby_id = null;
 var complete_game_data = null;
 var current_round_diff = 0;
@@ -9,15 +9,15 @@ var players_created = false;
 
 
 async function movePlayerAsync(player_id, new_field_col_num, new_field_row_num) {
-    gameClient.sendMove(player_id, new_field_col_num, new_field_row_num);
+    lobbyClient.sendMove(player_id, new_field_col_num, new_field_row_num);
 }
 
 async function placeWallAsync(player_id, col_start, row_start, col_end, row_end) {
-    gameClient.sendWall(player_id, col_start, row_start, col_end, row_end);
+    lobbyClient.sendWall(player_id, col_start, row_start, col_end, row_end);
 }
 
 async function surrenderAsync() {
-    gameClient.sendSurrender();
+    lobbyClient.sendSurrender();
 }
 
 async function createPlayers() {
@@ -174,7 +174,7 @@ function removePlayer(player_id, player) {
 
 
 
-class GameWebSocketClient {
+class LobbyWebSocketClient {
     constructor(lobbyId) {
         this.lobbyId = lobbyId;
         this.ws = null;
@@ -186,17 +186,13 @@ class GameWebSocketClient {
         this.handlers = {
             'connect': [],
             'disconnect': [],
-            'game_move': [],
-            'place_wall': [],
             'game_state': [],
-            'chat_message': [],
-            'player_connected': [],
             'error': [],
         };
     }
 
     connect() {
-        // Protokoll automatisch wählen (wss:// für HTTPS, ws:// für HTTP)
+        // Select protocol based on the current page's protocol (ws for http, wss for https)
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const url = `${protocol}//${window.location.host}/ws/game/${this.lobbyId}/`;
         
@@ -240,7 +236,7 @@ class GameWebSocketClient {
         // Attempt to reconnect
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
             this.reconnectAttempts++;
-            console.log(`Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+            showNotify("error", "", `Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`, 6);
             setTimeout(() => this.connect(), this.reconnectDelay);
         } else {
             console.error('Maximum reconnect attempts exceeded');
@@ -340,13 +336,13 @@ class GameWebSocketClient {
 }
 
 
-gameClient = new GameWebSocketClient(current_lobby_id);
-gameClient.connect();
-gameClient.on('connect', () => {
-    gameClient.requestGameState();  // get initial game state when connected
+lobbyClient = new LobbyWebSocketClient(current_lobby_id);
+lobbyClient.connect();
+lobbyClient.on('connect', () => {
+    lobbyClient.requestGameState();  // get initial game state when connected
 });
 
-gameClient.on('game_state', (data) => {
+lobbyClient.on('game_state', (data) => {
     complete_game_data = data.message;
     if (!players_created) {
         createPlayers();
@@ -355,6 +351,6 @@ gameClient.on('game_state', (data) => {
     updateGame(round_diff=0, play_audio=true, fetched_game_data_is_new=true);
 });
 
-gameClient.on('error', (data) => {
+lobbyClient.on('error', (data) => {
     showNotify("error", "", data.message, 6);
 });
