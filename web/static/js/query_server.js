@@ -1,9 +1,7 @@
 var gameClient = null;
-// var server_url = null;
-// var current_lobby_id = null;
 var next_lobby_id = null;
-var this_player_id = null;
 var complete_game_data = null;
+var current_round_diff = 0;
 
 var clear_last_error_msg_started = false;
 var last_error_msg = null;
@@ -54,7 +52,7 @@ async function placeWallAsync(player_id, col_start, row_start, col_end, row_end)
 }
 
 async function surrenderAsync() {
-    gameClient.sendSurrender(this_player_id);
+    gameClient.sendSurrender();
 }
 
 async function createPlayers() {
@@ -99,16 +97,10 @@ async function updateGame(round_diff=0, play_audio=true, fetched_game_data_is_ne
     // use round_diff=2 to actively load the last round
     // use round_diff=3 to actively load the round before last round
     // ......
-    // let new_complete_game_data = await getGameDataAsync();
-    // let new_game_data = new_complete_game_data["game"];
-    // let fetched_game_data_is_new = JSON.stringify(new_game_data) != JSON.stringify(complete_game_data);
     let game_data = complete_game_data.game;
     let game = game_data.game;
     let next_lobby_id = game_data["next_lobby_id"];
 
-    // if (next_lobby_id == null){
-    //     next_lobby_id = new_game_data["next_lobby_id"];
-    // }
     if (fetched_game_data_is_new) {
         current_round_diff = 0;  // defined in game_online.js
     }
@@ -490,12 +482,10 @@ class GameWebSocketClient {
         });
     }
 
-    sendSurrender(player_id) {
+    sendSurrender() {
         this.send({
             type: 'surrender',
-            message: {
-                "user_id": player_id
-            },
+            message: {},
         });
     }
 
