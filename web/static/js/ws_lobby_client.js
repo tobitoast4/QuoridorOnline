@@ -216,7 +216,10 @@ gameClient.on('lobby_state', (data) => {
     if (lobby_data.game) {
         window.location.replace(server_url + "game/" + lobby_data.id);
     } else {
-        var lobby_owner_id = lobby_data.owner.game_user.id;
+        var lobby_owner_id = null;
+        if (lobby_data.owner && lobby_data.owner.game_user) {
+            lobby_owner_id = lobby_data.owner.game_user.id;
+        }
         var list_of_players = $('#list_of_players');
         list_of_players.empty();
         lobby_data.gameplayer_set.forEach(player => {
