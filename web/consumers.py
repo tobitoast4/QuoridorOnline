@@ -344,6 +344,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                 await self.handle_surrender(message_data)
             elif message_type == 'game_state_request':
                 await self.handle_game_state_request()
+            elif message_type == 'online_state_request':
+                await self.handle_online_state_request()
             # elif message_type == 'chat_message':
             #     await self.handle_chat_message(message_data)
             else:
@@ -444,6 +446,24 @@ class GameConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             await self.send_error(str(e))
 
+    async def handle_online_state_request(self): 
+        @database_sync_to_async
+        def get_online_user_ids():
+            online_user_ids = utils.get_online_user_ids()
+            the_lobby = models.Lobby.objects.get(id=self.lobby_id)
+            players = the_lobby.gameplayer_set.all()
+            user_ids_in_lobby = [str(p.game_user.id) for p in players]
+            return list(set(online_user_ids) & set(user_ids_in_lobby))
+            
+        try:
+            online_user_ids = await get_online_user_ids()
+            await self.send(text_data=json.dumps({
+                'type': 'online_state',
+                'message': online_user_ids
+            }))
+        except Exception as e:
+            await self.send_error(str(e))
+
     # async def handle_chat_message(self, data):
     #     """Verarbeitet Chat-Nachrichten."""
     #     chat_data = {
@@ -464,11 +484,15 @@ class GameConsumer(AsyncWebsocketConsumer):
             'message': error_message
         }))
 
-    # Broadcast-Handler (werden von group_send aufgerufen)
     async def game_state(self, event):
-        """Broadcast des aktuellen Spielstatus."""
         await self.send(text_data=json.dumps({
             'type': 'game_state',
+            'message': event['message'],
+        }))
+
+    async def online_state(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'online_state',
             'message': event['message'],
         }))
 

@@ -188,6 +188,7 @@ class GameWebSocketClient {
             'player_connected': [],
             'player_disconnected': [],
             'game_state': [],
+            'online_state': [],
             'error': [],
         };
     }
@@ -289,6 +290,12 @@ class GameWebSocketClient {
         });
     }
 
+    requestOnlineState() {
+        this.send({
+            type: 'online_state_request',
+        });
+    }
+
     /** Generic message*/
     send(data) {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
@@ -341,6 +348,7 @@ gameClient = new GameWebSocketClient(current_lobby_id);
 gameClient.connect();
 gameClient.on('connect', () => {
     gameClient.requestGameState();  // get initial game state when connected
+    gameClient.requestOnlineState();  // check which of the players are online
 });
 
 gameClient.on('game_state', (data) => {
@@ -350,6 +358,13 @@ gameClient.on('game_state', (data) => {
         next_lobby_id = complete_game_data.game.next_lobby_id;
     }
     updateGame(round_diff=0, play_audio=true, fetched_game_data_is_new=true);
+});
+
+gameClient.on('online_state', (data) => {
+    online_user_ids = data.message;
+    online_user_ids.forEach(user_id => {
+        updatePlayerOnlineStatus(user_id, true);
+    });
 });
 
 gameClient.on('player_connected', (data) => {
