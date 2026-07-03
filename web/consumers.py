@@ -89,11 +89,20 @@ class LobbyConsumer(AsyncWebsocketConsumer):
         logger.info(f"Player {user_info['username']} connected to lobby {self.lobby_id}")
 
     async def disconnect(self, close_code):
+        @database_sync_to_async
+        def remove_player_from_lobby():
+            user = User.objects.get(pk=self.user_id)
+            the_lobbys = models.Lobby.objects.filter(pk=self.lobby_id)
+            if the_lobbys.count() == 1:
+                the_lobby = the_lobbys.first()
+                if the_lobby.game is None:  # game not started yet
+                    lobby_manager.remove_player_from_lobby(the_lobby, user)
+
         user_info = await self.get_user_info()
-        
-        await self.channel_layer.group_discard(
+        await remove_player_from_lobby()
+        await self.channel_layer.group_send(
             self.room_group_name,
-            self.channel_name
+            {'type': 'lobby_state', 'message': await self.get_lobby_data()}
         )
         logger.info(f"Player {user_info['username']} disconnected from lobby {self.lobby_id}")
 

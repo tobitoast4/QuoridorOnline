@@ -33,13 +33,15 @@ def check_players_last_seen_time(lobby):
     lobby.save()
 
 def add_player_to_lobby(the_lobby, the_user):
-    for player in the_lobby.gameplayer_set.iterator():
-        if player.game_user == the_user:
-            # user is already in lobby, we only need to update the last_seen status
-            player.last_seen = utils.get_current_time()
-            player.save()
-            return
     # if user is not in lobby, add them
-    player = models.GamePlayer.objects.create(game_user=the_user, color=the_user.color, lobby=the_lobby)
-    player.last_seen = utils.get_current_time()
-    player.save()
+    player = models.GamePlayer.objects.filter(game_user=the_user, lobby=the_lobby).first()
+    if not player:
+        player = models.GamePlayer.objects.create(game_user=the_user, color=the_user.color, lobby=the_lobby)
+        player.last_seen = utils.get_current_time()
+        player.save()
+
+def remove_player_from_lobby(the_lobby, the_user):
+    # if user is in lobby, remove them
+    player = models.GamePlayer.objects.filter(game_user=the_user, lobby=the_lobby).first()
+    if player:
+        player.delete()
