@@ -19,7 +19,7 @@ def get_random_public_lobby():
     else:
         return None
 
-def check_players_last_seen_time(lobby):
+def check_players_last_seen_time(lobby):  # TODO: Remove
     players_to_delete = []
     for player in lobby.gameplayer_set.iterator():
         if utils.get_current_time() - player.last_seen > PLAYER_TIME_OUT_TIME:

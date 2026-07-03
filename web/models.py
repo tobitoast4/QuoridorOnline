@@ -15,7 +15,7 @@ class GamePlayer(models.Model):
     game_user = models.ForeignKey(GameUser, null=True, blank=True, on_delete=models.SET_NULL)
     lobby = models.ForeignKey('Lobby', null=True, blank=True, on_delete=models.CASCADE)
     color = models.CharField(max_length=15, default=utils.get_random_color)
-    last_seen = models.IntegerField(default=time.time)
+    last_seen = models.IntegerField(default=time.time)  # TODO: Remove
     has_surrendered = models.BooleanField(default=False)
 
 class Lobby(models.Model):

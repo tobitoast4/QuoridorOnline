@@ -13,7 +13,8 @@ from web.quoridor import game as quoridor_game
 
 from html import escape
 
-
+# TODO: Logger should be configured in settings.py and not here. This is just a temporary solution for now.
+# TODO: Log on every message?
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
@@ -60,6 +61,7 @@ class LobbyConsumer(AsyncWebsocketConsumer):
         # User-Info für Logging
         user_info = await self.get_user_info()
         self.user_id = user_info['user_id']
+        self.user_name = user_info['username']
 
         # Zur Gruppe hinzufügen
         await self.channel_layer.group_add(
@@ -86,7 +88,7 @@ class LobbyConsumer(AsyncWebsocketConsumer):
                 'username': user_info['username'],
             }
         )
-        logger.info(f"Player {user_info['username']} connected to lobby {self.lobby_id}")
+        logger.info(f"Player {self.user_name} connected to lobby {self.lobby_id}")
 
     async def disconnect(self, close_code):
         @database_sync_to_async
@@ -98,13 +100,12 @@ class LobbyConsumer(AsyncWebsocketConsumer):
                 if the_lobby.game is None:  # game not started yet
                     lobby_manager.remove_player_from_lobby(the_lobby, user)
 
-        user_info = await self.get_user_info()
         await remove_player_from_lobby()
         await self.channel_layer.group_send(
             self.room_group_name,
             {'type': 'lobby_state', 'message': await self.get_lobby_data()}
         )
-        logger.info(f"Player {user_info['username']} disconnected from lobby {self.lobby_id}")
+        logger.info(f"Player {self.user_name} disconnected from lobby {self.lobby_id}")
 
     async def receive(self, text_data):
         try:
@@ -131,13 +132,13 @@ class LobbyConsumer(AsyncWebsocketConsumer):
 
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON received: {e}")
-            await self.send_error("Ungültige Nachricht")
+            await self.send_error("Invalid message")
 
     async def handle_start_game(self, data):
         @database_sync_to_async
-        def process_start_game(user_id, lobby_id):
-            the_lobby = models.Lobby.objects.get(pk=lobby_id)
-            if user_id != str(the_lobby.owner.game_user.id):
+        def process_start_game():
+            the_lobby = models.Lobby.objects.get(pk=self.lobby_id)
+            if self.user_id != str(the_lobby.owner.game_user.id):
                 raise PermissionError("Only the lobby owner can start the game")
             # TODO: Shuffle players
             next_lobby = models.Lobby.objects.create(created_by=the_lobby.created_by, owner=the_lobby.owner)
@@ -145,25 +146,28 @@ class LobbyConsumer(AsyncWebsocketConsumer):
             the_lobby.game = json.dumps(new_game.game_data, cls=utils.UUIDEncoder)
             the_lobby.save()
         try:
-            await process_start_game(self.user_id, self.lobby_id)
+            await process_start_game()
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {'type': 'lobby_state', 'message': await self.get_lobby_data()}
             )
+            logger.info(f"Player {self.user_name} started the game in lobby {self.lobby_id}")
         except Exception as e:
             await self.send_error(str(e))
 
     async def handle_change_lobby_visibility(self, data):
         @database_sync_to_async
-        def process_change_lobby_visibility(lobby_id):
-            the_lobby = models.Lobby.objects.get(id=lobby_id)
+        def process_change_lobby_visibility():
+            the_lobby = models.Lobby.objects.get(id=self.lobby_id)
+            if self.user_id != str(the_lobby.owner.game_user.id):
+                raise PermissionError("Only the lobby owner can change the lobby visibility")
             the_lobby.toggle_visibility()
             if the_lobby.is_private:
                 return "Lobby visibility successfully changed to: private"
             else:
                 return "Lobby visibility successfully changed to: public"
         try:
-            msg = await process_change_lobby_visibility(self.lobby_id)
+            msg = await process_change_lobby_visibility()
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {'type': 'lobby_state', 'message': await self.get_lobby_data()}
@@ -173,15 +177,15 @@ class LobbyConsumer(AsyncWebsocketConsumer):
 
     async def handle_change_amount_of_walls_per_player(self, data):
         @database_sync_to_async
-        def process_change_amount_of_walls_per_player(user_id, lobby_id, new_amount):
-            the_lobby = models.Lobby.objects.get(id=lobby_id)
-            if user_id != str(the_lobby.owner.game_user.id):
+        def process_change_amount_of_walls_per_player(new_amount):
+            the_lobby = models.Lobby.objects.get(id=self.lobby_id)
+            if self.user_id != str(the_lobby.owner.game_user.id):
                 raise PermissionError("Only the lobby owner can change the amount of walls per player")
             if the_lobby.game is not None:
                 raise PermissionError("You can not change the amount of walls per player when the game is already running")
             the_lobby.change_amount_of_walls_of_players(new_amount)
         try:
-            await process_change_amount_of_walls_per_player(self.user_id, self.lobby_id, data.get("new_amount"))
+            await process_change_amount_of_walls_per_player( data.get("new_amount"))
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {'type': 'lobby_state', 'message': await self.get_lobby_data()}
@@ -191,7 +195,7 @@ class LobbyConsumer(AsyncWebsocketConsumer):
 
     async def handle_rename_player(self, data):
         @database_sync_to_async
-        def process_rename_player(user_id, new_name):
+        def process_rename_player(new_name):
             if new_name == "":
                 raise ValueError("User name can not be empty")
             if len(new_name) > 64:
@@ -202,11 +206,11 @@ class LobbyConsumer(AsyncWebsocketConsumer):
                 raise ValueError("User name is already taken")
             if new_name != html_escape(new_name):  # XSS prevention
                 raise ValueError("User name contains invalid characters")
-            user = User.objects.get(pk=user_id)
+            user = User.objects.get(pk=self.user_id)
             user.username = new_name
             user.save()
         try:
-            await process_rename_player(self.user_id, data.get("new_name"))
+            await process_rename_player(data.get("new_name"))
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {'type': 'lobby_state', 'message': await self.get_lobby_data()}
@@ -216,17 +220,17 @@ class LobbyConsumer(AsyncWebsocketConsumer):
 
     async def handle_change_color(self, data):
         @database_sync_to_async
-        def process_change_color(user_id, lobby_id, new_color):
+        def process_change_color(new_color):
             if new_color not in utils.COLORS:
                 raise ValueError("Invalid color")
-            user = User.objects.get(pk=user_id)
-            gameplayer = user.gameplayer_set.filter(lobby__id=lobby_id).first()
+            user = User.objects.get(pk=self.user_id)
+            gameplayer = user.gameplayer_set.filter(lobby__id=self.lobby_id).first()
             gameplayer.color = new_color
             gameplayer.save()
             user.color = new_color
             user.save()
         try:
-            await process_change_color(self.user_id, self.lobby_id, data.get("new_color"))
+            await process_change_color(data.get("new_color"))
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {'type': 'lobby_state', 'message': await self.get_lobby_data()}
@@ -289,6 +293,8 @@ class GameConsumer(AsyncWebsocketConsumer):
         # User-Info für Logging
         user_info = await self.get_user_info()
         self.user_id = user_info['user_id']
+        self.user_name = user_info['username']
+        self.user_color = user_info['color']
 
         # Zur Gruppe hinzufügen
         await self.channel_layer.group_add(
@@ -306,11 +312,9 @@ class GameConsumer(AsyncWebsocketConsumer):
                 'username': user_info['username'],
             }
         )
-        logger.info(f"Player {user_info['username']} connected to lobby {self.lobby_id}")
+        logger.info(f"Player {user_info['username']} connected to game {self.lobby_id}")
 
-    async def disconnect(self, close_code):
-        user_info = await self.get_user_info()
-        
+    async def disconnect(self, close_code):        
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
@@ -319,11 +323,11 @@ class GameConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             {
                 'type': 'player_disconnected',
-                'username': user_info['username'],
-                'color': user_info['color']
+                'username': self.user_name,
+                'color': self.user_color
             }
         )
-        logger.info(f"Player {user_info['username']} disconnected from lobby {self.lobby_id}")
+        logger.info(f"Player {self.user_name} disconnected from game {self.lobby_id}")
 
     async def receive(self, text_data):
         try:
@@ -350,12 +354,12 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def handle_game_move(self, data):
         @database_sync_to_async
-        def process_move(user_id, col_num, row_num):
+        def process_move(col_num, row_num):
             try:
                 the_lobby = models.Lobby.objects.get(id=self.lobby_id)
                 the_game_json = json.loads(the_lobby.game)
                 the_game = quoridor_deserialize.create_game_from_json(the_game_json)
-                the_game.move_player(user_id, the_lobby, col_num, row_num)
+                the_game.move_player(self.user_id, the_lobby, col_num, row_num)
                 the_lobby.game = json.dumps(the_game.game_data, cls=utils.UUIDEncoder)
                 the_lobby.save()
                 serializer = serialize.LobbySerializer(the_lobby)
@@ -363,7 +367,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             except models.Lobby.DoesNotExist:
                 raise ValueError(f"Lobby with id {self.lobby_id} does not exist.")
         try:
-            lobby_data = await process_move(self.user_id, data.get("new_field_col_num"), data.get("new_field_row_num"))
+            lobby_data = await process_move(data.get("new_field_col_num"), data.get("new_field_row_num"))
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {'type': 'game_state', 'message': lobby_data}
@@ -373,12 +377,12 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def handle_place_wall(self, data):
         @database_sync_to_async
-        def process_place_wall(user_id, col_start, row_start, col_end, row_end):
+        def process_place_wall(col_start, row_start, col_end, row_end):
             try:
                 the_lobby = models.Lobby.objects.get(id=self.lobby_id)
                 the_game_json = json.loads(the_lobby.game)
                 the_game = quoridor_deserialize.create_game_from_json(the_game_json)
-                the_game.place_wall(user_id, col_start, row_start, col_end, row_end)
+                the_game.place_wall(self.user_id, col_start, row_start, col_end, row_end)
                 the_lobby.game = json.dumps(the_game.game_data, cls=utils.UUIDEncoder)
                 the_lobby.save()
                 serializer = serialize.LobbySerializer(the_lobby)
@@ -386,8 +390,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             except models.Lobby.DoesNotExist:
                 raise ValueError(f"Lobby with id {self.lobby_id} does not exist.")
         try:
-            lobby_data = await process_place_wall(self.user_id, 
-                                                  data.get("col_start"),
+            lobby_data = await process_place_wall(data.get("col_start"),
                                                   data.get("row_start"),
                                                   data.get("col_end"),
                                                   data.get("row_end"))
@@ -400,12 +403,12 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def handle_surrender(self, data):
         @database_sync_to_async
-        def process_surrender(user_id):
+        def process_surrender():
             try:
                 the_lobby = models.Lobby.objects.get(id=self.lobby_id)
                 the_game_json = json.loads(the_lobby.game)
                 the_game = quoridor_deserialize.create_game_from_json(the_game_json)
-                the_game.surrender(user_id, the_lobby)
+                the_game.surrender(self.user_id, the_lobby)
                 the_lobby.game = json.dumps(the_game.game_data, cls=utils.UUIDEncoder)
                 the_lobby.save()
                 serializer = serialize.LobbySerializer(the_lobby)
@@ -413,7 +416,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             except models.Lobby.DoesNotExist:
                 raise ValueError(f"Lobby with id {self.lobby_id} does not exist.")
         try:
-            lobby_data = await process_surrender(self.user_id)
+            lobby_data = await process_surrender()
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {'type': 'game_state', 'message': lobby_data}
@@ -442,11 +445,10 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     # async def handle_chat_message(self, data):
     #     """Verarbeitet Chat-Nachrichten."""
-    #     user_info = await self.get_user_info()
     #     chat_data = {
     #         'type': 'chat_message_broadcast',
-    #         'user_id': user_info['user_id'],
-    #         'username': user_info['username'],
+    #         'user_id': self.user_id,
+    #         'username': self.user_name,
     #         'message': data.get('message'),
     #     }
     #     await self.channel_layer.group_send(
