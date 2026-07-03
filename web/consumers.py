@@ -5,7 +5,6 @@ from django.contrib.auth import get_user_model
 from django.utils.html import escape
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from django.core.cache import cache
 
 from web import lobby_manager, models, serialize, utils
 from web.quoridor import deserialize as quoridor_deserialize
@@ -72,6 +71,7 @@ class LobbyConsumer(AsyncWebsocketConsumer):
 
         try:
             await add_player_to_lobby()
+            utils.add_online_user(self.user_id)
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {'type': 'lobby_state', 'message': await self.get_lobby_data()}
@@ -101,6 +101,7 @@ class LobbyConsumer(AsyncWebsocketConsumer):
                     lobby_manager.remove_player_from_lobby(the_lobby, user)
 
         await remove_player_from_lobby()
+        utils.remove_online_user(self.user_id)
         await self.channel_layer.group_send(
             self.room_group_name,
             {'type': 'lobby_state', 'message': await self.get_lobby_data()}
@@ -302,6 +303,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
         await self.accept()
+        utils.add_online_user(self.user_id)
 
         # Benachrichtige andere Spieler, dass jemand verbunden ist
         await self.channel_layer.group_send(
@@ -319,6 +321,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+        utils.remove_online_user(self.user_id)
         await self.channel_layer.group_send(
             self.room_group_name,
             {

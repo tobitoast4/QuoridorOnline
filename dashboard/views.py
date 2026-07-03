@@ -8,6 +8,7 @@ from django.db.models.functions import TruncDate
 from datetime import datetime, timedelta
 
 from web import models, serialize
+from web import utils
 
 
 def parse_date_filter(value):
@@ -72,6 +73,7 @@ def dashboard(request):
         "lobbies_count_per_day": lobbies_count_per_day,
         "date_from": date_from,
         "date_to": date_to,
+        "online_user_count": utils.get_online_user_count(),
     }
     return render(request, 'dashboard.html', context)
 

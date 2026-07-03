@@ -1,16 +1,25 @@
+import logging
 import random
 from datetime import datetime
 import time
 import uuid
 import json
+import os
 from pathlib import Path
 from typing import Any, Dict
 
+import redis
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
+logger = logging.getLogger(__name__)
+
 from web import models
 
+logger = logging.getLogger(__name__)
+
+REDIS_ONLINE_USERS_SET_KEY = "online_users"
+REDIS_ONLINE_USERS_COUNT_HASH_KEY = "online_users_count"
 COLORS = ["red", "orange", "#FFE600", "#199A19", "blue", "#4A0080", "#EE81EE"]
 
 
@@ -33,6 +42,50 @@ def get_current_time():
     """
     return time.time()
 
+
+def get_redis_client():
+    if not hasattr(get_redis_client, "_client"):
+        redis_url = os.getenv("REDIS_URL", "redis://127.0.0.1:6379")
+        get_redis_client._client = redis.from_url(redis_url, decode_responses=True)
+    return get_redis_client._client
+
+
+def add_online_user(user_id: str):
+    try:
+        client = get_redis_client()
+        client.hincrby(REDIS_ONLINE_USERS_COUNT_HASH_KEY, user_id, 1)
+        client.sadd(REDIS_ONLINE_USERS_SET_KEY, user_id)
+    except redis.RedisError as e:
+        logger.warning("Unable to add online user to Redis: %s", e)
+
+
+def remove_online_user(user_id: str):
+    try:
+        client = get_redis_client()
+        count = client.hincrby(REDIS_ONLINE_USERS_COUNT_HASH_KEY, user_id, -1)
+        if count <= 0:
+            client.hdel(REDIS_ONLINE_USERS_COUNT_HASH_KEY, user_id)
+            client.srem(REDIS_ONLINE_USERS_SET_KEY, user_id)
+    except redis.RedisError as e:
+        logger.warning("Unable to remove online user from Redis: %s", e)
+
+
+def get_online_user_ids():
+    try:
+        client = get_redis_client()
+        return list(client.smembers(REDIS_ONLINE_USERS_SET_KEY))
+    except redis.RedisError as e:
+        logger.warning("Unable to read online user ids from Redis: %s", e)
+        return []
+
+
+def get_online_user_count():
+    try:
+        client = get_redis_client()
+        return client.scard(REDIS_ONLINE_USERS_SET_KEY)
+    except redis.RedisError as e:
+        logger.warning("Unable to read online user count from Redis: %s", e)
+        return 0
 
 def get_player_guest_name():
     return f"Guest-{str(uuid.uuid4())[:6]}"
