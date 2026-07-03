@@ -27,9 +27,11 @@ function updatePlayerOnlineStatus(player_id, is_online) {
     var online_status_dot = $('#online-status-' + player_id);
     if (is_online) {
         online_status_dot.css('background-color', '#00DD00');
+        online_status_dot.attr('title', 'online');
         online_user_ids.push(player_id);
     } else {
         online_status_dot.css('background-color', '#a8a8a8');
+        online_status_dot.attr('title', 'offline');
         online_user_ids = online_user_ids.filter(id => id !== player_id);
     }
 }
