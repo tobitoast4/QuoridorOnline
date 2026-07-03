@@ -12,6 +12,7 @@ urlpatterns = [
     re_path(r'^lobby/(?P<lobby_id>[^/]+)/?$', views.lobby, name='lobby_detail'),
     re_path(r'^get_random_lobby/?$', views.get_random_lobby, name='get_random_lobby'),
     re_path(r'^game/(?P<lobby_id>[^/]+)/?$', views.game, name='game'),
+    re_path(r'^get_game_data/(?P<lobby_id>[^/]+)/?$', views.get_game_data, name='get_game_data'),
     re_path(r'^rename_player/?$', views.rename_player, name='rename_player'),
     re_path(r'^change_color/?$', views.change_color, name='change_color'),
     re_path(r'^logout/?$', views.logout_user, name='logout'),

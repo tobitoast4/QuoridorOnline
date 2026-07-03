@@ -158,6 +158,19 @@ def game(request, lobby_id=None):
     context = {"user": request.user, "lobby": the_lobby}
     return render(request, "game_online.html", context)
 
+@api_view(['GET'])
+def get_game_data(request, lobby_id=None):
+    if lobby_id is None:
+        return Response({"error": "No lobby ID provided"}, 400)
+    else:
+        try:
+            the_lobby = models.Lobby.objects.get(id=lobby_id)
+        except models.Lobby.DoesNotExist:
+            return Response({"error": "Lobby not found"}, 404)
+        serializer = serialize.LobbySerializer(the_lobby)
+        json_data = serializer.data
+        return Response({"lobby": json_data}, 200)
+
 @api_view(['POST'])
 def rename_player(request):
     new_user_name = request.data.get("new_user_name")
