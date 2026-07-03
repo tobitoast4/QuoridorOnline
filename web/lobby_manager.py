@@ -39,6 +39,9 @@ def add_player_to_lobby(the_lobby, the_user):
         player = models.GamePlayer.objects.create(game_user=the_user, color=the_user.color, lobby=the_lobby)
         player.last_seen = utils.get_current_time()
         player.save()
+        if the_lobby.owner is None:
+            the_lobby.owner = player
+            the_lobby.save()
 
 def remove_player_from_lobby(the_lobby, the_user):
     # if user is in lobby, remove them
