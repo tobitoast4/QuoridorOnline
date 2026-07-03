@@ -140,7 +140,7 @@ CHANNEL_LAYERS = {
                 # ('127.0.0.1', 6379),  # Lokal: Redis auf Port 6379
                 os.getenv('REDIS_URL', 'redis://127.0.0.1:6379')
             ],
-            'capacity': 1500,
+            'capacity': 100,
             'expiry': 10,
         },
     }
