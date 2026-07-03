@@ -19,28 +19,6 @@ async function changeAmountOfWallsPerPlayer(new_amount) {
     gameClient.changeAmountOfWallsPerPlayer(new_amount);
 }
 
-async function getRandomPublicLobby() {
-    try {
-        var response = await fetch(window.location.origin + "/get_random_lobby", {
-            method: 'GET',
-            headers: {
-                'X-CSRFToken': getCookie("csrftoken", ""),
-                'Content-Type': 'application/json'
-            }
-        });
-        var data = await response.json();
-        throwOnError(data);
-        if (data.hasOwnProperty("error")) {
-            showNotify("error", "", data["error"], 6);
-        }
-        if (data.hasOwnProperty("lobby_url")) {
-            window.location.replace(data["lobby_url"]);
-        }
-    } catch (error) {
-        showNewError(error);
-    }
-}
-
 async function updatePlayerName() {
     let new_player_name = $('#input-players-name').val();
     gameClient.renamePlayer(new_player_name);
