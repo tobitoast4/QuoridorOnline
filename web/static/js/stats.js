@@ -3,7 +3,7 @@ function refreshPlayerStats() {
     players.forEach(player => {
         var player_stats = $('<div class="two-col-grid"></div>');
         player_stats.append('<h2 style="text-align: right;">' + player.name + `
-            <span id="online-status-${player.id}" title="online" class="online-dot""></span>
+            <span id="online-status-${player.player_id}" title="online" class="online-dot"" style="background-color: #00DD00;"></span>
         </h2>`);
     
         var wall_box = $('<div id="remaining_walls_container" style="display: flex; gap: 3px; padding: 20px"></div>');

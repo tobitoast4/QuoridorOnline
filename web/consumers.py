@@ -311,12 +311,11 @@ class GameConsumer(AsyncWebsocketConsumer):
             {
                 'type': 'player_connected',
                 'user_id': user_info['user_id'],
-                'username': user_info['username'],
             }
         )
-        logger.info(f"Player {user_info['username']} connected to game {self.lobby_id}")
+        logger.info(f"Player {self.user_name} connected to game {self.lobby_id}")
 
-    async def disconnect(self, close_code):        
+    async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
@@ -326,8 +325,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             {
                 'type': 'player_disconnected',
-                'username': self.user_name,
-                'color': self.user_color
+                'user_id': self.user_id
             }
         )
         logger.info(f"Player {self.user_name} disconnected from game {self.lobby_id}")
@@ -487,14 +485,12 @@ class GameConsumer(AsyncWebsocketConsumer):
         # Required as we have group_send(... 'type': 'player_connected',
         await self.send(text_data=json.dumps({
             'type': 'player_connected',
-            'user_id': event['user_id'],
-            'username': event['username'],
+            'user_id': event['user_id']
         }))
 
     async def player_disconnected(self, event):
         # Required as we have group_send(... 'type': 'player_disconnected',
         await self.send(text_data=json.dumps({
             'type': 'player_disconnected',
-            'username': event['username'],
-            'color': event['color'],
+            'user_id': event['user_id']
         }))

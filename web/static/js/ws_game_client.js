@@ -185,6 +185,7 @@ class GameWebSocketClient {
         // Event Callbacks
         this.handlers = {
             'connect': [],
+            'player_connected': [],
             'player_disconnected': [],
             'game_state': [],
             'error': [],
@@ -351,11 +352,12 @@ gameClient.on('game_state', (data) => {
     updateGame(round_diff=0, play_audio=true, fetched_game_data_is_new=true);
 });
 
+gameClient.on('player_connected', (data) => {
+    updatePlayerOnlineStatus(data.user_id, true);
+});
+
 gameClient.on('player_disconnected', (data) => {
-    let colored_name = `
-        <span class="font-effect-outline" style="font-weight: 100; color: ${data.color}">${data.username}</span>
-    `;
-    showNotify("info", "", colored_name + " has disconnected", 6);
+    updatePlayerOnlineStatus(data.user_id, false);
 });
 
 gameClient.on('error', (data) => {
