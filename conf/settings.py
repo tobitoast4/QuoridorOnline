@@ -137,8 +137,8 @@ CHANNEL_LAYERS = {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
             'hosts': [
-                ('127.0.0.1', 6379),  # Lokal: Redis auf Port 6379
-                # Für Production: os.getenv('REDIS_URL', 'redis://127.0.0.1:6379')
+                # ('127.0.0.1', 6379),  # Lokal: Redis auf Port 6379
+                os.getenv('REDIS_URL', 'redis://127.0.0.1:6379')
             ],
             'capacity': 1500,
             'expiry': 10,
