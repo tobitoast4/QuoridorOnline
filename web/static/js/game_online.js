@@ -437,12 +437,13 @@ function viewPreviousOrNextGameRound(round_diff) {
     if (current_round_diff <= 0) {
         current_round_diff = 0;
     }
-    let game_data = complete_game_data["game"];  // complete_game_data is defined in query_server.js
+    let game_data = complete_game_data.game.game;  // complete_game_data is defined in query_server.js
     if (current_round_diff > game_data.length - players.length) {
         current_round_diff = game_data.length - players.length;
     }
 
-    updateGame(current_round_diff+1);
+    console.log("current_round_diff: " + current_round_diff);
+    updateGame(current_round_diff+1, play_audio=false, fetched_game_data_is_new=false);
 }
 
 function itsLoggedInPlayersTurn(field, fields_to_win) {

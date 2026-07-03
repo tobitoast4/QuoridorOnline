@@ -28,6 +28,16 @@
             "justMyCode": false
         },
         {
+            "name": "Daphne",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "daphne",
+            "args": [
+                "conf.asgi:application"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Django Tests",
             "type": "python",
             "request": "launch",

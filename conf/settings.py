@@ -27,7 +27,11 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-secret-key")
 DEBUG = os.getenv("DJANGO_DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = ['*']
-X_FRAME_OPTIONS = "ALLOWALL"
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://quoridoronline.com",
+    "https://quoridoronlinedev.onrender.com",
+]
 
 AUTH_USER_MODEL = 'web.GameUser'
 
@@ -42,11 +46,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'web.apps.WebConfig',
-    'dashboard.apps.DashboardConfig'
+    'dashboard.apps.DashboardConfig',
+    'channels'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # whitenoise for static files in production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -77,6 +83,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'conf.wsgi.application'
+ASGI_APPLICATION = "conf.asgi.application"
 
 
 # Database
@@ -118,12 +125,6 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
-STATIC_URL = 'static/'
-# STATICFILES_DIRS = [BASE_DIR / "web/static"]
-STATIC_ROOT = os.path.join(BASE_DIR, "web/static")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -133,3 +134,47 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "web.errors.custom_exception_handler",
 }
+
+# Django Channels Configuration
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [{
+                "address": os.getenv('REDIS_URL', 'redis://127.0.0.1:6379'),
+                "socket_timeout": 10,
+                "socket_connect_timeout": 10,
+            }],
+            'capacity': 100,
+            'expiry': 10,
+        },
+    }
+}
+
+# Fallback für Entwicklung ohne Redis (nur in-memory)
+if os.getenv('DJANGO_DEBUG', 'True') == 'True' and not os.getenv('USE_REDIS'):
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer'
+        }
+    }
+
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.2/howto/static-files/
+
+# STATICFILES_DIRS = [BASE_DIR / "web/static"]
+STATIC_ROOT = os.path.join(BASE_DIR, "web/static")
+
+# This setting informs Django of the URI path from which your static files will be served to users
+# Here, they well be accessible at your-domain.onrender.com/static/... or yourcustomdomain.com/static/...
+STATIC_URL = 'static/'
+
+# This production code might break development mode, so we check whether we're in DEBUG mode
+if not DEBUG:
+    # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+    # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
+    # and renames the files with unique names for each version to support long-term caching
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
