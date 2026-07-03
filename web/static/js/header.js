@@ -21,5 +21,5 @@ function closeGameOverScreen(){
 }
 
 function playAgain(){
-    window.location.replace(server_url + 'lobby/' + next_lobby_id);
+    window.location.replace(window.location.origin + '/lobby/' + next_lobby_id);
 }

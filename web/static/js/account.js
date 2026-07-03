@@ -3,7 +3,7 @@ async function updatePlayerName() {
     let new_player_name = $('#input-players-name').val();
 
     try {
-        var response = await fetch(server_url + "rename_player", {
+        var response = await fetch(window.location.origin + "/rename_player", {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie("csrftoken", ""),
@@ -25,7 +25,7 @@ async function updatePlayerName() {
 
 async function updateColor(new_color) {
     try {
-        var response = await fetch(server_url + "change_color", {
+        var response = await fetch(window.location.origin + "/change_color", {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie("csrftoken", ""),

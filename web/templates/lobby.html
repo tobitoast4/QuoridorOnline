@@ -98,13 +98,12 @@
 
 
 <script>
-    server_url = "{{ request.scheme }}://{{ request.get_host }}/";
     current_lobby_id = "{{ lobby.id }}";
     this_player_id = "{{ user.id }}";
     this_player_name = "{{ user.username }}";
     this_player_color = "{{ user.color }}";
 
-    let lobby_link = server_url + "lobby/" + current_lobby_id;
+    let lobby_link = window.location.origin + "/lobby/" + current_lobby_id;
     $('#link-to-lobby').html("" + lobby_link);
 
     function copy_to_clipboard() {

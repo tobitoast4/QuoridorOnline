@@ -21,7 +21,7 @@ async function changeAmountOfWallsPerPlayer(new_amount) {
 
 async function getRandomPublicLobby() {
     try {
-        var response = await fetch(server_url + "get_random_lobby", {
+        var response = await fetch(window.location.origin + "/get_random_lobby", {
             method: 'GET',
             headers: {
                 'X-CSRFToken': getCookie("csrftoken", ""),
@@ -214,7 +214,7 @@ gameClient.on('lobby_state', (data) => {
     lobby_data = data.message;
 
     if (lobby_data.game) {
-        window.location.replace(server_url + "game/" + lobby_data.id);
+        window.location.replace(window.location.origin + "/game/" + lobby_data.id);
     } else {
         var lobby_owner_id = null;
         if (lobby_data.owner && lobby_data.owner.game_user) {

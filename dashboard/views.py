@@ -1,5 +1,3 @@
-import logging
-
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -12,7 +10,6 @@ from datetime import datetime, timedelta
 from web import models, serialize
 from web import utils
 
-logger = logging.getLogger(__name__)
 
 def parse_date_filter(value):
     if not value:
@@ -87,6 +84,5 @@ def delete_empty_lobbies(request):
     lobbies_to_delete = models.Lobby.objects.filter(game__isnull=True).exclude(game="")
     deleted_count = lobbies_to_delete.count()
     lobbies_to_delete.delete()
-    logger.info(f"Deleted {deleted_count} empty lobbies.")
     return Response({"deleted": deleted_count}, 200)
 

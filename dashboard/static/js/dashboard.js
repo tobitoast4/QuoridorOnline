@@ -1,4 +1,3 @@
-var server_url = null;
 var labels = [];
 
 // convert labels from string (e.g. "2024-02-23") to Date object)
@@ -207,7 +206,7 @@ function setPageSize(pageSize) {
 
 async function deleteEmptyLobbies() {
     try {
-        var response = await fetch(server_url + "dashboard/delete_empty_lobbies/" , {
+        var response = await fetch(window.location.origin + "/dashboard/delete_empty_lobbies/" , {
             method: 'DELETE',
             headers: {
                 'X-CSRFToken': getCookie("csrftoken", ""),
