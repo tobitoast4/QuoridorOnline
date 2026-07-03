@@ -136,10 +136,11 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [
-                # ('127.0.0.1', 6379),  # Lokal: Redis auf Port 6379
-                os.getenv('REDIS_URL', 'redis://127.0.0.1:6379')
-            ],
+            "hosts": [{
+                "address": os.getenv('REDIS_URL', 'redis://127.0.0.1:6379'),
+                "socket_timeout": 10,
+                "socket_connect_timeout": 10,
+            }],
             'capacity': 100,
             'expiry': 10,
         },
