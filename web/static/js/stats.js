@@ -1,3 +1,5 @@
+let online_user_ids = [];
+
 function refreshPlayerStats() {
     $('#stats_grid').empty();
     players.forEach(player => {
@@ -13,8 +15,9 @@ function refreshPlayerStats() {
         player_stats.append(wall_box);
         $('#stats_grid').append(player_stats);
 
-        if (player.player_id == this_player_id) {
-            updatePlayerOnlineStatus(this_player_id, true);
+        if (player.player_id == this_player_id || online_user_ids.includes(player.player_id)) {
+            // if the player is online or the player themselves, set the online status to green
+            updatePlayerOnlineStatus(player.player_id, true);
         }
     });
 
@@ -24,7 +27,9 @@ function updatePlayerOnlineStatus(player_id, is_online) {
     var online_status_dot = $('#online-status-' + player_id);
     if (is_online) {
         online_status_dot.css('background-color', '#00DD00');
+        online_user_ids.push(player_id);
     } else {
         online_status_dot.css('background-color', '#a8a8a8');
+        online_user_ids = online_user_ids.filter(id => id !== player_id);
     }
 }
