@@ -2,7 +2,9 @@ function refreshPlayerStats() {
     $('#stats_grid').empty();
     players.forEach(player => {
         var player_stats = $('<div class="two-col-grid"></div>');
-        player_stats.append('<h2 style="text-align: right;">' + player.name + '</h2>');
+        player_stats.append('<h2 style="text-align: right;">' + player.name + `
+            <span id="online-status-${player.id}" title="online" class="online-dot""></span>
+        </h2>`);
     
         var wall_box = $('<div id="remaining_walls_container" style="display: flex; gap: 3px; padding: 20px"></div>');
         for (var i = 0; i < player.amount_walls_left; i++) {
@@ -11,4 +13,13 @@ function refreshPlayerStats() {
         player_stats.append(wall_box);
         $('#stats_grid').append(player_stats);
     });
+}
+
+function updatePlayerOnlineStatus(player_id, is_online) {
+    var online_status_dot = $('#online-status-' + player_id);
+    if (is_online) {
+        online_status_dot.css('background-color', '#00DD00');
+    } else {
+        online_status_dot.css('background-color', '#a8a8a8');
+    }
 }

@@ -90,3 +90,12 @@
     font-size: 16px;
     cursor: pointer;
 }
+
+.online-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    margin-left: 3px;
+}
