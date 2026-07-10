@@ -3,5 +3,5 @@ djangorestframework==3.16.0
 uuid6==2024.7.10
 channels==4.3.2
 channels-redis==4.3.0
-daphne==4.2.2
 whitenoise==6.12.0
+gunicorn
