@@ -1,6 +1,7 @@
 import logging
 import random
 from datetime import datetime
+import threading
 import time
 import uuid
 import json
@@ -125,20 +126,28 @@ def delete_json_files_without_game():
 
 
 def send_email(content):
-    try:
-        smtp = smtplib.SMTP('smtp.ionos.de', 587)
-        smtp.connect('smtp.ionos.de', 587)
-        smtp.starttls()
-        smtp.ehlo()
-        password = os.getenv("IONOS_PASSWORD")
-        if password is None:
-            return
-        smtp.login("support@quoridoronline.com", password)
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = "NEW LOBBY"
-        msg['From'] = "support@quoridoronline.com"
-        msg['To'] = "tobi83301@gmail.com"
-        msg.attach(MIMEText(content, "plain"))
-        smtp.send_message(msg)
-    except Exception as e:
-        logger.warning("Unable to send email: %s", e)
+    def _send():
+        try:
+            smtp = smtplib.SMTP("smtp.ionos.de", 587)
+            smtp.connect("smtp.ionos.de", 587)
+            smtp.starttls()
+            smtp.ehlo()
+
+            password = os.getenv("IONOS_PASSWORD")
+            if password is None:
+                logger.error("IONOS_PASSWORD environment variable is not set. Cannot send email.")
+
+            smtp.login("support@quoridoronline.com", password)
+
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = "NEW LOBBY"
+            msg["From"] = "support@quoridoronline.com"
+            msg["To"] = "tobi83301@gmail.com"
+            msg.attach(MIMEText(content, "plain"))
+            smtp.send_message(msg)
+
+        except Exception as e:
+            logger.warning("Unable to send email: %s", e)
+
+    thread = threading.Thread(target=_send, daemon=True)
+    thread.start()
