@@ -133,7 +133,7 @@ def lobby(request, lobby_id=None):
         # create new lobby
         game_player = models.GamePlayer.objects.create(game_user=request.user, color=request.user.color)
         new_lobby = models.Lobby.objects.create(created_by=request.user, owner=game_player)
-        utils.send_email(f"New lobby created by {request.user.username}\n\nLobby ID: \nhttps://quoridoronline.com/lobby/{new_lobby.id}")
+        # utils.send_email(f"New lobby created by {request.user.username}\n\nLobby ID: \nhttps://quoridoronline.com/lobby/{new_lobby.id}")
         game_player.lobby = new_lobby
         game_player.save()
         return redirect(f"/lobby/{new_lobby.id}")
