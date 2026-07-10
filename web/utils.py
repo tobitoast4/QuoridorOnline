@@ -11,6 +11,9 @@ from typing import Any, Dict
 import redis
 from django.contrib.auth import get_user_model
 from django.db import transaction
+import smtplib, os
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 logger = logging.getLogger(__name__)
 
@@ -121,13 +124,9 @@ def delete_json_files_without_game():
             print(f"Fehler bei {json_file.name}: {e}")
 
 
-import smtplib, os
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-smtp = smtplib.SMTP('smtp.ionos.de', 587)
-
 def send_email(content):
     try:
+        smtp = smtplib.SMTP('smtp.ionos.de', 587)
         smtp.connect('smtp.ionos.de', 587)
         smtp.starttls()
         smtp.ehlo()
@@ -142,4 +141,4 @@ def send_email(content):
         msg.attach(MIMEText(content, "plain"))
         smtp.send_message(msg)
     except Exception as e:
-        print(f"Error sending email: {e}")
+        logger.warning("Unable to send email: %s", e)
