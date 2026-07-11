@@ -84,7 +84,7 @@ class MoveSimulator:
         score = (
             3 * (others_distance - game.shortest_distance(ai_player))
             + 1 * (ai_player.amount_walls_left - others_walls)
-        ) + random.randint(-4, 4)
+        ) + random.randint(-1, 1)
         return score
     
     def _generate_moves(self, game, dictionary, depth, alpha, beta):
