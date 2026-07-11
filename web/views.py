@@ -215,7 +215,7 @@ def calculate_ai(request):
     the_lobby = models.Lobby.objects.get(id=lobby_id)
     the_game_json = json.loads(the_lobby.game)
     the_game = quoridor_deserialize.create_game_from_json(the_game_json)
-    move_generator = ai_move.MoveSimulator(the_game, depth=2, wall_range=3)
+    move_generator = ai_move.MoveSimulator(the_lobby, the_game, depth=2, wall_range=5)
     logger.info("START")
     new_game, score = move_generator.start_generate_moves()
     logger.info("END")

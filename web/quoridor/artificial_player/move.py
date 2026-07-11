@@ -9,14 +9,17 @@ import threading
 
 
 class MoveSimulator:
-    def __init__(self, game: Game, depth, wall_range):
+    def __init__(self, lobby, game: Game, depth, wall_range):
         self.depth = depth
         self.wall_range = wall_range
+        self.moves_before_wall = 2
+        self.lobby = lobby
         self.game = game
         self.ai_player = game.get_current_player()
         self.game_copies = dict()
         self.running_threads = []
         self.moves = []
+        self.impossible_walls = []  # TODO: store impossible walls here to not check over and over
 
     def start_generate_moves(self):
         score = self._generate_moves(self.game, dictionary=self.game_copies, depth=self.depth, 
@@ -57,7 +60,7 @@ class MoveSimulator:
                 others_distance += distance
                 others_walls += player.amount_walls_left
         score = (
-            10 * (others_distance - game.shortest_distance(current_player))
+            1 * (others_distance - game.shortest_distance(current_player))
             + 2 * (current_player.amount_walls_left - others_walls)
         )
         return score
@@ -65,10 +68,12 @@ class MoveSimulator:
     def _generate_moves(self, game, dictionary, depth, alpha, beta):
         current_turn_player = game.get_current_player()  # its this players turn != self.ai_player
         if current_turn_player == self.ai_player:  # minimaxing
+            kzl = "AI"
             maximizing = True
             best_score = float("-inf")
             func = max
         else:
+            kzl = "G"
             maximizing = False
             best_score = float("inf")
             func = min
@@ -78,34 +83,13 @@ class MoveSimulator:
             dictionary["score"] = score
             return score
         
-        # Player movement moves
-        for option in current_turn_player.getMoveOptions():
-            key = str(f"KI-M-({option.col_num}, {option.row_num})")
-            new_game = copy.deepcopy(game)
-            new_game.move_player(current_turn_player.gameplayer.game_user.id, 
-                                 None, option.col_num, option.row_num)
-            dictionary[key] = {}
-            score = self._generate_moves(new_game, dictionary[key], depth-1, alpha, beta)
-            if depth == self.depth:
-                print(f"{key} - {score}")
-                self.moves.append((new_game, score))
-            best_score = func(best_score, score)
-            if maximizing:
-                alpha = max(alpha, best_score)
-            else:
-                beta = min(beta, best_score)
-            if alpha >= beta:
-                break
-
-        # Walls placement moves
-        walls = self.get_walls_in_range(game.get_other_players()[0].field, self.wall_range)  # TODO: all walls for all players
-        for wall in walls:
-            key = f"KI-W-{str(wall)}"
-            new_game = copy.deepcopy(game)
-            col_start, row_start, col_end, row_end = wall
-            try:  # if trying to place a wall does not throw an error, we know its a legal move
-                new_game.place_wall(current_turn_player.gameplayer.game_user.id, 
-                                    col_start, row_start, col_end, row_end)
+        if game.turn <= self.moves_before_wall or len(game.game_board.walls) >= 1:
+            # Player movement moves
+            for option in current_turn_player.getMoveOptions():
+                key = str(f"{kzl}-M-({option.col_num}, {option.row_num})")
+                new_game = copy.deepcopy(game)
+                new_game.move_player(current_turn_player.gameplayer.game_user.id, 
+                                    self.lobby, option.col_num, option.row_num)
                 dictionary[key] = {}
                 score = self._generate_moves(new_game, dictionary[key], depth-1, alpha, beta)
                 if depth == self.depth:
@@ -118,8 +102,33 @@ class MoveSimulator:
                     beta = min(beta, best_score)
                 if alpha >= beta:
                     break
-            except QuoridorOnlineGameError as e:
-                pass  # wall can not be placed
+        
+        if game.turn > self.moves_before_wall:
+            # Walls placement moves
+            walls1 = self.get_walls_on_path(game, game.get_other_players()[0])  # TODO: all walls for all players
+            walls2 = self.get_walls_in_range(game.get_other_players()[0].field, self.wall_range)  # TODO: --"--
+            walls = list(set(walls1) & set(walls2))
+            for wall in walls:
+                key = f"{kzl}-W-{str(wall)}"
+                new_game = copy.deepcopy(game)
+                col_start, row_start, col_end, row_end = wall
+                try:  # if trying to place a wall does not throw an error, we know its a legal move
+                    new_game.place_wall(current_turn_player.gameplayer.game_user.id, 
+                                        col_start, row_start, col_end, row_end)
+                    dictionary[key] = {}
+                    score = self._generate_moves(new_game, dictionary[key], depth-1, alpha, beta)
+                    if depth == self.depth:
+                        print(f"{key} - {score}")
+                        self.moves.append((new_game, score))
+                    best_score = func(best_score, score)
+                    if maximizing:
+                        alpha = max(alpha, best_score)
+                    else:
+                        beta = min(beta, best_score)
+                    if alpha >= beta:
+                        break
+                except QuoridorOnlineGameError as e:
+                    pass  # wall can not be placed
         return best_score
         print("done")
 
@@ -161,29 +170,6 @@ class MoveSimulator:
 
 
     def get_walls_in_range(self, field, distance):
-        def get_walls_at_field(field):
-            col = field.col_num
-            row = field.row_num
-            walls = []
-
-            candidate_walls = [
-                # horizontal
-                (col, row + 0.5, col + 1, row + 0.5),
-                (col - 1, row + 0.5, col, row + 0.5),
-                (col, row - 0.5, col + 1, row - 0.5),
-                (col - 1, row - 0.5, col, row - 0.5),
-                # vertical
-                (col + 0.5, row, col + 0.5, row + 1),
-                (col + 0.5, row - 1, col + 0.5, row),
-                (col - 0.5, row, col - 0.5, row + 1),
-                (col - 0.5, row - 1, col - 0.5, row),
-            ]
-
-            for wall_coords in candidate_walls:
-                if is_wall_within_board(*wall_coords, self.game.game_board.amount_fields):
-                    walls.append(wall_coords)
-            return walls
-
         # get all fields in range of the given manhatten distance
         fields_in_range = {field}
         for _ in range(distance):
@@ -193,5 +179,35 @@ class MoveSimulator:
             fields_in_range = set(new_fields_in_range)
         walls = []
         for field in fields_in_range:
-            walls += get_walls_at_field(field)
+            walls += self.get_walls_at_field(field)
+        return list(set(walls))
+    
+    def get_walls_on_path(self, game, player):
+        fields_of_path = game.fields_of_path_to_win(player)
+        walls = []
+        for field in fields_of_path:
+            walls += self.get_walls_at_field(field)
+        return list(set(walls))
+
+    def get_walls_at_field(self, field):
+        col = field.col_num
+        row = field.row_num
+        walls = []
+
+        candidate_walls = [
+            # horizontal
+            (col, row + 0.5, col + 1, row + 0.5),
+            (col - 1, row + 0.5, col, row + 0.5),
+            (col, row - 0.5, col + 1, row - 0.5),
+            (col - 1, row - 0.5, col, row - 0.5),
+            # vertical
+            (col + 0.5, row, col + 0.5, row + 1),
+            (col + 0.5, row - 1, col + 0.5, row),
+            (col - 0.5, row, col - 0.5, row + 1),
+            (col - 0.5, row - 1, col - 0.5, row),
+        ]
+
+        for wall_coords in candidate_walls:
+            if is_wall_within_board(*wall_coords, self.game.game_board.amount_fields):
+                walls.append(wall_coords)
         return walls

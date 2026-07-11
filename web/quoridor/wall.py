@@ -133,6 +133,14 @@ class Wall:
             return True
         if col == self.col_end and row == self.row_end:
             return True
+        
+    def __eq__(self, other):
+        if self.col_start == other.col_start and \
+            self.row_start == other.row_start and \
+            self.col_end == other.col_end and \
+            self.row_end == other.row_end: 
+                return True
+        return False
 
     def __json__(self):
         return {

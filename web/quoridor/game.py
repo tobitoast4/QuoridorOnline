@@ -55,7 +55,7 @@ class Game:
                 self.state = STATE_PLAYING
         else:
             result = player.move_to_field(new_field)
-            if result is not None and lobby is not None:
+            if result is not None:
                 self.state = STATE_PLAYER_DID_WIN
                 lobby.winner = player.gameplayer
                 lobby.save()
@@ -146,3 +146,21 @@ class Game:
                     queue.append((neighbor, distance + 1))
         # no path
         return -1
+    
+    def fields_of_path_to_win(self, player):
+        fields_to_win = player.win_option_fields
+        start = player.field 
+
+        queue = deque([(start, 0)])
+        visited = {start}
+
+        while queue:
+            field, distance = queue.popleft()
+            if field in fields_to_win:
+                return visited
+            for neighbor in field.neighbour_fields:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append((neighbor, distance + 1))
+        # no path
+        return None
