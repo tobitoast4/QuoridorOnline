@@ -97,7 +97,7 @@ class GameBoard:
                 field_right = self.getFieldByColAndRow(col + 1, row)
                 field_marker = "0"
                 if current_field.player is not None:
-                    field_marker = current_field.player.user.name[0]
+                    field_marker = current_field.player.gameplayer.game_user.username[0]
                 if field_right in current_field.neighbour_fields:
                     print(f"{field_marker}----", end="")
                 else:

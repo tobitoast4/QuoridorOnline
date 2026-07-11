@@ -1,10 +1,11 @@
 from web.errors import QuoridorOnlineGameError
 from web.serialize import GamePlayerSerializer
 import web.quoridor.field as field
+from web import models
 
 
 class QouridorPlayer:
-    def __init__(self, gameplayer, amount_walls: int):
+    def __init__(self, gameplayer: models.GamePlayer, amount_walls: int):
         self.gameplayer = gameplayer
         self.amount_walls_left = amount_walls
         self.field = None
@@ -61,6 +62,9 @@ class QouridorPlayer:
                         if neighbour_field.player is None:
                             move_option_fields.append(neighbour_field)
         return move_option_fields
+    
+    def __eq__(self, other):
+        return str(self.gameplayer.id) == str(other.gameplayer.id)
 
     def __json__(self, initial=False):
         serializer = GamePlayerSerializer(self.gameplayer)

@@ -14,8 +14,11 @@ from web import serialize
 from web import utils, lobby_manager
 from web.quoridor import game as quoridor_game
 from web.quoridor import deserialize as quoridor_deserialize
+from web.quoridor.artificial_player import move as ai_move
 import dashboard.views
+import logging
 
+logger = logging.getLogger(__name__)
 
 
 def login(request):
@@ -204,3 +207,19 @@ def ads_txt(request):
         open("web/static/ads.txt", "rb"),
         content_type="text/plain"
     )
+
+
+@api_view(['POST'])
+def calculate_ai(request):
+    lobby_id = request.data.get("lobby_id")
+    the_lobby = models.Lobby.objects.get(id=lobby_id)
+    the_game_json = json.loads(the_lobby.game)
+    the_game = quoridor_deserialize.create_game_from_json(the_game_json)
+    move_generator = ai_move.MoveSimulator(the_game, depth=2, wall_range=3)
+    logger.info("START")
+    new_game, score = move_generator.start_generate_moves()
+    logger.info("END")
+    the_lobby.game = json.dumps(new_game.game_data, cls=utils.UUIDEncoder)
+    the_lobby.save()
+    
+    return Response({"status": "done"}, 200)

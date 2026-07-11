@@ -110,6 +110,8 @@ document.addEventListener('keyup', function(event) {
             viewPreviousOrNextGameRound(1);
         } else if (event.key == "ArrowRight") {
             viewPreviousOrNextGameRound(-1);
+        } else if (event.key.toLowerCase() == "m") {
+            calculateAiAsync();
         } else if (event.key) {
             changePlayState();  // place walls
         }

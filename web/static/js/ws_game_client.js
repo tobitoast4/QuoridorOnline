@@ -8,6 +8,8 @@ var last_error_msg = null;
 var players_created = false;
 
 
+
+
 async function movePlayerAsync(player_id, new_field_col_num, new_field_row_num) {
     gameClient.sendMove(player_id, new_field_col_num, new_field_row_num);
 }
@@ -18,6 +20,25 @@ async function placeWallAsync(player_id, col_start, row_start, col_end, row_end)
 
 async function surrenderAsync() {
     gameClient.sendSurrender();
+}
+
+async function calculateAiAsync() {
+    try {
+        const response = await fetch(window.location.origin + "/calculate_ai/", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie("csrftoken", ""),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "lobby_id": current_lobby_id
+            })
+        });
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        throw error;
+    }
 }
 
 async function createPlayers() {

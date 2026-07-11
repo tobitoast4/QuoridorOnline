@@ -2,6 +2,15 @@ from web.errors import QuoridorOnlineGameError
 import math
 
 
+def is_wall_within_board(col_start, row_start, col_end, row_end, amount_fields):
+    return (
+        0 <= col_start <= amount_fields-1 and
+        0 <= row_start <= amount_fields-1 and
+        0 <= col_end <= amount_fields-1 and
+        0 <= row_end <= amount_fields-1
+    )
+
+
 class Wall:
     def __init__(self, player_id, col_start, row_start, col_end, row_end, game_board):
         """Walls can be placed like this:
@@ -55,7 +64,7 @@ class Wall:
             field_bottom_left = self.game_board.getFieldByColAndRow(col_left, self.row_end)
             field_bottom_right = self.game_board.getFieldByColAndRow(col_right, self.row_end)
             field_bottom_left.remove_connection(field_bottom_right)
-        elif self.row_start == self.row_end:
+        elif self.row_start == self.row_end:  # wall is horizontal
             row_top = math.floor(self.row_start)
             row_bottom = math.ceil(self.row_start)
             field_top_left = self.game_board.getFieldByColAndRow(self.col_start, row_top)

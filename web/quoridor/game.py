@@ -25,7 +25,7 @@ class Game:
 
     def surrender(self, user_id, lobby):
         """Can be used to surrender from the game."""
-        if str(self._get_current_player().gameplayer.game_user.id) != user_id:
+        if str(self.get_current_player().gameplayer.game_user.id) != user_id:
             raise QuoridorOnlineGameError("It's not your turn currently")
         player = self._get_player_of_user(user_id)
         # if player.gameplayer.has_surrendered:
@@ -43,8 +43,7 @@ class Game:
 
     def move_player(self, user_id, lobby, new_field_col, new_field_row):
         """Can be used to move a player."""
-        if str(self._get_current_player().gameplayer.game_user.id) != user_id:
-            print(str(self._get_current_player().gameplayer.game_user.id), user_id)
+        if str(self.get_current_player().gameplayer.game_user.id) != str(user_id):
             raise QuoridorOnlineGameError("It's not your turn currently")
         player = self._get_player_of_user(user_id)
         # if player.gameplayer.has_surrendered:
@@ -56,7 +55,7 @@ class Game:
                 self.state = STATE_PLAYING
         else:
             result = player.move_to_field(new_field)
-            if result is not None:
+            if result is not None and lobby is not None:
                 self.state = STATE_PLAYER_DID_WIN
                 lobby.winner = player.gameplayer
                 lobby.save()
@@ -65,23 +64,37 @@ class Game:
     def place_wall(self, user_id, col_start, row_start, col_end, row_end, skip_user_check=False):
         """Can be used to place a wall."""
         if not skip_user_check:
-            if str(self._get_current_player().gameplayer.game_user.id) != user_id:
+            if str(self.get_current_player().gameplayer.game_user.id) != str(user_id):
                 raise QuoridorOnlineGameError("It's not your turn currently")
-            if self._get_current_player().amount_walls_left <= 0:
+            if self.get_current_player().amount_walls_left <= 0:
                 raise QuoridorOnlineGameError("You do not have any more walls left")
         player = self._get_player_of_user(user_id)
         # if player.gameplayer.has_surrendered:
         #     raise QuoridorOnlineGameError("You have surrendered already")
         new_wall = wall.Wall(user_id, col_start, row_start, col_end, row_end, self.game_board)
         self.game_board.walls.append(new_wall)
-        path_checker = PathChecker()
-        if not path_checker.check_if_path_to_win_exists_for_all_players(self.game_board.players):
+        if not self.check_if_path_to_win_exists_for_all_players():
             new_wall.remove_wall_from_field()
             raise QuoridorOnlineGameError("Wall could not be placed as it would block a player from winning")
         # if creating a wall did not throw an exception, decrease the amount of walls the player has
         if not skip_user_check:
-            self._get_current_player().amount_walls_left -= 1
+            self.get_current_player().amount_walls_left -= 1
             self._next_players_turn()
+
+    def get_current_player(self):
+        player = self.game_board.players[self.its_this_players_turn]
+        if player.gameplayer.has_surrendered:
+            self._next_players_turn()
+            return self.get_current_player()
+        return player
+    
+    def get_other_players(self):
+        current_player = self.get_current_player()
+        other_players = []
+        for p in self.game_board.players:
+            if p != current_player:
+                other_players.append(p)
+        return other_players
 
     def _next_players_turn(self):
         self.its_this_players_turn += 1
@@ -99,13 +112,6 @@ class Game:
                 return player
         return None
 
-    def _get_current_player(self):
-        player = self.game_board.players[self.its_this_players_turn]
-        if player.gameplayer.has_surrendered:
-            self._next_players_turn()
-            return self._get_current_player()
-        return player
-
     def _append_game_data(self):
         self.game_data["game"].append({
             "state": self.state,
@@ -115,39 +121,24 @@ class Game:
             "game_board": self.game_board.__json__(),
         })
 
-
-class PathChecker:
-    """Class that checks that a wall does not block any player
-       completely off from winning.
-
-       # TODO: PROBLEM THAT COULD OCCUR:
-       A problem that could currently happen, is that there is a path,
-       but check_if_path_to_win_exists_for_all_players() returns False.
-       This could happen, if a field that need a way to win would contains
-       is already visited by another recursion loop.
-    """
-    def __init__(self):
-        self.path_found = None
-        self.fields_visited = None
-
-    def check_if_path_to_win_exists_for_all_players(self, players):
-        for player in players:
+    def check_if_path_to_win_exists_for_all_players(self):
+        for player in self.game_board.players:
             if not player.gameplayer.has_surrendered:
-                self.path_found = False
-                self.fields_visited = []
-                distance = self.shortest_distance(player.field, player.win_option_fields)
+                distance = self.shortest_distance(player)
                 if distance < 0:  # after shortest_distance() this should be set
                     return False              # to true if there is a path
         return True
 
-    def shortest_distance(self, start, fields_to_win):
+    def shortest_distance(self, player):
+        fields_to_win = player.win_option_fields
+        start = player.field 
+
         queue = deque([(start, 0)])
         visited = {start}
 
         while queue:
             field, distance = queue.popleft()
             if field in fields_to_win:
-                print(distance)
                 return distance
             for neighbor in field.neighbour_fields:
                 if neighbor not in visited:
