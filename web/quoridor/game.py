@@ -1,3 +1,5 @@
+from collections import deque
+
 from web.errors import QuoridorOnlineGameError
 import web.quoridor.game_board as game_board
 import web.quoridor.wall as wall
@@ -133,22 +135,23 @@ class PathChecker:
             if not player.gameplayer.has_surrendered:
                 self.path_found = False
                 self.fields_visited = []
-                self.check_if_path_to_win_exists(player.field, player.win_option_fields)
-                if self.path_found == False:  # after check_if_path_to_win_exists() this should be set
+                distance = self.shortest_distance(player.field, player.win_option_fields)
+                if distance < 0:  # after shortest_distance() this should be set
                     return False              # to true if there is a path
         return True
 
-    def check_if_path_to_win_exists(self, field, fields_to_win):
-        # Returns true if there is at least one path from field to one of
-        # the fields in fields_to_win. Otherwise returns false.
-        if field in self.fields_visited:
-            return
-        if field in fields_to_win:
-            self.path_found = True
-            return
-        if self.path_found:
-            return
-        self.fields_visited.append(field)
-        neighbour_fields = field.neighbour_fields
-        for neighbour_field in neighbour_fields:
-            self.check_if_path_to_win_exists(neighbour_field, fields_to_win)
+    def shortest_distance(self, start, fields_to_win):
+        queue = deque([(start, 0)])
+        visited = {start}
+
+        while queue:
+            field, distance = queue.popleft()
+            if field in fields_to_win:
+                print(distance)
+                return distance
+            for neighbor in field.neighbour_fields:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append((neighbor, distance + 1))
+        # no path
+        return -1
