@@ -1,6 +1,6 @@
 import sys
 
-from web.quoridor.game import Game, STATE_PLACING_PLAYERS
+from web.quoridor.game import Game, STATE_PLACING_PLAYERS, STATE_PLAYER_DID_WIN
 from web.quoridor.wall import Wall, is_wall_within_board
 from web.errors import QuoridorOnlineGameError
 from collections import deque
@@ -12,14 +12,14 @@ class MoveSimulator:
     def __init__(self, lobby, game: Game, depth, wall_range):
         self.depth = depth
         self.wall_range = wall_range
-        self.moves_before_wall = 2  # this many moves will be performed before placing a wall
+        self.moves_before_wall = random.randint(3, 8)  # this many moves will be performed before placing a wall
         self.lobby = lobby
         self.game = game
         self.ai_player = game.get_current_player()
         self.game_copies = dict()
         self.running_threads = []
         self.moves = []
-        self.impossible_walls = []  # TODO: store impossible walls here to not check over and over
+        self.impossible_walls = []
 
     def play(self):
         """Wrapper function for play_ai_player() that ensures that at least 0.5 
@@ -28,11 +28,13 @@ class MoveSimulator:
         start = time.monotonic()
         game = self.play_ai_player()  # actual method
         elapsed = time.monotonic() - start
-        if elapsed < 1.1:
-            time.sleep(1.1)
+        if elapsed < 0.1:
+            time.sleep(0.1)
         return game
 
     def play_ai_player(self):
+        if self.game.state == STATE_PLAYER_DID_WIN:
+            return
         if self.game.state == STATE_PLACING_PLAYERS:
             move_options = self.ai_player.start_option_fields
             start_field = random.choice(move_options)
@@ -65,6 +67,7 @@ class MoveSimulator:
         
             score = (10 * (sum_enemy_distance - own_distance) + 2 * (amount_own_walls - sum_amount_enemy_walls))
         """
+        # TODO: Lower score for going back to an old field
         others_walls = 0
         others_distance = 0
         ai_player = self.get_ai_player(game)
@@ -81,7 +84,7 @@ class MoveSimulator:
         score = (
             3 * (others_distance - game.shortest_distance(ai_player))
             + 1 * (ai_player.amount_walls_left - others_walls)
-        )
+        ) + random.randint(-4, 4)
         return score
     
     def _generate_moves(self, game, dictionary, depth, alpha, beta):
@@ -107,8 +110,8 @@ class MoveSimulator:
             for option in current_turn_player.getMoveOptions():
                 key = str(f"{kzl}-M-({option.col_num}, {option.row_num})")
                 new_game = copy.deepcopy(game)
-                new_game.move_player(current_turn_player.gameplayer.game_user.id, 
-                                    self.lobby, option.col_num, option.row_num)
+                new_game.move_player(current_turn_player.gameplayer.game_user.id,   # only at the top level depth, the winner 
+                                    self.lobby, option.col_num, option.row_num, depth==self.depth)  # should be set
                 dictionary[key] = {}
                 score = self._generate_moves(new_game, dictionary[key], depth-1, alpha, beta)
                 if depth == self.depth:

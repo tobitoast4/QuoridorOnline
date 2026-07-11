@@ -499,6 +499,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                 return None
             except models.Lobby.DoesNotExist:
                 raise ValueError(f"Lobby with id {self.lobby_id} does not exist.")
+            except Exception:
+                pass
         try:
             lobby_data = await play_ai()
             if lobby_data:

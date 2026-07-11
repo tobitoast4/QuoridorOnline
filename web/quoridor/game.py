@@ -41,7 +41,7 @@ class Game:
             lobby.save()
         self._next_players_turn()
 
-    def move_player(self, user_id, lobby, new_field_col, new_field_row):
+    def move_player(self, user_id, lobby, new_field_col, new_field_row, set_winner=True):
         """Can be used to move a player."""
         if str(self.get_current_player().gameplayer.game_user.id) != str(user_id):
             raise QuoridorOnlineGameError("It's not your turn currently")
@@ -55,7 +55,7 @@ class Game:
                 self.state = STATE_PLAYING
         else:
             result = player.move_to_field(new_field)
-            if result is not None:
+            if result is not None and set_winner:
                 self.state = STATE_PLAYER_DID_WIN
                 lobby.winner = player.gameplayer
                 lobby.save()
