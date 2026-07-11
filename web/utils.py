@@ -15,9 +15,6 @@ from django.db import transaction
 import smtplib, os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
-logger = logging.getLogger(__name__)
-
 from web import models
 
 logger = logging.getLogger(__name__)
