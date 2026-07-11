@@ -12,7 +12,7 @@ class MoveSimulator:
     def __init__(self, lobby, game: Game, depth, wall_range):
         self.depth = depth
         self.wall_range = wall_range
-        self.moves_before_wall = 2
+        self.moves_before_wall = 2  # this many moves will be performed before placing a wall
         self.lobby = lobby
         self.game = game
         self.ai_player = game.get_current_player()
@@ -45,23 +45,27 @@ class MoveSimulator:
         return players
 
     def calculate_game_score(self, game: Game):
-        """Calculates the score of the game for the current player. The higher the score, 
-        the better the position of the current player. 
+        """Calculates the score of the game for the AI player. The higher the score, 
+        the better the position of the AI player. 
         
             score = (10 * (sum_enemy_distance - own_distance) + 2 * (amount_own_walls - sum_amount_enemy_walls))
         """
         others_walls = 0
         others_distance = 0
-        current_player = self.get_ai_player(game)
+        ai_player = self.get_ai_player(game)
+        if ai_player.field in ai_player.win_option_fields:
+            return float("inf")  # best score possible
         for player in self.get_not_ai_players(game):
-            if not player.gameplayer.has_surrendered and player != current_player:
+            if player.field in player.win_option_fields:
+                float("-inf")  # best score possible
+            if not player.gameplayer.has_surrendered and player != ai_player:
                 distance = game.shortest_distance(player)
                 assert distance >= 0, "Distance should be non-negative"
                 others_distance += distance
                 others_walls += player.amount_walls_left
         score = (
-            1 * (others_distance - game.shortest_distance(current_player))
-            + 2 * (current_player.amount_walls_left - others_walls)
+            3 * (others_distance - game.shortest_distance(ai_player))
+            + 1 * (ai_player.amount_walls_left - others_walls)
         )
         return score
     
@@ -109,6 +113,8 @@ class MoveSimulator:
             walls2 = self.get_walls_in_range(game.get_other_players()[0].field, self.wall_range)  # TODO: --"--
             walls = list(set(walls1) & set(walls2))
             for wall in walls:
+                if wall in self.impossible_walls:
+                    continue
                 key = f"{kzl}-W-{str(wall)}"
                 new_game = copy.deepcopy(game)
                 col_start, row_start, col_end, row_end = wall
@@ -128,7 +134,7 @@ class MoveSimulator:
                     if alpha >= beta:
                         break
                 except QuoridorOnlineGameError as e:
-                    pass  # wall can not be placed
+                    self.impossible_walls.append(wall)
         return best_score
         print("done")
 
