@@ -43,6 +43,15 @@ def add_player_to_lobby(the_lobby, the_user):
             the_lobby.owner = player
             the_lobby.save()
 
+def add_ai_player_to_lobby(the_lobby):
+    # if user is not in lobby, add them
+    user = models.GameUser.objects.create(username=utils.get_player_guest_name(), color=utils.get_random_color())
+    player = models.GamePlayer.objects.create(game_user=user, lobby=the_lobby, is_artificial=True)
+    player.save()
+    if the_lobby.owner is None:
+        the_lobby.owner = player
+        the_lobby.save()
+
 def remove_player_from_lobby(the_lobby, the_user):
     # if user is in lobby, remove them
     player = models.GamePlayer.objects.filter(game_user=the_user, lobby=the_lobby).first()

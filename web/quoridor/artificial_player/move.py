@@ -1,11 +1,11 @@
 import sys
 
-from web.quoridor.game import Game
+from web.quoridor.game import Game, STATE_PLACING_PLAYERS
 from web.quoridor.wall import Wall, is_wall_within_board
 from web.errors import QuoridorOnlineGameError
-import copy
 from collections import deque
-import threading
+import copy, asyncio
+import threading, random, time
 
 
 class MoveSimulator:
@@ -21,14 +21,29 @@ class MoveSimulator:
         self.moves = []
         self.impossible_walls = []  # TODO: store impossible walls here to not check over and over
 
-    def start_generate_moves(self):
-        score = self._generate_moves(self.game, dictionary=self.game_copies, depth=self.depth, 
-                             alpha=float("-inf"), beta=float("inf"),)
-        # for my_thread in self.running_threads:
-        #     my_thread.join()
-        print("x")
-        games = [m for m in self.moves if m[1] == score]
-        return games[0]
+    def play(self):
+        """Wrapper function for play_ai_player() that ensures that at least 0.5 
+           seconds pass when executing play_ai_player(). 
+        """
+        start = time.monotonic()
+        game = self.play_ai_player()  # actual method
+        elapsed = time.monotonic() - start
+        if elapsed < 1.1:
+            time.sleep(1.1)
+        return game
+
+    def play_ai_player(self):
+        if self.game.state == STATE_PLACING_PLAYERS:
+            move_options = self.ai_player.start_option_fields
+            start_field = random.choice(move_options)
+            self.game.move_player(self.ai_player.gameplayer.game_user.id, self.lobby, 
+                                  start_field.col_num, start_field.row_num)
+            return self.game
+        else:
+            score = self._generate_moves(self.game, dictionary=self.game_copies, depth=self.depth, 
+                                alpha=float("-inf"), beta=float("inf"),)
+            games = [m for m in self.moves if m[1] == score]
+            return games[0][0]
 
     def get_ai_player(self, game):
         for p in game.game_board.players:

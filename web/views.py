@@ -139,6 +139,7 @@ def lobby(request, lobby_id=None):
         utils.send_email(f"New lobby created by {request.user.username}\n\nLobby ID: \nhttps://quoridoronline.com/lobby/{new_lobby.id}")
         game_player.lobby = new_lobby
         game_player.save()
+        lobby_manager.add_ai_player_to_lobby(new_lobby)
         return redirect(f"/lobby/{new_lobby.id}")
     else:
         # join lobby
@@ -209,17 +210,17 @@ def ads_txt(request):
     )
 
 
-@api_view(['POST'])
-def calculate_ai(request):
-    lobby_id = request.data.get("lobby_id")
-    the_lobby = models.Lobby.objects.get(id=lobby_id)
-    the_game_json = json.loads(the_lobby.game)
-    the_game = quoridor_deserialize.create_game_from_json(the_game_json)
-    move_generator = ai_move.MoveSimulator(the_lobby, the_game, depth=2, wall_range=5)
-    logger.info("START")
-    new_game, score = move_generator.start_generate_moves()
-    logger.info("END")
-    the_lobby.game = json.dumps(new_game.game_data, cls=utils.UUIDEncoder)
-    the_lobby.save()
+# @api_view(['POST'])
+# def calculate_ai(request):
+#     lobby_id = request.data.get("lobby_id")
+#     the_lobby = models.Lobby.objects.get(id=lobby_id)
+#     the_game_json = json.loads(the_lobby.game)
+#     the_game = quoridor_deserialize.create_game_from_json(the_game_json)
+#     move_generator = ai_move.MoveSimulator(the_lobby, the_game, depth=2, wall_range=5)
+#     logger.info("START")
+#     new_game = move_generator.play()
+#     logger.info("END")
+#     the_lobby.game = json.dumps(new_game.game_data, cls=utils.UUIDEncoder)
+#     the_lobby.save()
     
-    return Response({"status": "done"}, 200)
+#     return Response({"status": "done"}, 200)

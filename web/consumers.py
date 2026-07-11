@@ -9,6 +9,8 @@ from channels.db import database_sync_to_async
 from web import lobby_manager, models, serialize, utils
 from web.quoridor import deserialize as quoridor_deserialize
 from web.quoridor import game as quoridor_game
+from web.quoridor.artificial_player import move as ai_move
+import asyncio
 
 from html import escape
 
@@ -21,6 +23,7 @@ User = get_user_model()
 
 def html_escape(text):
     return escape(str(text), quote=True)
+    
 
 
 class LobbyConsumer(AsyncWebsocketConsumer):
@@ -375,6 +378,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 {'type': 'game_state', 'message': lobby_data}
             )
+            asyncio.create_task(self.play_ai_player())
         except Exception as e:
             await self.send_error(str(e))
 
@@ -401,6 +405,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 {'type': 'game_state', 'message': lobby_data}
             )
+            asyncio.create_task(self.play_ai_player())
         except Exception as e:
             await self.send_error(str(e))
 
@@ -476,6 +481,33 @@ class GameConsumer(AsyncWebsocketConsumer):
     #         self.room_group_name,
     #         chat_data
     #     )
+
+    async def play_ai_player(self):
+        @database_sync_to_async
+        def play_ai():
+            try:
+                the_lobby = models.Lobby.objects.get(id=self.lobby_id)
+                the_game_json = json.loads(the_lobby.game)
+                the_game = quoridor_deserialize.create_game_from_json(the_game_json)
+                if the_game.get_current_player().gameplayer.is_artificial:
+                    move_generator = ai_move.MoveSimulator(the_lobby, the_game, depth=2, wall_range=5)
+                    new_game = move_generator.play()
+                    the_lobby.game = json.dumps(new_game.game_data, cls=utils.UUIDEncoder)
+                    the_lobby.save()
+                    serializer = serialize.LobbySerializer(the_lobby)
+                    return serializer.data
+                return None
+            except models.Lobby.DoesNotExist:
+                raise ValueError(f"Lobby with id {self.lobby_id} does not exist.")
+        try:
+            lobby_data = await play_ai()
+            if lobby_data:
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {'type': 'game_state', 'message': lobby_data}
+                )
+        except Exception as e:
+            await self.send_error(str(e))
 
     async def send_error(self, error_message):
         """Sendet eine Fehlernachricht an den Client."""
