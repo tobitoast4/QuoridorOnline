@@ -12,10 +12,12 @@ class MoveSimulator:
     def __init__(self, lobby, game: Game, depth, wall_range):
         self.depth = depth
         self.wall_range = wall_range
-        self.moves_before_wall = random.randint(3, 8)  # this many moves will be performed before placing a wall
+        self.ai_player = game.get_current_player()
+        if self.ai_player.amount_walls_left <= 0:
+            self.depth = 1  # just follow the direct path to the win option fields, no need to calculate walls placement
+        self.moves_before_wall = random.randint(3, 6)  # this many moves will be performed before placing a wall
         self.lobby = lobby
         self.game = game
-        self.ai_player = game.get_current_player()
         self.game_copies = dict()
         self.running_threads = []
         self.moves = []
@@ -45,7 +47,7 @@ class MoveSimulator:
             score = self._generate_moves(self.game, dictionary=self.game_copies, depth=self.depth, 
                                 alpha=float("-inf"), beta=float("inf"),)
             games = [m for m in self.moves if m[1] == score]
-            return games[0][0]
+            return random.choice(games)[0]
 
     def get_ai_player(self, game):
         for p in game.game_board.players:
@@ -71,20 +73,23 @@ class MoveSimulator:
         others_walls = 0
         others_distance = 0
         ai_player = self.get_ai_player(game)
+        ai_player_horizontal_walls = [w for w in game.game_board.walls if w.player_id == \
+            str(ai_player.gameplayer.game_user.id) and w.is_horizontal()]
         if ai_player.field in ai_player.win_option_fields:
             return float("inf")  # best score possible
         for player in self.get_not_ai_players(game):
             if player.field in player.win_option_fields:
-                float("-inf")  # best score possible
+                return float("-inf")  # worst score possible
             if not player.gameplayer.has_surrendered and player != ai_player:
                 distance = game.shortest_distance(player)
                 assert distance >= 0, "Distance should be non-negative"
                 others_distance += distance
                 others_walls += player.amount_walls_left
         score = (
-            3 * (others_distance - game.shortest_distance(ai_player))
-            + 1 * (ai_player.amount_walls_left - others_walls)
-        ) + random.randint(-1, 1)
+            9 * (others_distance - game.shortest_distance(ai_player))
+            + 8 * (ai_player.amount_walls_left - others_walls)
+            + len(ai_player_horizontal_walls)  # 
+        )
         return score
     
     def _generate_moves(self, game, dictionary, depth, alpha, beta):
@@ -125,11 +130,11 @@ class MoveSimulator:
                 if alpha >= beta:
                     break
         
-        if game.turn > self.moves_before_wall:
+        if game.turn > self.moves_before_wall or len(game.game_board.walls) >= 1 and current_turn_player.amount_walls_left <= 0:
             # Walls placement moves
-            walls1 = self.get_walls_on_path(game, game.get_other_players()[0])  # TODO: all walls for all players
-            walls2 = self.get_walls_in_range(game.get_other_players()[0].field, self.wall_range)  # TODO: --"--
-            walls = list(set(walls1) & set(walls2))
+            walls = self.get_walls_on_paths(game, game.get_other_players())
+            # walls2 = self.get_walls_in_range(game.get_other_players()[0].field, self.wall_range)
+            # walls = list(set(walls1) & set(walls2))
             for wall in walls:
                 if wall in self.impossible_walls:
                     continue
@@ -154,7 +159,6 @@ class MoveSimulator:
                 except QuoridorOnlineGameError as e:
                     self.impossible_walls.append(wall)
         return best_score
-        print("done")
 
     def get_best_game(self):
         self._generate_moves2(self.game_copies)
@@ -206,11 +210,12 @@ class MoveSimulator:
             walls += self.get_walls_at_field(field)
         return list(set(walls))
     
-    def get_walls_on_path(self, game, player):
-        fields_of_path = game.fields_of_path_to_win(player)
+    def get_walls_on_paths(self, game, players):
         walls = []
-        for field in fields_of_path:
-            walls += self.get_walls_at_field(field)
+        for p in players:
+            fields_of_path = game.fields_of_path_to_win(p.field, p.win_option_fields)
+            for field in fields_of_path:
+                walls += self.get_walls_at_field(field)
         return list(set(walls))
 
     def get_walls_at_field(self, field):
