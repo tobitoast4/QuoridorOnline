@@ -34,7 +34,7 @@ class MoveSimulator:
         game = self.play_ai_player()  # actual method
         elapsed = time.monotonic() - start
         min_delay = random.uniform(0.5, 2.5)  # artificial delay to make the AI player look more human-like (and not too fast)
-        if elapsed < min_delay:
+        if not settings.DEBUG and elapsed < min_delay:
             time.sleep(min_delay)
         return game
 
@@ -68,7 +68,7 @@ class MoveSimulator:
                     players.append(p)
         return players
 
-    def calculate_game_score(self, game: Game):
+    def calculate_game_score(self, game: Game, depth):
         """Calculates the score of the game for the AI player. The higher the score, 
         the better the position of the AI player. 
         
@@ -77,6 +77,13 @@ class MoveSimulator:
         others_walls = 0
         others_distance = 0
         ai_player = self.get_ai_player(game)
+
+        # calculate las field  # TODO: improve this, this is a hacky solution
+        rounds = game.game_data["game"]
+        last_real_round = rounds[len(rounds)-(self.depth-depth)-1]
+        last_real_round_players = last_real_round["game_board"]["players"]
+        last_field = [p["field"] for p in last_real_round_players if p["user"]["id"] == str(ai_player.gameplayer.id)][0]
+
         ai_player_walls = [w for w in game.game_board.walls if w.player_id == \
             str(ai_player.gameplayer.game_user.id)]
         ai_player_horizontal_walls = [w for w in ai_player_walls if w.is_horizontal()]
@@ -97,6 +104,8 @@ class MoveSimulator:
             + len(ai_player_horizontal_walls) 
             - 2 * len(wall_anchors)  # reward for placing walls in a way that they can be extended 
         )                        # (the less anchors the less lonely walls -> the better)
+        if ai_player.field.col_num == last_field["col_num"] and ai_player.field.row_num == last_field["row_num"]:
+            score -= 50  # Ai player should not return to same field
         return score
     
     def _generate_moves(self, game, dictionary, depth, alpha, beta):
@@ -112,7 +121,7 @@ class MoveSimulator:
             best_score = float("inf")
             func = min
 
-        score = self.calculate_game_score(game)
+        score = self.calculate_game_score(game, depth)
         if depth <= 0 or score == float("inf") or score == float("-inf"):
             # if the score is +/- infinity, it means that the game is over and we can return the score directly
             dictionary["score"] = score

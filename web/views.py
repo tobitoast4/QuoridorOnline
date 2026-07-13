@@ -161,9 +161,8 @@ def get_random_lobby(request):
         utils.send_email(f"New lobby created by {request.user.username}\n\nLobby ID: \nhttps://quoridoronline.com/lobby/{the_lobby.id}")
         game_player.lobby = the_lobby
         game_player.save()
-        for _ in range(3):
-            if random.random() < 0.5:
-                lobby_manager.add_ai_player_to_lobby(the_lobby)
+        for _ in range(random.randint(1, 3)):  # Add 1 to 3 AI players
+            lobby_manager.add_ai_player_to_lobby(the_lobby)
     return Response({"lobby_url": f"/lobby/{the_lobby.id}"}, 200)
 
 def game(request, lobby_id=None):
