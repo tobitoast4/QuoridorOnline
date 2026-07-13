@@ -484,26 +484,28 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def play_ai_player(self):
         @database_sync_to_async
-        def play_ai():
-            try:
-                the_lobby = models.Lobby.objects.get(id=self.lobby_id)
-                the_game_json = json.loads(the_lobby.game)
-                the_game = quoridor_deserialize.create_game_from_json(the_game_json)
-                if the_game.get_current_player().gameplayer.is_artificial:
-                    move_generator = ai_move.MoveSimulator(the_lobby, the_game, depth=2, wall_range=5)
-                    new_game = move_generator.play()
-                    the_lobby.game = json.dumps(new_game.game_data, cls=utils.UUIDEncoder)
-                    the_lobby.save()
-                    serializer = serialize.LobbySerializer(the_lobby)
-                    return serializer.data
-                return None
-            except models.Lobby.DoesNotExist:
-                raise ValueError(f"Lobby with id {self.lobby_id} does not exist.")
-            except Exception:
-                pass
+        def load_game_state():
+            the_lobby = models.Lobby.objects.get(id=self.lobby_id)
+            the_game_json = json.loads(the_lobby.game)
+            the_game = quoridor_deserialize.create_game_from_json(the_game_json)
+            return the_lobby, the_game
+
+        @database_sync_to_async
+        def save_game_state(the_lobby, new_game):
+            the_lobby.game = json.dumps(new_game.game_data, cls=utils.UUIDEncoder)
+            the_lobby.save()
+            serializer = serialize.LobbySerializer(the_lobby)
+            return serializer.data
+
+        def run_ai_move(the_lobby, the_game):
+            move_generator = ai_move.MoveSimulator(the_lobby, the_game, depth=4, wall_range=5)
+            return move_generator.play()
+
         try:
-            lobby_data = await play_ai()
-            if lobby_data:
+            the_lobby, the_game = await load_game_state()
+            if the_game.get_current_player().gameplayer.is_artificial:
+                new_game = await asyncio.to_thread(run_ai_move, the_lobby, the_game)
+                lobby_data = await save_game_state(the_lobby, new_game)
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {'type': 'game_state', 'message': lobby_data}
