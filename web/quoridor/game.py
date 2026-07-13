@@ -147,20 +147,31 @@ class Game:
         # no path
         return -1
     
-    def fields_of_path_to_win(self, player):
-        fields_to_win = player.win_option_fields
-        start = player.field 
+    def fields_of_path_to_win(self, field, win_option_fields):
+        """Return the shortest path (list of Field) from `field` to the
+        nearest field in `win_option_fields` using BFS. Returns `None` if no
+        path exists.
+        """
+        goals = set(win_option_fields)
+        start = field
 
-        queue = deque([(start, 0)])
-        visited = {start}
+        queue = deque([start])
+        prev = {start: None}
 
         while queue:
-            field, distance = queue.popleft()
-            if field in fields_to_win:
-                return visited
-            for neighbor in field.neighbour_fields:
-                if neighbor not in visited:
-                    visited.add(neighbor)
-                    queue.append((neighbor, distance + 1))
-        # no path
+            cur = queue.popleft()
+            if cur in goals:
+                # reconstruct path from start -> cur
+                path = []
+                node = cur
+                while node is not None:
+                    path.append(node)
+                    node = prev[node]
+                path.reverse()
+                return path
+            for neighbor in cur.neighbour_fields:
+                if neighbor not in prev:
+                    prev[neighbor] = cur
+                    queue.append(neighbor)
         return None
+    
