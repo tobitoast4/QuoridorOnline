@@ -65,6 +65,9 @@ class QouridorPlayer:
     
     def __eq__(self, other):
         return str(self.gameplayer.id) == str(other.gameplayer.id)
+    
+    def __str__(self):
+        return f"QouridorPlayer({self.gameplayer.game_user.username}, {self.gameplayer.color} walls left)"
 
     def __json__(self, initial=False):
         serializer = GamePlayerSerializer(self.gameplayer)
