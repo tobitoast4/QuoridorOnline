@@ -12,16 +12,25 @@ class GameUser(AbstractUser):
 
 class GamePlayer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid6.uuid8, editable=False)
+    name = models.CharField(max_length=64, default=utils.get_player_guest_name)
     game_user = models.ForeignKey(GameUser, null=True, blank=True, on_delete=models.SET_NULL)
     lobby = models.ForeignKey('Lobby', null=True, blank=True, on_delete=models.CASCADE)
     color = models.CharField(max_length=15, default=utils.get_random_color)
     last_seen = models.IntegerField(default=time.time)  # TODO: Remove
     has_surrendered = models.BooleanField(default=False)
+    is_artificial = models.BooleanField(default=False)
+
+    def get_name(self):
+        if self.game_user is None:
+            return self.name
+        else:
+            return self.game_user.username
 
 class Lobby(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid6.uuid8, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(GameUser, related_name='created_by', null=True, blank=True, on_delete=models.SET_NULL)
+    previous_lobby = models.ForeignKey('Lobby', null=True, blank=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(GamePlayer, related_name='owner', null=True, blank=True, on_delete=models.SET_NULL)
     amount_of_walls_per_player = models.IntegerField(default=10)
     is_private = models.BooleanField(default=False)

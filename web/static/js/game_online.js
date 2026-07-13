@@ -193,7 +193,7 @@ function Field(x, y, col_num, row_num) {
     }
 }
 
-function Player(player_id, name, amount_walls_left, color, has_surrendered) {
+function Player(player_id, name, amount_walls_left, color, has_surrendered, is_artificial) {
     this.player_id = player_id;
     this.name = name;
     this.color = color;
@@ -204,6 +204,7 @@ function Player(player_id, name, amount_walls_left, color, has_surrendered) {
     this.win_option_fields = [];  // the fields this player needs to reach for win
     this.move_option_fields = [];  // the fields this player can move to in the next round
     this.has_surrendered = has_surrendered;
+    this.is_artificial = is_artificial;
 
     this.draw = function() {
         if (this.field != null) {  // if player is not placed yet, dont draw it

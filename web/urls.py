@@ -19,4 +19,5 @@ urlpatterns = [
     re_path(r'^account/?$', views.account, name='account'),
     re_path(r'^register/?$', views.register, name='register'),
     re_path(r'^login/?$', views.login, name='login'),
+    # re_path(r'^calculate_ai/?$', views.calculate_ai, name='calculate_ai'),
 ]

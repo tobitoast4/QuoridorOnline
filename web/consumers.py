@@ -1,5 +1,6 @@
 import json
 import logging
+import random
 import re
 from django.contrib.auth import get_user_model
 from django.utils.html import escape
@@ -9,6 +10,8 @@ from channels.db import database_sync_to_async
 from web import lobby_manager, models, serialize, utils
 from web.quoridor import deserialize as quoridor_deserialize
 from web.quoridor import game as quoridor_game
+from web.quoridor.artificial_player import move as ai_move
+import asyncio
 
 from html import escape
 
@@ -21,6 +24,7 @@ User = get_user_model()
 
 def html_escape(text):
     return escape(str(text), quote=True)
+    
 
 
 class LobbyConsumer(AsyncWebsocketConsumer):
@@ -142,7 +146,9 @@ class LobbyConsumer(AsyncWebsocketConsumer):
             if self.user_id != str(the_lobby.owner.game_user.id):
                 raise PermissionError("Only the lobby owner can start the game")
             # TODO: Shuffle players
-            next_lobby = models.Lobby.objects.create(created_by=the_lobby.created_by, owner=the_lobby.owner)
+            next_lobby = models.Lobby.objects.create(created_by=the_lobby.created_by, previous_lobby=the_lobby)
+            for _ in range(random.randint(1, 3)):  # Add 1 to 3 AI players
+                lobby_manager.add_ai_player_to_lobby(next_lobby)  # TODO: Add old players?
             new_game = quoridor_game.Game(the_lobby.gameplayer_set, the_lobby.amount_of_walls_per_player, next_lobby.id)
             the_lobby.game = json.dumps(new_game.game_data, cls=utils.UUIDEncoder)
             the_lobby.save()
@@ -313,6 +319,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 'user_id': user_info['user_id'],
             }
         )
+        asyncio.create_task(self.play_ai_player())  # start AI player moves if the real user connects
         logger.info(f"Player {self.user_name} connected to game {self.lobby_id}")
 
     async def disconnect(self, close_code):
@@ -375,6 +382,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 {'type': 'game_state', 'message': lobby_data}
             )
+            asyncio.create_task(self.play_ai_player())
         except Exception as e:
             await self.send_error(str(e))
 
@@ -401,6 +409,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 {'type': 'game_state', 'message': lobby_data}
             )
+            asyncio.create_task(self.play_ai_player())
         except Exception as e:
             await self.send_error(str(e))
 
@@ -424,6 +433,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 {'type': 'game_state', 'message': lobby_data}
             )
+            asyncio.create_task(self.play_ai_player())
         except Exception as e:
             await self.send_error(str(e))
 
@@ -476,6 +486,38 @@ class GameConsumer(AsyncWebsocketConsumer):
     #         self.room_group_name,
     #         chat_data
     #     )
+
+    async def play_ai_player(self):
+        @database_sync_to_async
+        def load_game_state():
+            the_lobby = models.Lobby.objects.get(id=self.lobby_id)
+            the_game_json = json.loads(the_lobby.game)
+            the_game = quoridor_deserialize.create_game_from_json(the_game_json)
+            return the_lobby, the_game, the_lobby.winner
+
+        @database_sync_to_async
+        def save_game_state(the_lobby, new_game):
+            the_lobby.game = json.dumps(new_game.game_data, cls=utils.UUIDEncoder)
+            the_lobby.save()
+            serializer = serialize.LobbySerializer(the_lobby)
+            return serializer.data
+
+        def run_ai_move(the_lobby, the_game):
+            move_generator = ai_move.MoveSimulator(the_lobby, the_game, depth=2, wall_range=5)
+            return move_generator.play()
+
+        try:
+            the_lobby, the_game, winner = await load_game_state()
+            if not winner and the_game.get_current_player().gameplayer.is_artificial:
+                new_game = await asyncio.to_thread(run_ai_move, the_lobby, the_game)
+                lobby_data = await save_game_state(the_lobby, new_game)
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {'type': 'game_state', 'message': lobby_data}
+                )
+                asyncio.create_task(self.play_ai_player())
+        except Exception as e:
+            await self.send_error(str(e))
 
     async def send_error(self, error_message):
         """Sendet eine Fehlernachricht an den Client."""

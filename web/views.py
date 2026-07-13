@@ -1,3 +1,5 @@
+import random
+
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login as auth_login, logout
@@ -14,8 +16,11 @@ from web import serialize
 from web import utils, lobby_manager
 from web.quoridor import game as quoridor_game
 from web.quoridor import deserialize as quoridor_deserialize
+from web.quoridor.artificial_player import move as ai_move
 import dashboard.views
+import logging
 
+logger = logging.getLogger(__name__)
 
 
 def login(request):
@@ -150,7 +155,14 @@ def lobby(request, lobby_id=None):
 def get_random_lobby(request):
     the_lobby = lobby_manager.get_random_public_lobby()
     if the_lobby is None:
-        return Response({"error": "Could not find any public lobby :(<br/>Try again later or create your own one"}, 200)
+        # create new lobby with an AI player if no public lobby is available
+        game_player = models.GamePlayer.objects.create(game_user=request.user, color=request.user.color)
+        the_lobby = models.Lobby.objects.create(created_by=request.user, owner=game_player)
+        utils.send_email(f"New lobby created by {request.user.username}\n\nLobby ID: \nhttps://quoridoronline.com/lobby/{the_lobby.id}")
+        game_player.lobby = the_lobby
+        game_player.save()
+        for _ in range(random.randint(1, 3)):  # Add 1 to 3 AI players
+            lobby_manager.add_ai_player_to_lobby(the_lobby)
     return Response({"lobby_url": f"/lobby/{the_lobby.id}"}, 200)
 
 def game(request, lobby_id=None):
@@ -204,3 +216,19 @@ def ads_txt(request):
         open("web/static/ads.txt", "rb"),
         content_type="text/plain"
     )
+
+
+# @api_view(['POST'])
+# def calculate_ai(request):
+#     lobby_id = request.data.get("lobby_id")
+#     the_lobby = models.Lobby.objects.get(id=lobby_id)
+#     the_game_json = json.loads(the_lobby.game)
+#     the_game = quoridor_deserialize.create_game_from_json(the_game_json)
+#     move_generator = ai_move.MoveSimulator(the_lobby, the_game, depth=2, wall_range=5)
+#     logger.info("START")
+#     new_game = move_generator.play()
+#     logger.info("END")
+#     the_lobby.game = json.dumps(new_game.game_data, cls=utils.UUIDEncoder)
+#     the_lobby.save()
+    
+#     return Response({"status": "done"}, 200)

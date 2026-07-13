@@ -24,12 +24,14 @@ class GamePlayerSerializer(serializers.ModelSerializer):
 
 class LobbySerializer(serializers.ModelSerializer):
     id = serializers.UUIDField()
+    previous_lobby = serializers.PrimaryKeyRelatedField(queryset=models.Lobby.objects.all(), allow_null=False)
     gameplayer_set = GamePlayerSerializer(many=True, required=False)
     created_by = GamePlayerSerializer(required=False)
     owner = GamePlayerSerializer(required=False)
     winner = GamePlayerSerializer(required=False)
     # created_by = serializers.PrimaryKeyRelatedField(queryset=models.GamePlayer.objects.all(), allow_null=True)
     # owner = serializers.PrimaryKeyRelatedField(queryset=models.GamePlayer.objects.all(), allow_null=True)
+    
     class Meta:
         model = models.Lobby
         fields = "__all__"
@@ -37,6 +39,7 @@ class LobbySerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+        representation["previous_lobby"] = str(representation["previous_lobby"]) if representation["previous_lobby"] else None
         if instance.game:
             representation['game'] = json.loads(instance.game)
         return representation

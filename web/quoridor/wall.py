@@ -2,6 +2,15 @@ from web.errors import QuoridorOnlineGameError
 import math
 
 
+def is_wall_within_board(col_start, row_start, col_end, row_end, amount_fields):
+    return (
+        0 <= col_start <= amount_fields-1 and
+        0 <= row_start <= amount_fields-1 and
+        0 <= col_end <= amount_fields-1 and
+        0 <= row_end <= amount_fields-1
+    )
+
+
 class Wall:
     def __init__(self, player_id, col_start, row_start, col_end, row_end, game_board):
         """Walls can be placed like this:
@@ -35,7 +44,7 @@ class Wall:
             raise QuoridorOnlineGameError(error_msg)
         if row_start == row_end and row_end % 1 != 0.5:
             raise QuoridorOnlineGameError(error_msg)
-        self.player_id = player_id  # placed by this player
+        self.player_id = str(player_id)  # placed by this player
         self.col_start = col_start
         self.row_start = row_start
         self.col_end = col_end
@@ -55,7 +64,7 @@ class Wall:
             field_bottom_left = self.game_board.getFieldByColAndRow(col_left, self.row_end)
             field_bottom_right = self.game_board.getFieldByColAndRow(col_right, self.row_end)
             field_bottom_left.remove_connection(field_bottom_right)
-        elif self.row_start == self.row_end:
+        elif self.row_start == self.row_end:  # wall is horizontal
             row_top = math.floor(self.row_start)
             row_bottom = math.ceil(self.row_start)
             field_top_left = self.game_board.getFieldByColAndRow(self.col_start, row_top)
@@ -124,6 +133,43 @@ class Wall:
             return True
         if col == self.col_end and row == self.row_end:
             return True
+        
+    def get_wall_anchors(self):
+        """Checks if wall is at coordinates.:
+        E.g. Wall is placed here:
+                          ->  col_start=0.5, row_start=0, col_end=0.5, row_end=1
+          field (0, 0)
+            +-----+  #  +-----+
+            |     |  #  |  x  |
+            +-----+  #  +-----+
+                     #                  (### is the wall)
+            +-----+  #  +-----+
+            |     |  #  |     |
+            +-----+  #  +-----+ field (1, 1)
+
+        The anchors of this wall are (0.5, -0.5) and (0.5, 1.5)
+        """
+        if self.is_horizontal():
+            return [(self.col_start-0.5, self.row_start), (self.col_end+0.5, self.row_end)]
+        else:
+            return [(self.col_start, self.row_start-0.5), (self.col_end, self.row_end+0.5)]
+        
+    def is_horizontal(self):
+        return self.row_start == self.row_end
+
+    def is_vertical(self):
+        return self.col_start == self.col_end
+        
+    def __eq__(self, other):
+        if self.col_start == other.col_start and \
+            self.row_start == other.row_start and \
+            self.col_end == other.col_end and \
+            self.row_end == other.row_end: 
+                return True
+        return False
+    
+    def __str__(self):
+        return f"Wall({self.col_start}, {self.row_start}, {self.col_end}, {self.row_end})"
 
     def __json__(self):
         return {

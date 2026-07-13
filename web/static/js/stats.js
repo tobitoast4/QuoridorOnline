@@ -15,20 +15,25 @@ function refreshPlayerStats() {
         player_stats.append(wall_box);
         $('#stats_grid').append(player_stats);
 
-        if (player.player_id == this_player_id || online_user_ids.includes(player.player_id)) {
+        if (player.player_id == this_player_id || online_user_ids.includes(player.player_id) || player.is_artificial) {
             // if the player is online or the player themselves, set the online status to green
-            updatePlayerOnlineStatus(player.player_id, true);
+            updatePlayerOnlineStatus(player.player_id, true, player.is_artificial);
         }
     });
 
 }
 
-function updatePlayerOnlineStatus(player_id, is_online) {
+function updatePlayerOnlineStatus(player_id, is_online, is_artificial=false) {
     var online_status_dot = $('#online-status-' + player_id);
     if (is_online) {
-        online_status_dot.css('background-color', '#00DD00');
-        online_status_dot.attr('title', 'online');
-        online_user_ids.push(player_id);
+        if (this_player_is_superuser && is_artificial) {
+            online_status_dot.css('background-color', '#5153ff');
+            online_status_dot.attr('title', 'online');
+        } else {
+            online_status_dot.css('background-color', '#00DD00');
+            online_status_dot.attr('title', 'online');
+        }
+        online_user_ids.push(player_id);  // safe for next update
     } else {
         online_status_dot.css('background-color', '#a8a8a8');
         online_status_dot.attr('title', 'offline');

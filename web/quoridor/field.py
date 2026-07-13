@@ -43,6 +43,19 @@ class Field:
         else:
             return None
 
+    def __eq__(self, other):
+        if other is None:
+            return False
+        if self.col_num == other.col_num and self.row_num == other.row_num:
+            return True
+        return False
+    
+    def __str__(self):
+        return f"Field({self.col_num}, {self.row_num})"
+
+    def __hash__(self):
+        return hash((self.col_num, self.row_num))
+
     def __json__(self):
         return {
             "col_num": self.col_num,
