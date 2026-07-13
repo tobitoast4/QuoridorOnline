@@ -83,9 +83,9 @@ class Game:
 
     def get_current_player(self):
         player = self.game_board.players[self.its_this_players_turn]
-        if player.gameplayer.has_surrendered:
-            self._next_players_turn()
-            return self.get_current_player()
+        # if player.gameplayer.has_surrendered:
+        #     self._next_players_turn()
+        #     return self.get_current_player()
         return player
     
     def get_other_players(self):
