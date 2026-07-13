@@ -139,7 +139,6 @@ def lobby(request, lobby_id=None):
         utils.send_email(f"New lobby created by {request.user.username}\n\nLobby ID: \nhttps://quoridoronline.com/lobby/{new_lobby.id}")
         game_player.lobby = new_lobby
         game_player.save()
-        lobby_manager.add_ai_player_to_lobby(new_lobby)
         return redirect(f"/lobby/{new_lobby.id}")
     else:
         # join lobby
@@ -154,7 +153,15 @@ def lobby(request, lobby_id=None):
 def get_random_lobby(request):
     the_lobby = lobby_manager.get_random_public_lobby()
     if the_lobby is None:
-        return Response({"error": "Could not find any public lobby :(<br/>Try again later or create your own one"}, 200)
+        # create new lobby with an AI player if no public lobby is available
+        game_player = models.GamePlayer.objects.create(game_user=request.user, color=request.user.color)
+        new_lobby = models.Lobby.objects.create(created_by=request.user, owner=game_player)
+        utils.send_email(f"New lobby created by {request.user.username}\n\nLobby ID: \nhttps://quoridoronline.com/lobby/{new_lobby.id}")
+        game_player.lobby = new_lobby
+        game_player.save()
+        lobby_manager.add_ai_player_to_lobby(new_lobby)
+        lobby_manager.add_ai_player_to_lobby(new_lobby)
+        return redirect(f"/lobby/{new_lobby.id}")
     return Response({"lobby_url": f"/lobby/{the_lobby.id}"}, 200)
 
 def game(request, lobby_id=None):
