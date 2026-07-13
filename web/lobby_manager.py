@@ -19,7 +19,7 @@ def get_random_public_lobby():
     models.Lobby.objects
         .filter(is_private=False, game=None)
         .annotate(player_count=Count("gameplayer"))
-        .filter(player_count__gte=0)
+        .filter(player_count__gt=0)
     )
     if lobbys.count() >= 1:
         return lobbys.order_by("?").first()  # .order_by("?") returns random
@@ -62,4 +62,7 @@ def remove_player_from_lobby(the_lobby, the_user):
     # if user is in lobby, remove them
     player = models.GamePlayer.objects.filter(game_user=the_user, lobby=the_lobby).first()
     if player:
+        if the_lobby.owner == player:
+            the_lobby.owner = None
+            the_lobby.save()
         player.delete()

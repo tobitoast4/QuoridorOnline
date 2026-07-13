@@ -1,3 +1,5 @@
+import random
+
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login as auth_login, logout
@@ -155,13 +157,13 @@ def get_random_lobby(request):
     if the_lobby is None:
         # create new lobby with an AI player if no public lobby is available
         game_player = models.GamePlayer.objects.create(game_user=request.user, color=request.user.color)
-        new_lobby = models.Lobby.objects.create(created_by=request.user, owner=game_player)
-        utils.send_email(f"New lobby created by {request.user.username}\n\nLobby ID: \nhttps://quoridoronline.com/lobby/{new_lobby.id}")
-        game_player.lobby = new_lobby
+        the_lobby = models.Lobby.objects.create(created_by=request.user, owner=game_player)
+        utils.send_email(f"New lobby created by {request.user.username}\n\nLobby ID: \nhttps://quoridoronline.com/lobby/{the_lobby.id}")
+        game_player.lobby = the_lobby
         game_player.save()
-        lobby_manager.add_ai_player_to_lobby(new_lobby)
-        lobby_manager.add_ai_player_to_lobby(new_lobby)
-        return redirect(f"/lobby/{new_lobby.id}")
+        for _ in range(3):
+            if random.random() < 0.5:
+                lobby_manager.add_ai_player_to_lobby(the_lobby)
     return Response({"lobby_url": f"/lobby/{the_lobby.id}"}, 200)
 
 def game(request, lobby_id=None):

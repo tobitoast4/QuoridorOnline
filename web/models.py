@@ -30,6 +30,7 @@ class Lobby(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid6.uuid8, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(GameUser, related_name='created_by', null=True, blank=True, on_delete=models.SET_NULL)
+    previous_lobby = models.ForeignKey('Lobby', null=True, blank=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(GamePlayer, related_name='owner', null=True, blank=True, on_delete=models.SET_NULL)
     amount_of_walls_per_player = models.IntegerField(default=10)
     is_private = models.BooleanField(default=False)

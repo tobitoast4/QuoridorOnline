@@ -1,5 +1,6 @@
 import sys
 
+from conf import settings
 from web.quoridor.game import Game, STATE_PLACING_PLAYERS, STATE_PLAYER_DID_WIN
 from web.quoridor.wall import Wall, is_wall_within_board
 from web.errors import QuoridorOnlineGameError
@@ -32,8 +33,9 @@ class MoveSimulator:
         start = time.monotonic()
         game = self.play_ai_player()  # actual method
         elapsed = time.monotonic() - start
-        if elapsed < 0.1:
-            time.sleep(0.1)
+        min_delay = random.uniform(0.5, 2.5)  # artificial delay to make the AI player look more human-like (and not too fast)
+        if elapsed < min_delay:
+            time.sleep(min_delay)
         return game
 
     def play_ai_player(self):
@@ -219,6 +221,8 @@ class MoveSimulator:
     def get_walls_on_paths(self, game, players):
         walls = []
         for p in players:
+            if p.gameplayer.has_surrendered:
+                continue
             fields_of_path = game.fields_of_path_to_win(p.field, p.win_option_fields)
             for field in fields_of_path:
                 walls += self.get_walls_at_field(field)

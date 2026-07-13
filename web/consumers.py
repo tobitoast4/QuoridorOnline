@@ -145,7 +145,7 @@ class LobbyConsumer(AsyncWebsocketConsumer):
             if self.user_id != str(the_lobby.owner.game_user.id):
                 raise PermissionError("Only the lobby owner can start the game")
             # TODO: Shuffle players
-            next_lobby = models.Lobby.objects.create(created_by=the_lobby.created_by, owner=the_lobby.owner)
+            next_lobby = models.Lobby.objects.create(created_by=the_lobby.created_by, previous_lobby=the_lobby)
             new_game = quoridor_game.Game(the_lobby.gameplayer_set, the_lobby.amount_of_walls_per_player, next_lobby.id)
             the_lobby.game = json.dumps(new_game.game_data, cls=utils.UUIDEncoder)
             the_lobby.save()
@@ -316,6 +316,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 'user_id': user_info['user_id'],
             }
         )
+        asyncio.create_task(self.play_ai_player())  # start AI player moves if the real user connects
         logger.info(f"Player {self.user_name} connected to game {self.lobby_id}")
 
     async def disconnect(self, close_code):
@@ -429,6 +430,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 {'type': 'game_state', 'message': lobby_data}
             )
+            asyncio.create_task(self.play_ai_player())
         except Exception as e:
             await self.send_error(str(e))
 
@@ -510,6 +512,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                     self.room_group_name,
                     {'type': 'game_state', 'message': lobby_data}
                 )
+                asyncio.create_task(self.play_ai_player())
         except Exception as e:
             await self.send_error(str(e))
 
