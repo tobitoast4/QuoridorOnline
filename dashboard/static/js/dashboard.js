@@ -107,6 +107,7 @@ function fillTableListOfGames() {
                     <th>Lobby ID</th>
                     <th>Time created</th>
                     <th>Amount of players</th>
+                    <th>AI</th>
                     <th></th>
                 </tr>
             </thead>
@@ -121,6 +122,11 @@ function fillTableListOfGames() {
         i++;
 
         let link_to_game = "<td></td>";
+        let ai_players_count = "";
+        if (!isNaN(lobby.amount_ai_players) && lobby.amount_ai_players > 0) {
+            ai_players_count = lobby.amount_ai_players;
+        }
+
         if (lobby.game) {
             link_to_game = `
                 <td>
@@ -140,6 +146,7 @@ function fillTableListOfGames() {
                 </td>
                 <td>${lobby.time_created}</td>
                 <td>${lobby.amount_players}</td>
+                <td>${ai_players_count}</td>
                 ${link_to_game}
             </tr>
         `);

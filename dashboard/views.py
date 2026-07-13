@@ -37,6 +37,7 @@ def dashboard(request):
             "lobby_id": lobby.id,
             "time_created": lobby.created_at,
             "amount_players": lobby.gameplayer_set.count() if lobby.game != None else "NaN",
+            "amount_ai_players": lobby.gameplayer_set.filter(is_artificial=True).count() if lobby.game != None else "NaN",
             "game": True if lobby.game else None
         })
 
