@@ -1,5 +1,6 @@
 import json
 import logging
+import random
 import re
 from django.contrib.auth import get_user_model
 from django.utils.html import escape
@@ -146,6 +147,8 @@ class LobbyConsumer(AsyncWebsocketConsumer):
                 raise PermissionError("Only the lobby owner can start the game")
             # TODO: Shuffle players
             next_lobby = models.Lobby.objects.create(created_by=the_lobby.created_by, previous_lobby=the_lobby)
+            for _ in range(random.randint(1, 3)):  # Add 1 to 3 AI players
+                lobby_manager.add_ai_player_to_lobby(next_lobby)  # TODO: Add old players?
             new_game = quoridor_game.Game(the_lobby.gameplayer_set, the_lobby.amount_of_walls_per_player, next_lobby.id)
             the_lobby.game = json.dumps(new_game.game_data, cls=utils.UUIDEncoder)
             the_lobby.save()
