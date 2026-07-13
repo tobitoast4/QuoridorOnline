@@ -52,7 +52,8 @@ async function createPlayers() {
                                 player_json.user.game_user.username,
                                 player_json.amount_walls_left,
                                 player_json.user.color, 
-                                player_json.user.has_surrendered);
+                                player_json.user.has_surrendered,
+                                player_json.user.is_artificial);
 
         // Add start_ and win_option_fields
         for (var i = 0; i < player_json["start_option_fields"].length; i++) {

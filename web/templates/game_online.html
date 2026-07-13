@@ -147,6 +147,7 @@
 <script>
     var current_lobby_id = "{{ lobby.id }}";
     var this_player_id = "{{ user.id }}";
+    var this_player_is_superuser = "{{ user.is_superuser }}" == "True";
     // players_action_state = STATE_PLACE_PLAYER;
     // createPlayers();
 
