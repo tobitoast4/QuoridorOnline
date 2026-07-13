@@ -488,7 +488,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             the_lobby = models.Lobby.objects.get(id=self.lobby_id)
             the_game_json = json.loads(the_lobby.game)
             the_game = quoridor_deserialize.create_game_from_json(the_game_json)
-            return the_lobby, the_game
+            return the_lobby, the_game, the_lobby.winner
 
         @database_sync_to_async
         def save_game_state(the_lobby, new_game):
@@ -498,12 +498,12 @@ class GameConsumer(AsyncWebsocketConsumer):
             return serializer.data
 
         def run_ai_move(the_lobby, the_game):
-            move_generator = ai_move.MoveSimulator(the_lobby, the_game, depth=4, wall_range=5)
+            move_generator = ai_move.MoveSimulator(the_lobby, the_game, depth=2, wall_range=5)
             return move_generator.play()
 
         try:
-            the_lobby, the_game = await load_game_state()
-            if the_game.get_current_player().gameplayer.is_artificial:
+            the_lobby, the_game, winner = await load_game_state()
+            if not winner and the_game.get_current_player().gameplayer.is_artificial:
                 new_game = await asyncio.to_thread(run_ai_move, the_lobby, the_game)
                 lobby_data = await save_game_state(the_lobby, new_game)
                 await self.channel_layer.group_send(
