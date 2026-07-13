@@ -50,6 +50,9 @@ class Field:
             return True
         return False
     
+    def __str__(self):
+        return f"Field({self.col_num}, {self.row_num})"
+
     def __hash__(self):
         return hash((self.col_num, self.row_num))
 
