@@ -134,6 +134,12 @@ class Wall:
         if col == self.col_end and row == self.row_end:
             return True
         
+    def is_horizontal(self):
+        return self.row_start == self.row_end
+
+    def is_vertical(self):
+        return self.col_start == self.col_end
+        
     def __eq__(self, other):
         if self.col_start == other.col_start and \
             self.row_start == other.row_start and \
@@ -141,6 +147,9 @@ class Wall:
             self.row_end == other.row_end: 
                 return True
         return False
+    
+    def __str__(self):
+        return f"Wall({self.col_start}, {self.row_start}, {self.col_end}, {self.row_end})"
 
     def __json__(self):
         return {
