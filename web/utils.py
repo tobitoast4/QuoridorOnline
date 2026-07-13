@@ -1,6 +1,7 @@
 import logging
 import random
 from datetime import datetime
+import string
 import threading
 import time
 import uuid
@@ -88,8 +89,13 @@ def get_online_user_count():
         logger.warning("Unable to read online user count from Redis: %s", e)
         return 0
 
-def get_player_guest_name():
-    return f"Guest-{str(uuid.uuid4())[:6]}"
+def get_player_guest_name(include_capital_letters=False):
+    """Generates a random guest name for a player."""
+    if include_capital_letters:
+        letters = string.ascii_letters + string.digits
+    else:
+        letters = string.ascii_lowercase + string.digits
+    return ''.join(random.choice(letters) for _ in range(6))
 
 
 def get_random_color():
