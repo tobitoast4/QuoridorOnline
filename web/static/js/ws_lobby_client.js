@@ -188,6 +188,10 @@ gameClient.on('connect', () => {
     gameClient.requestLobbyState();  // get initial lobby state when connected
 });
 
+window.addEventListener("beforeunload", () => {
+    gameClient.disconnect();
+});
+
 gameClient.on('lobby_state', (data) => {
     lobby_data = data.message;
 
