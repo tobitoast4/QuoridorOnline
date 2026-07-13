@@ -21,7 +21,9 @@ class MoveSimulator:
         self.game_copies = dict()
         self.running_threads = []
         self.moves = []
-        self.impossible_walls = []
+        self.impossible_walls = []  # TODO: Only add in depth=self.depth (problem we need BFS for that...)
+                                    # Currently walls that are possible are added here :((
+                                    # This is especially a problem when self.depth is high, e.g. self.depth>=4
 
     def play(self):
         """Wrapper function for play_ai_player() that ensures that at least 0.5 
@@ -44,6 +46,7 @@ class MoveSimulator:
                                   start_field.col_num, start_field.row_num)
             return self.game
         else:
+            print("")
             score = self._generate_moves(self.game, dictionary=self.game_copies, depth=self.depth, 
                                 alpha=float("-inf"), beta=float("inf"),)
             games = [m for m in self.moves if m[1] == score]
@@ -69,12 +72,13 @@ class MoveSimulator:
         
             score = (10 * (sum_enemy_distance - own_distance) + 2 * (amount_own_walls - sum_amount_enemy_walls))
         """
-        # TODO: Lower score for going back to an old field
         others_walls = 0
         others_distance = 0
         ai_player = self.get_ai_player(game)
-        ai_player_horizontal_walls = [w for w in game.game_board.walls if w.player_id == \
-            str(ai_player.gameplayer.game_user.id) and w.is_horizontal()]
+        ai_player_walls = [w for w in game.game_board.walls if w.player_id == \
+            str(ai_player.gameplayer.game_user.id)]
+        ai_player_horizontal_walls = [w for w in ai_player_walls if w.is_horizontal()]
+        wall_anchors = {a for w in game.game_board.walls for a in w.get_wall_anchors()}
         if ai_player.field in ai_player.win_option_fields:
             return float("inf")  # best score possible
         for player in self.get_not_ai_players(game):
@@ -86,10 +90,11 @@ class MoveSimulator:
                 others_distance += distance
                 others_walls += player.amount_walls_left
         score = (
-            9 * (others_distance - game.shortest_distance(ai_player))
-            + 8 * (ai_player.amount_walls_left - others_walls)
-            + len(ai_player_horizontal_walls)  # 
-        )
+            6 * (others_distance - game.shortest_distance(ai_player))
+            + 4 * (ai_player.amount_walls_left - others_walls)
+            + len(ai_player_horizontal_walls) 
+            - 2 * len(wall_anchors)  # reward for placing walls in a way that they can be extended 
+        )                        # (the less anchors the less lonely walls -> the better)
         return score
     
     def _generate_moves(self, game, dictionary, depth, alpha, beta):
@@ -105,8 +110,9 @@ class MoveSimulator:
             best_score = float("inf")
             func = min
 
-        if depth <= 0:
-            score = self.calculate_game_score(game)
+        score = self.calculate_game_score(game)
+        if depth <= 0 or score == float("inf") or score == float("-inf"):
+            # if the score is +/- infinity, it means that the game is over and we can return the score directly
             dictionary["score"] = score
             return score
         
@@ -120,7 +126,7 @@ class MoveSimulator:
                 dictionary[key] = {}
                 score = self._generate_moves(new_game, dictionary[key], depth-1, alpha, beta)
                 if depth == self.depth:
-                    print(f"{key} - {score}")
+                    print(f"{key}: {score}")
                     self.moves.append((new_game, score))
                 best_score = func(best_score, score)
                 if maximizing:
@@ -147,7 +153,7 @@ class MoveSimulator:
                     dictionary[key] = {}
                     score = self._generate_moves(new_game, dictionary[key], depth-1, alpha, beta)
                     if depth == self.depth:
-                        print(f"{key} - {score}")
+                        print(f"{key}: {score}")
                         self.moves.append((new_game, score))
                     best_score = func(best_score, score)
                     if maximizing:

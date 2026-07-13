@@ -44,7 +44,7 @@ class Wall:
             raise QuoridorOnlineGameError(error_msg)
         if row_start == row_end and row_end % 1 != 0.5:
             raise QuoridorOnlineGameError(error_msg)
-        self.player_id = player_id  # placed by this player
+        self.player_id = str(player_id)  # placed by this player
         self.col_start = col_start
         self.row_start = row_start
         self.col_end = col_end
@@ -133,6 +133,26 @@ class Wall:
             return True
         if col == self.col_end and row == self.row_end:
             return True
+        
+    def get_wall_anchors(self):
+        """Checks if wall is at coordinates.:
+        E.g. Wall is placed here:
+                          ->  col_start=0.5, row_start=0, col_end=0.5, row_end=1
+          field (0, 0)
+            +-----+  #  +-----+
+            |     |  #  |  x  |
+            +-----+  #  +-----+
+                     #                  (### is the wall)
+            +-----+  #  +-----+
+            |     |  #  |     |
+            +-----+  #  +-----+ field (1, 1)
+
+        The anchors of this wall are (0.5, -0.5) and (0.5, 1.5)
+        """
+        if self.is_horizontal():
+            return [(self.col_start-0.5, self.row_start), (self.col_end+0.5, self.row_end)]
+        else:
+            return [(self.col_start, self.row_start-0.5), (self.col_end, self.row_end+0.5)]
         
     def is_horizontal(self):
         return self.row_start == self.row_end
