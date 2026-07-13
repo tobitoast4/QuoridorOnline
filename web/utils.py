@@ -95,7 +95,7 @@ def get_player_guest_name(include_capital_letters=False):
         letters = string.ascii_letters + string.digits
     else:
         letters = string.ascii_lowercase + string.digits
-    return ''.join(random.choice(letters) for _ in range(6))
+    return "Guest-" + ''.join(random.choice(letters) for _ in range(5))
 
 
 def get_random_color():
@@ -139,6 +139,7 @@ def send_email(content):
             password = os.getenv("IONOS_PASSWORD")
             if password is None:
                 logger.error("IONOS_PASSWORD environment variable is not set. Cannot send email.")
+                return
 
             smtp.login("support@quoridoronline.com", password)
 
