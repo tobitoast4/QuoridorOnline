@@ -1,3 +1,5 @@
+from django.db.models import Count
+
 from web.errors import QuoridorOnlineGameError
 from web.quoridor.game import Game
 from web.quoridor import deserialize
@@ -13,9 +15,14 @@ PLAYER_TIME_OUT_TIME = 2  # how long (in sec) is the player allowed to not poll 
 
 def get_random_public_lobby():
     """Actually gets the first in the list"""
-    lobbies = models.Lobby.objects.filter(is_private=False, game=None)
-    if lobbies.count() >= 1:
-        return lobbies.first()  # TODO: Return random
+    lobbys = (
+    models.Lobby.objects
+        .filter(is_private=False, game=None)
+        .annotate(player_count=Count("gameplayer"))
+        .filter(player_count__gte=0)
+    )
+    if lobbys.count() >= 1:
+        return lobbys.order_by("?").first()  # .order_by("?") returns random
     else:
         return None
 
