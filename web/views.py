@@ -138,7 +138,8 @@ def lobby(request, lobby_id=None):
         # create new lobby
         game_player = models.GamePlayer.objects.create(game_user=request.user, color=request.user.color)
         new_lobby = models.Lobby.objects.create(created_by=request.user, owner=game_player)
-        utils.send_email(f"New lobby created by {request.user.username}\n\nLobby ID: \nhttps://quoridoronline.com/lobby/{new_lobby.id}")
+        if not request.user.is_superuser:
+            utils.send_email(f"New lobby created by {request.user.username}\n\nLobby ID: \nhttps://quoridoronline.com/lobby/{new_lobby.id}")
         game_player.lobby = new_lobby
         game_player.save()
         return redirect(f"/lobby/{new_lobby.id}")
@@ -158,7 +159,8 @@ def get_random_lobby(request):
         # create new lobby with an AI player if no public lobby is available
         game_player = models.GamePlayer.objects.create(game_user=request.user, color=request.user.color)
         the_lobby = models.Lobby.objects.create(created_by=request.user, owner=game_player)
-        utils.send_email(f"New lobby created by {request.user.username}\n\nLobby ID: \nhttps://quoridoronline.com/lobby/{the_lobby.id}")
+        if not request.user.is_superuser:
+            utils.send_email(f"New lobby created by {request.user.username}\n\nLobby ID: \nhttps://quoridoronline.com/lobby/{the_lobby.id}")
         game_player.lobby = the_lobby
         game_player.save()
         colors = random.sample(utils.COLORS, 3)
