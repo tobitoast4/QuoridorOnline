@@ -2,6 +2,7 @@ import json
 import logging
 import random
 import re
+import time
 from django.contrib.auth import get_user_model
 from django.utils.html import escape
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -93,6 +94,7 @@ class LobbyConsumer(AsyncWebsocketConsumer):
             }
         )
         logger.info(f"Player {self.user_name} connected to lobby {self.lobby_id}")
+        asyncio.create_task(self.start_game_by_ai_player())
 
     async def disconnect(self, close_code):
         @database_sync_to_async
@@ -138,12 +140,30 @@ class LobbyConsumer(AsyncWebsocketConsumer):
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON received: {e}")
             await self.send_error("Invalid message")
+    
+    
+    async def start_game_by_ai_player(self):
+        @database_sync_to_async
+        def load_lobby_state():
+            the_lobby = models.Lobby.objects.get(id=self.lobby_id)
+            gameplayers = the_lobby.gameplayer_set.all()
+            owner_is_ai = the_lobby.owner.is_artificial
+            non_artificial_players_count = gameplayers.exclude(is_artificial=True).count()
+            return owner_is_ai, non_artificial_players_count
 
-    async def handle_start_game(self, data):
+        try:
+            owner_is_ai, non_artificial_players_count = await load_lobby_state()
+            if owner_is_ai and non_artificial_players_count >= 1:
+                time.sleep(random.uniform(1.0, 2.5))  # Wait a bit before starting the game
+                asyncio.create_task(self.handle_start_game(None, skip_user_check=True))
+        except Exception as e:
+            await self.send_error(str(e))
+
+    async def handle_start_game(self, data, skip_user_check=False):
         @database_sync_to_async
         def process_start_game():
             the_lobby = models.Lobby.objects.get(pk=self.lobby_id)
-            if self.user_id != str(the_lobby.owner.game_user.id):
+            if not skip_user_check and self.user_id != str(the_lobby.owner.game_user.id):
                 raise PermissionError("Only the lobby owner can start the game")
             # TODO: Shuffle players
             next_lobby = models.Lobby.objects.create(created_by=the_lobby.created_by, previous_lobby=the_lobby, is_private=True)
