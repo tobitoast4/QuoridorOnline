@@ -199,8 +199,14 @@ window.addEventListener("beforeunload", () => {
 
 gameClient.on('player_kicked', (data) => {
     if (data.message.user_id === this_player_id) {
+        showNotify("info", "", "You have been kicked from the lobby.", 6);
+        sessionStorage.setItem("pending_notify", JSON.stringify({
+            type: "info",
+            title: "",
+            description: "You have been kicked from the lobby",
+            timeout: 6,
+        }));
         window.location = window.location.origin;  // redirect to home page
-        showNotify("info", "", "You have been kicked from the lobby.", 10);
     }
 });
 

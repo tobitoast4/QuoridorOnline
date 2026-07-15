@@ -41,5 +41,17 @@
                 {% endfor %}
             {% endif %}
         </div>
+
+        <script>
+            const pendingNotify = sessionStorage.getItem("pending_notify");
+            if (pendingNotify) {
+                try {
+                    const notify = JSON.parse(pendingNotify);
+                    showNotify(notify.type || "info", notify.title || "", notify.description || "", notify.timeout || 6);
+                } finally {
+                    sessionStorage.removeItem("pending_notify");
+                }
+            }
+        </script>
     </body>
 </html>
