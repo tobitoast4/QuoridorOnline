@@ -167,8 +167,11 @@ class LobbyConsumer(AsyncWebsocketConsumer):
                 raise PermissionError("Only the lobby owner can start the game")
             # TODO: Shuffle players
             next_lobby = models.Lobby.objects.create(created_by=the_lobby.created_by, previous_lobby=the_lobby, is_private=True)
-            for _ in range(random.randint(1, 3)):  # Add 1 to 3 AI players
-                lobby_manager.add_ai_player_to_lobby(next_lobby)  # TODO: Add old players?
+            if the_lobby.gameplayer_set.exclude(is_artificial=True).count() >= 1:  # Only add AIs to lobby if previous lobby contained AI
+                colors = random.sample(utils.COLORS, 3)
+                for i in range(3):  # Add 1 to 3 AI players
+                    if random.random() < 0.5:
+                        lobby_manager.add_ai_player_to_lobby(next_lobby, color=colors[i])  # TODO: Add old players?
             new_game = quoridor_game.Game(the_lobby.gameplayer_set, the_lobby.amount_of_walls_per_player, next_lobby.id)
             the_lobby.game = json.dumps(new_game.game_data, cls=utils.UUIDEncoder)
             the_lobby.save()
