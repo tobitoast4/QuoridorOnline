@@ -285,10 +285,10 @@ class LobbyConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 {'type': 'player_kicked', 'message': {"user_id": data.get("user_id")}}
             )
-            # await self.channel_layer.group_send(
-            #     self.room_group_name,
-            #     {'type': 'lobby_state', 'message': await self.get_lobby_data()}
-            # )
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {'type': 'lobby_state', 'message': await self.get_lobby_data()}
+            )
         except Exception as e:
             await self.send_error(str(e))
 
