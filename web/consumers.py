@@ -130,6 +130,8 @@ class LobbyConsumer(AsyncWebsocketConsumer):
                 await self.handle_rename_player(message_data)
             elif message_type == 'change_color':
                 await self.handle_change_color(message_data)
+            elif message_type == 'kick_player':
+                await self.handle_kick_player(message_data)
             elif message_type == 'lobby_state_request':
                 await self.handle_lobby_state_request()
             # elif message_type == 'chat_message':
@@ -268,6 +270,28 @@ class LobbyConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             await self.send_error(str(e))
 
+    async def handle_kick_player(self, data):
+        @database_sync_to_async
+        def process_kick_player(user_id):
+            the_lobby = models.Lobby.objects.get(id=self.lobby_id)
+            if self.user_id != str(the_lobby.owner.game_user.id):
+                raise PermissionError("Only the lobby owner can kick players")
+            user = User.objects.get(pk=user_id)
+            if the_lobby.game is None:  # game not started yet
+                lobby_manager.remove_player_from_lobby(the_lobby, user)
+        try:
+            await process_kick_player(data.get("user_id"))
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {'type': 'player_kicked', 'message': {"user_id": data.get("user_id")}}
+            )
+            # await self.channel_layer.group_send(
+            #     self.room_group_name,
+            #     {'type': 'lobby_state', 'message': await self.get_lobby_data()}
+            # )
+        except Exception as e:
+            await self.send_error(str(e))
+
     async def handle_lobby_state_request(self): 
         try:
             await self.send(text_data=json.dumps({
@@ -288,6 +312,12 @@ class LobbyConsumer(AsyncWebsocketConsumer):
     async def lobby_state(self, event):
         await self.send(text_data=json.dumps({
             'type': 'lobby_state',
+            'message': event['message'],
+        }))
+
+    async def player_kicked(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'player_kicked',
             'message': event['message'],
         }))
 

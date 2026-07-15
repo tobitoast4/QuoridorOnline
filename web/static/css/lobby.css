@@ -1,3 +1,14 @@
+.kick-button {
+    margin-left: auto; 
+    font-size: 22px;
+}
+
+.kick-button:hover {
+    color: red;
+    cursor: pointer;
+}
+
+
 .element-box {
     background-color: white;
     margin-left: 5%;

@@ -43,6 +43,7 @@ class LobbyWebSocketClient {
         this.handlers = {
             'connect': [],
             'disconnect': [],
+            'player_kicked': [],
             'lobby_state': [],
             'error': [],
         };
@@ -121,6 +122,10 @@ class LobbyWebSocketClient {
         this.send({type: 'change_color', message: { "new_color": new_color }});
     }
 
+    kickPlayer(user_id) {
+        this.send({type: 'kick_player', message: { "user_id": user_id }});
+    }
+
     // sendChatMessage(message) {
     //     this.send({
     //         type: 'chat_message',
@@ -192,6 +197,13 @@ window.addEventListener("beforeunload", () => {
     gameClient.disconnect();
 });
 
+gameClient.on('player_kicked', (data) => {
+    if (data.message.user_id === this_player_id) {
+        window.location = window.location.origin;  // redirect to home page
+        showNotify("info", "", "You have been kicked from the lobby.", 10);
+    }
+});
+
 gameClient.on('lobby_state', (data) => {
     lobby_data = data.message;
 
@@ -205,8 +217,12 @@ gameClient.on('lobby_state', (data) => {
         var list_of_players = $('#list_of_players');
         list_of_players.empty();
         lobby_data.gameplayer_set.forEach(player => {
+            let button_kick_player = `<span class='kick-button' title='Kick ${player.game_user.username}' 
+                                            onclick="gameClient.kickPlayer('${player.game_user.id}')">&times;</span>`;
+
             if (player.game_user.id == this_player_id) {
                 $('#players-color').css('background-color', player.color);
+                button_kick_player = "";  // don't show kick button for self
             }
 
             if (player.game_user.id == lobby_owner_id) {
@@ -214,11 +230,13 @@ gameClient.on('lobby_state', (data) => {
                                             "<div class='color-of-user-in-list' style='background-color: " + player.color + "'></div>" +
                                             player.game_user.username +
                                             "<i class='fa fa-user-circle-o' aria-hidden='true' style='margin-left: 12px'></i>" +
-                                        "</div>");
+                                            button_kick_player +
+                                        `</div>`);
             } else {
                 list_of_players.append("<div style='display: flex; padding: 10px 0; word-wrap: anywhere;'>" +
                                             "<div class='color-of-user-in-list' style='background-color: " + player.color + "'></div>" +
                                             player.game_user.username +
+                                            button_kick_player +
                                         "</div>");
             }
         });
