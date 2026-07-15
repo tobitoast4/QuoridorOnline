@@ -205,6 +205,10 @@ gameClient.on('lobby_state', (data) => {
         var list_of_players = $('#list_of_players');
         list_of_players.empty();
         lobby_data.gameplayer_set.forEach(player => {
+            if (player.game_user.id == this_player_id) {
+                $('#players-color').css('background-color', player.color);
+            }
+
             if (player.game_user.id == lobby_owner_id) {
                 list_of_players.append("<div style='display: flex; padding: 10px 0; word-wrap: anywhere;'>" +
                                             "<div class='color-of-user-in-list' style='background-color: " + player.color + "'></div>" +
