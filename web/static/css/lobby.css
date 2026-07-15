@@ -1,5 +1,15 @@
+.element-box #list_of_players > div {  /* make sure the kick button does not enlarge its container */
+    position: relative;
+    padding-right: 28px !important;
+}
+
 .kick-button {
-    margin-left: auto; 
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    line-height: 1;
+    margin-left: 0;
     font-size: 22px;
 }
 
