@@ -165,7 +165,7 @@ def get_random_lobby(request):
         game_player.save()
         colors = random.sample(utils.COLORS, 3)
         for i in range(3):  # Add 1 to 3 AI players
-            if random.random() < 0.7:
+            if random.random() < 0.5:
                 lobby_manager.add_ai_player_to_lobby(the_lobby, color=colors[i])  # TODO: Add old players?
     return Response({"lobby_url": f"/lobby/{the_lobby.id}"}, 200)
 

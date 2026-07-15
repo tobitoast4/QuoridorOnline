@@ -172,7 +172,7 @@ class LobbyConsumer(AsyncWebsocketConsumer):
             if the_lobby.gameplayer_set.exclude(is_artificial=True).count() >= 1:  # Only add AIs to lobby if previous lobby contained AI
                 colors = random.sample(utils.COLORS, 3)
                 for i in range(3):  # Add 1 to 3 AI players
-                    if random.random() < 0.5:
+                    if random.random() < 0.8:
                         lobby_manager.add_ai_player_to_lobby(next_lobby, color=colors[i])  # TODO: Add old players?
             new_game = quoridor_game.Game(the_lobby.gameplayer_set, the_lobby.amount_of_walls_per_player, next_lobby.id)
             the_lobby.game = json.dumps(new_game.game_data, cls=utils.UUIDEncoder)
