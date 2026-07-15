@@ -154,7 +154,7 @@ class LobbyConsumer(AsyncWebsocketConsumer):
         try:
             owner_is_ai, non_artificial_players_count = await load_lobby_state()
             if owner_is_ai and non_artificial_players_count >= 1:
-                time.sleep(random.uniform(1.0, 4.0))  # Wait a bit before starting the game
+                time.sleep(random.uniform(2.0, 6.0))  # Wait a bit before starting the game
                 asyncio.create_task(self.handle_start_game(None, skip_user_check=True))
         except Exception as e:
             await self.send_error(str(e))
