@@ -77,12 +77,7 @@ class MoveSimulator:
         others_walls = 0
         others_distance = 0
         ai_player = self.get_ai_player(game)
-
-        # calculate las field  # TODO: improve this, this is a hacky solution
-        rounds = game.game_data["game"]
-        last_real_round = rounds[len(rounds)-(self.depth-depth)-1]
-        last_real_round_players = last_real_round["game_board"]["players"]
-        last_field = [p["field"] for p in last_real_round_players if p["user"]["id"] == str(ai_player.gameplayer.id)][0]
+        fields_of_path_to_win = game.fields_of_path_to_win(ai_player.field, ai_player.win_option_fields)
 
         ai_player_walls = [w for w in game.game_board.walls if w.player_id == \
             str(ai_player.gameplayer.game_user.id)]
@@ -104,8 +99,8 @@ class MoveSimulator:
             + len(ai_player_horizontal_walls) 
             - 2 * len(wall_anchors)  # reward for placing walls in a way that they can be extended 
         )                        # (the less anchors the less lonely walls -> the better)
-        if ai_player.field.col_num == last_field["col_num"] and ai_player.field.row_num == last_field["row_num"]:
-            score -= 50  # Ai player should not return to same field
+        if ai_player.field in fields_of_path_to_win:
+            score += 10  # Ai player should not go back
         return score
     
     def _generate_moves(self, game, dictionary, depth, alpha, beta):
@@ -150,8 +145,10 @@ class MoveSimulator:
         if game.turn > self.moves_before_wall or len(game.game_board.walls) >= 1 and current_turn_player.amount_walls_left <= 0:
             # Walls placement moves
             walls = self.get_walls_on_paths(game, game.get_other_players())
-            # walls2 = self.get_walls_in_range(game.get_other_players()[0].field, self.wall_range)
-            # walls = list(set(walls1) & set(walls2))
+            if depth == self.depth:
+                # calculate impossible walls only at the top level depth
+                # if we'd calculate impossible walls at lower depths, we might add one that is possible at higher level / different branch
+                self._calculate_impossible_walls(game, walls)
             for wall in walls:
                 if wall in self.impossible_walls:
                     continue
@@ -173,9 +170,22 @@ class MoveSimulator:
                         beta = min(beta, best_score)
                     if alpha >= beta:
                         break
-                except QuoridorOnlineGameError as e:
-                    self.impossible_walls.append(wall)
+                except QuoridorOnlineGameError:
+                    pass
         return best_score
+    
+    def _calculate_impossible_walls(self, game, walls):
+        current_turn_player = game.get_current_player()  # its this players turn != self.ai_player
+        for wall in walls:
+            if wall in self.impossible_walls:
+                continue
+            new_game = copy.deepcopy(game)
+            col_start, row_start, col_end, row_end = wall
+            try:  # if trying to place a wall does not throw an error, we know its a legal move
+                new_game.place_wall(current_turn_player.gameplayer.game_user.id, 
+                                    col_start, row_start, col_end, row_end)
+            except QuoridorOnlineGameError:
+                self.impossible_walls.append(wall)
 
     def get_best_game(self):
         self._generate_moves2(self.game_copies)
