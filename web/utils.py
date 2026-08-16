@@ -153,5 +153,7 @@ def send_email(content):
         except Exception as e:
             logger.warning("Unable to send email: %s", e)
 
+    # the email is deprecated
+    return
     thread = threading.Thread(target=_send, daemon=True)
     thread.start()
