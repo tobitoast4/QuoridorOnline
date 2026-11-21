@@ -124,6 +124,20 @@ h2 { margin-bottom: 5px; font-size: 1.28rem; letter-spacing: -.025em; }
 .panel-header { margin-bottom: 20px; }
 .toolbar { display: flex; align-items: center; gap: 10px; }
 .toolbar.wrap { justify-content: flex-end; flex-wrap: wrap; }
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+.dashboard-grid > .panel { min-width: 0; height: 100%; margin-bottom: 0; }
+.chart-column { min-width: 0; display: grid; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.chart-column > .panel { min-width: 0; margin-bottom: 0; }
+.dashboard-grid .chart-panel { display: flex; flex-direction: column; }
+.dashboard-grid .chart-wrap { flex: 1; min-height: 255px; height: 255px; }
+.dashboard-grid .table-panel { display: flex; flex-direction: column; }
+.dashboard-grid .table-scroll { flex: 1; max-height: 655px; }
 
 .button, .range-buttons button {
     min-height: 40px;
@@ -143,6 +157,8 @@ h2 { margin-bottom: 5px; font-size: 1.28rem; letter-spacing: -.025em; }
 .button:disabled { cursor: default; opacity: .5; transform: none; }
 
 .chart-wrap { position: relative; min-height: 330px; height: min(39vw, 410px); }
+.chart-wrap canvas { cursor: grab; }
+.chart-wrap canvas:active { cursor: grabbing; }
 .chart-help { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 13px; color: var(--muted); font-size: .78rem; }
 .chart-help span::before { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 7px 2px 0; border-radius: 50%; background: #9babb1; }
 
@@ -194,6 +210,9 @@ tbody tr:hover, tbody tr.selected { background: #eff9f5; }
 
 @media (max-width: 1080px) {
     .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .dashboard-grid > .panel { height: auto; }
+    .chart-column { grid-template-columns: 1fr 1fr; grid-template-rows: none; }
     .table-heading { align-items: flex-start; flex-direction: column; }
     .toolbar.wrap { justify-content: flex-start; }
 }
@@ -216,5 +235,6 @@ tbody tr:hover, tbody tr.selected { background: #eff9f5; }
     .page-header { flex-direction: column; }
     .metrics { grid-template-columns: 1fr; }
     .panel-header { align-items: flex-start; flex-direction: column; }
+    .chart-column { grid-template-columns: 1fr; }
     .range-buttons { width: 100%; overflow-x: auto; }
 }

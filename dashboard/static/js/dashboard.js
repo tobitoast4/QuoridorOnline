@@ -4,6 +4,8 @@ const rawDailyPoints = chartSource.labels.map((label, index) => ({
     date: label,
     x: Date.parse(`${label}T00:00:00Z`),
     y: chartSource.data[index],
+    started: chartSource.started[index],
+    empty: chartSource.empty[index],
 }));
 
 function isoDate(timestamp) {
@@ -38,6 +40,26 @@ function aggregatePoints(granularity) {
             buckets.set(key, { x: key, y: 0, bucketStart: isoDate(bounds.start), bucketEnd: isoDate(bounds.end) });
         }
         buckets.get(key).y += point.y;
+    });
+    return Array.from(buckets.values());
+}
+
+function aggregateStatusPoints(granularity) {
+    const buckets = new Map();
+    rawDailyPoints.forEach((point) => {
+        const bounds = bucketBounds(point.x, granularity);
+        if (!buckets.has(bounds.start)) {
+            buckets.set(bounds.start, {
+                x: bounds.start,
+                started: 0,
+                empty: 0,
+                bucketStart: isoDate(bounds.start),
+                bucketEnd: isoDate(bounds.end),
+            });
+        }
+        const bucket = buckets.get(bounds.start);
+        bucket.started += point.started;
+        bucket.empty += point.empty;
     });
     return Array.from(buckets.values());
 }
@@ -125,11 +147,7 @@ const lineChart = new Chart(ctx, {
         onClick(event, elements) {
             if (!elements.length) return;
             const point = lineChart.data.datasets[elements[0].datasetIndex].data[elements[0].index];
-            tableState.dateFrom = point.bucketStart;
-            tableState.dateTo = point.bucketEnd;
-            document.getElementById("tableContext").textContent = `Showing lobbies from ${point.bucketStart} to ${point.bucketEnd}.`;
-            document.getElementById("tableScroll").scrollTop = 0;
-            loadLobbies(true);
+            filterTableToBucket(point);
         },
     },
 });
@@ -152,6 +170,102 @@ document.getElementById("resetZoomBtn").addEventListener("click", () => {
     refreshChartAggregation();
 });
 
+let statusGranularity = granularityForSpan(sourceSpan);
+const initialStatusPoints = aggregateStatusPoints(statusGranularity);
+document.getElementById("statusChartGranularity").textContent = `${granularityLabel(statusGranularity)} · started and empty lobbies.`;
+
+const statusChart = new Chart(document.getElementById("statusChart").getContext("2d"), {
+    type: "bar",
+    data: {
+        datasets: [
+            {
+                label: "Started games",
+                data: initialStatusPoints.map((point) => ({ ...point, y: point.started })),
+                parsing: false,
+                backgroundColor: "rgba(8, 127, 91, .78)",
+                borderRadius: 4,
+            },
+            {
+                label: "Empty lobbies",
+                data: initialStatusPoints.map((point) => ({ ...point, y: point.empty })),
+                parsing: false,
+                backgroundColor: "rgba(155, 171, 177, .62)",
+                borderRadius: 4,
+            },
+        ],
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { intersect: false, mode: "index" },
+        scales: {
+            x: {
+                type: "time",
+                stacked: true,
+                time: { unit: statusGranularity },
+                grid: { display: false },
+                ticks: { color: "#65727a", maxRotation: 0, autoSkipPadding: 26 },
+            },
+            y: {
+                beginAtZero: true,
+                stacked: true,
+                grid: { color: "rgba(101, 114, 122, .13)" },
+                ticks: { color: "#65727a", precision: 0 },
+            },
+        },
+        plugins: {
+            legend: {
+                position: "bottom",
+                align: "start",
+                labels: { usePointStyle: true, boxWidth: 8, color: "#65727a" },
+            },
+            tooltip: {
+                callbacks: {
+                    title(items) {
+                        if (!items.length) return "";
+                        const point = items[0].raw;
+                        return point.bucketStart === point.bucketEnd
+                            ? point.bucketStart
+                            : `${point.bucketStart} – ${point.bucketEnd}`;
+                    },
+                },
+            },
+            zoom: {
+                limits: { x: { min: "original", max: "original", minRange: 2 * dayMs } },
+                pan: { enabled: true, mode: "x", threshold: 4, onPanComplete: refreshStatusAggregation },
+                zoom: {
+                    wheel: { enabled: true, speed: .08 },
+                    pinch: { enabled: true },
+                    mode: "x",
+                    onZoomComplete: refreshStatusAggregation,
+                },
+            },
+        },
+        onClick(event, elements) {
+            if (!elements.length) return;
+            const point = statusChart.data.datasets[elements[0].datasetIndex].data[elements[0].index];
+            filterTableToBucket(point);
+        },
+    },
+});
+
+function refreshStatusAggregation({ chart } = { chart: statusChart }) {
+    const granularity = granularityForSpan(chart.scales.x.max - chart.scales.x.min);
+    if (granularity === statusGranularity) return;
+    statusGranularity = granularity;
+    const points = aggregateStatusPoints(granularity);
+    chart.data.datasets[0].data = points.map((point) => ({ ...point, y: point.started }));
+    chart.data.datasets[1].data = points.map((point) => ({ ...point, y: point.empty }));
+    chart.options.scales.x.time.unit = granularity;
+    document.getElementById("statusChartGranularity").textContent = `${granularityLabel(granularity)} · started and empty lobbies.`;
+    chart.update("none");
+}
+
+document.getElementById("resetStatusZoomBtn").addEventListener("click", () => {
+    statusChart.resetZoom();
+    refreshStatusAggregation();
+});
+
 const query = new URLSearchParams(window.location.search);
 const tableState = {
     page: 1,
@@ -172,6 +286,14 @@ const tableBody = document.getElementById("lobbyTableBody");
 const loadingState = document.getElementById("loadingState");
 const emptyState = document.getElementById("emptyState");
 const loadMoreBtn = document.getElementById("loadMoreBtn");
+
+function filterTableToBucket(point) {
+    tableState.dateFrom = point.bucketStart;
+    tableState.dateTo = point.bucketEnd;
+    document.getElementById("tableContext").textContent = `Showing lobbies from ${point.bucketStart} to ${point.bucketEnd}.`;
+    document.getElementById("tableScroll").scrollTop = 0;
+    loadLobbies(true);
+}
 
 function lobbyApiUrl() {
     const url = new URL("/dashboard/lobbies/", window.location.origin);

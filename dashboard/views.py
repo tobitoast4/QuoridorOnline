@@ -46,24 +46,30 @@ def dashboard(request):
     lobbies_per_day_query = lobbies_queryset.annotate(
         date=TruncDate('created_at')
     ).values('date').annotate(
-        count=Count('id')
+        count=Count('id'),
+        started=Count('id', filter=Q(game__isnull=False) & ~Q(game="")),
+        empty=Count('id', filter=Q(game__isnull=True) | Q(game="")),
     ).order_by('date')
 
     lobbies_count_dict = {
-        item['date']: item['count']
+        item['date']: item
         for item in lobbies_per_day_query
     }
 
     lobbies_count_per_day = {
         "labels": [],
-        "data": []
+        "data": [],
+        "started": [],
+        "empty": [],
     }
     if start_date and start_date <= end_date:
         current_date = start_date
         while current_date <= end_date:
-            count = lobbies_count_dict.get(current_date, 0)
+            daily_counts = lobbies_count_dict.get(current_date, {})
             lobbies_count_per_day["labels"].append(current_date.strftime('%Y-%m-%d'))
-            lobbies_count_per_day["data"].append(count)
+            lobbies_count_per_day["data"].append(daily_counts.get('count', 0))
+            lobbies_count_per_day["started"].append(daily_counts.get('started', 0))
+            lobbies_count_per_day["empty"].append(daily_counts.get('empty', 0))
             current_date += timedelta(days=1)
 
     context = {

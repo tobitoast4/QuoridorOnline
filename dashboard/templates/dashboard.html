@@ -9,8 +9,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@0.1.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.0"></script>
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=20261121-5">
     <link rel="stylesheet" href="{% static 'css/json-viewer.css' %}">
     <script src="{% static 'js/json-viewer.js' %}"></script>
     <script src="{% static 'js/utils.js' %}"></script>
@@ -62,6 +63,8 @@
             </article>
         </section>
 
+        <div class="dashboard-grid">
+        <div class="chart-column">
         <section class="panel chart-panel">
             <div class="panel-header">
                 <div>
@@ -74,6 +77,20 @@
             <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
             <div class="chart-help"><span>Scroll to zoom</span><span>Drag to move</span><span>Click a point to filter the table</span></div>
         </section>
+
+        <section class="panel chart-panel status-chart-panel">
+            <div class="panel-header">
+                <div>
+                    <p class="eyebrow">Quality</p>
+                    <h2>Started vs. empty</h2>
+                    <p id="statusChartGranularity" class="panel-copy">Lobby outcome over time.</p>
+                </div>
+                <div class="toolbar"><button id="resetStatusZoomBtn" class="button secondary" type="button">Reset view</button></div>
+            </div>
+            <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
+            <div class="chart-help"><span>Started games</span><span>Empty lobbies</span><span>Click a bar to filter the table</span></div>
+        </section>
+        </div>
 
         <section class="panel table-panel">
             <div class="panel-header table-heading">
@@ -117,6 +134,7 @@
             </div>
             <div class="table-footer"><span id="loadedCount">0 loaded</span><button id="loadMoreBtn" class="button secondary" type="button">Load more</button></div>
         </section>
+        </div>
 
         <section class="panel detail-panel">
             <div class="panel-header">
@@ -138,6 +156,6 @@
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     {{ lobbies_count_per_day|json_script:"lobbies_count_per_day" }}
-    <script src="{% static 'js/dashboard.js' %}"></script>
+    <script src="{% static 'js/dashboard.js' %}?v=20261121-3"></script>
 </body>
 </html>

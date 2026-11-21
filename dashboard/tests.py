@@ -23,12 +23,18 @@ class DashboardLobbyApiTests(TestCase):
         return lobby
 
     def test_dashboard_renders_new_lazy_loading_interface(self):
+        self.create_lobby()
+        self.create_lobby(game=None)
         response = self.client.get(reverse("dashboard"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'id="lobbyTableBody"')
         self.assertContains(response, 'id="lineChart"')
+        self.assertContains(response, 'id="statusChart"')
         self.assertNotContains(response, 'id="lobbies"')
+        chart_data = response.context["lobbies_count_per_day"]
+        self.assertEqual(sum(chart_data["started"]), 1)
+        self.assertEqual(sum(chart_data["empty"]), 1)
 
     def test_lobbies_are_paginated(self):
         for _ in range(12):
