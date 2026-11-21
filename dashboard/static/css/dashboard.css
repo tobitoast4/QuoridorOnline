@@ -179,14 +179,16 @@ select {
 .table-scroll { max-height: 620px; overflow: auto; border: 1px solid var(--line); border-radius: 12px; }
 table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .88rem; }
 th { position: sticky; top: 0; z-index: 2; padding: 0; text-align: left; background: #f5f8f9; border-bottom: 1px solid var(--line); }
-.sort-button, th > .sr-only { width: 100%; padding: 13px 15px; color: #536169; border: 0; background: transparent; font-size: .75rem; font-weight: 800; letter-spacing: .035em; text-align: left; text-transform: uppercase; white-space: nowrap; }
+.sort-button, th > .sr-only { width: 100%; padding: 10px 15px; color: #536169; border: 0; background: transparent; font-size: .75rem; font-weight: 800; letter-spacing: .035em; text-align: left; text-transform: uppercase; white-space: nowrap; }
 .sort-button { cursor: pointer; }
 .sort-button span::after { content: "↕"; margin-left: 5px; color: #a4b0b5; }
 .sort-button.active.asc span::after { content: "↑"; color: var(--brand); }
 .sort-button.active.desc span::after { content: "↓"; color: var(--brand); }
-td { padding: 13px 15px; border-bottom: 1px solid #e8edef; white-space: nowrap; }
+td { padding: 3px 15px; border-bottom: 1px solid #e4e9eb; white-space: nowrap; }
 tbody tr { transition: background .14s ease; }
-tbody tr:hover, tbody tr.selected { background: #eff9f5; }
+tbody tr:nth-child(odd) > td { background-color: #ffffff; }
+tbody tr:nth-child(even) > td { background-color: #edf1f3; }
+tbody tr:hover > td, tbody tr.selected > td { background-color: #e3f5ee; }
 .id-button { max-width: 210px; padding: 0; overflow: hidden; color: var(--brand-dark); border: 0; background: none; cursor: pointer; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .81rem; text-overflow: ellipsis; text-decoration: underline; text-underline-offset: 3px; }
 .status-pill { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 999px; color: #176b50; background: #e7f7f0; font-size: .73rem; font-weight: 750; }
 .status-pill.empty { color: #6d7780; background: #edf1f3; }

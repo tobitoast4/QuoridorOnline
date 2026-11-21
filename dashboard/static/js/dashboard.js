@@ -415,8 +415,8 @@ function appendLobbyRow(lobby) {
 
     row.appendChild(makeCell(idButton));
     row.appendChild(makeCell(formatCreatedAt(lobby.time_created)));
-    row.appendChild(makeCell(lobby.amount_players ?? "—"));
-    row.appendChild(makeCell(lobby.amount_ai_players ?? "—"));
+    row.appendChild(makeCell(lobby.amount_players ?? ""));
+    row.appendChild(makeCell(lobby.amount_ai_players ?? ""));
     row.appendChild(makeCell(status));
 
     const link = document.createElement("a");
