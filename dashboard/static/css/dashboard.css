@@ -157,8 +157,8 @@ h2 { margin-bottom: 5px; font-size: 1.28rem; letter-spacing: -.025em; }
 .button:disabled { cursor: default; opacity: .5; transform: none; }
 
 .chart-wrap { position: relative; min-height: 330px; height: min(39vw, 410px); }
-.chart-wrap canvas { cursor: grab; }
-.chart-wrap canvas:active { cursor: grabbing; }
+.chart-wrap canvas { cursor: grab; touch-action: none; }
+.chart-wrap canvas.is-panning { cursor: grabbing; }
 .chart-help { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 13px; color: var(--muted); font-size: .78rem; }
 .chart-help span::before { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 7px 2px 0; border-radius: 50%; background: #9babb1; }
 

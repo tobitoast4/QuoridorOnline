@@ -10,8 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@0.1.1"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.0"></script>
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=20261121-5">
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0"></script>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=20261121-7">
     <link rel="stylesheet" href="{% static 'css/json-viewer.css' %}">
     <script src="{% static 'js/json-viewer.js' %}"></script>
     <script src="{% static 'js/utils.js' %}"></script>
@@ -70,7 +70,7 @@
                 <div>
                     <p class="eyebrow">Activity</p>
                     <h2>Lobby creation</h2>
-                    <p id="chartGranularity" class="panel-copy">Grouped automatically for the visible range.</p>
+                    <p id="chartGranularity" class="panel-copy">Scroll to zoom · drag to move.</p>
                 </div>
                 <div class="toolbar"><button id="resetZoomBtn" class="button secondary" type="button">Reset view</button></div>
             </div>
@@ -88,7 +88,7 @@
                 <div class="toolbar"><button id="resetStatusZoomBtn" class="button secondary" type="button">Reset view</button></div>
             </div>
             <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
-            <div class="chart-help"><span>Started games</span><span>Empty lobbies</span><span>Click a bar to filter the table</span></div>
+            <div class="chart-help"><span>Scroll to zoom</span><span>Drag to move</span><span>Click a bar to filter the table</span></div>
         </section>
         </div>
 
@@ -156,6 +156,6 @@
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     {{ lobbies_count_per_day|json_script:"lobbies_count_per_day" }}
-    <script src="{% static 'js/dashboard.js' %}?v=20261121-3"></script>
+    <script src="{% static 'js/dashboard.js' %}?v=20261121-7"></script>
 </body>
 </html>

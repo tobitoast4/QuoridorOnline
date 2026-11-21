@@ -75,6 +75,73 @@ function granularityLabel(granularity) {
     return { day: "Daily values", week: "Weekly totals", month: "Monthly totals" }[granularity];
 }
 
+const dragFlags = new WeakMap();
+
+function setupNativePan(chart, canvas, refreshAggregation) {
+    let gesture = null;
+
+    canvas.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0 || !rawDailyPoints.length) return;
+        const scale = chart.scales.x;
+        gesture = {
+            pointerId: event.pointerId,
+            startX: event.clientX,
+            min: scale.min,
+            max: scale.max,
+            moved: false,
+        };
+        canvas.setPointerCapture(event.pointerId);
+        canvas.classList.add("is-panning");
+        event.preventDefault();
+    });
+
+    canvas.addEventListener("pointermove", (event) => {
+        if (!gesture || event.pointerId !== gesture.pointerId) return;
+        const deltaPixels = event.clientX - gesture.startX;
+        if (Math.abs(deltaPixels) > 3) gesture.moved = true;
+        if (!gesture.moved) return;
+
+        const scale = chart.scales.x;
+        const visibleRange = gesture.max - gesture.min;
+        const deltaValue = (deltaPixels / scale.width) * visibleRange;
+        const sourceMin = rawDailyPoints[0].x;
+        const sourceMax = rawDailyPoints[rawDailyPoints.length - 1].x;
+        const sourceRange = Math.max(sourceMax - sourceMin, dayMs);
+        const boundaryPadding = sourceRange * .06;
+        const lowerLimit = sourceMin - boundaryPadding;
+        const upperLimit = sourceMax + boundaryPadding;
+        let nextMin = gesture.min - deltaValue;
+        let nextMax = gesture.max - deltaValue;
+
+        if (nextMin < lowerLimit) {
+            nextMax += lowerLimit - nextMin;
+            nextMin = lowerLimit;
+        }
+        if (nextMax > upperLimit) {
+            nextMin -= nextMax - upperLimit;
+            nextMax = upperLimit;
+        }
+
+        chart.options.scales.x.min = nextMin;
+        chart.options.scales.x.max = nextMax;
+        chart.update("none");
+        event.preventDefault();
+    });
+
+    const finishGesture = (event) => {
+        if (!gesture || event.pointerId !== gesture.pointerId) return;
+        if (gesture.moved) {
+            dragFlags.set(canvas, true);
+            window.setTimeout(() => dragFlags.delete(canvas), 150);
+            refreshAggregation({ chart });
+        }
+        gesture = null;
+        canvas.classList.remove("is-panning");
+    };
+    canvas.addEventListener("pointerup", finishGesture);
+    canvas.addEventListener("pointercancel", finishGesture);
+}
+
 const sourceSpan = rawDailyPoints.length > 1
     ? rawDailyPoints[rawDailyPoints.length - 1].x - rawDailyPoints[0].x
     : 0;
@@ -135,7 +202,7 @@ const lineChart = new Chart(ctx, {
             },
             zoom: {
                 limits: { x: { min: "original", max: "original", minRange: 2 * dayMs } },
-                pan: { enabled: true, mode: "x", threshold: 4, onPanComplete: refreshChartAggregation },
+                pan: { enabled: false },
                 zoom: {
                     wheel: { enabled: true, speed: .08 },
                     pinch: { enabled: true },
@@ -145,6 +212,7 @@ const lineChart = new Chart(ctx, {
             },
         },
         onClick(event, elements) {
+            if (dragFlags.get(document.getElementById("lineChart"))) return;
             if (!elements.length) return;
             const point = lineChart.data.datasets[elements[0].datasetIndex].data[elements[0].index];
             filterTableToBucket(point);
@@ -161,18 +229,21 @@ function refreshChartAggregation({ chart } = { chart: lineChart }) {
     chart.data.datasets[0].data = points;
     chart.data.datasets[0].pointRadius = points.length > 100 ? 0 : 2;
     chart.options.scales.x.time.unit = granularity;
-    document.getElementById("chartGranularity").textContent = `${granularityLabel(granularity)} · grouped automatically for this view.`;
+    document.getElementById("chartGranularity").textContent = `${granularityLabel(granularity)} · scroll to zoom, drag to move.`;
     chart.update("none");
 }
 
 document.getElementById("resetZoomBtn").addEventListener("click", () => {
+    delete lineChart.options.scales.x.min;
+    delete lineChart.options.scales.x.max;
     lineChart.resetZoom();
     refreshChartAggregation();
 });
+setupNativePan(lineChart, document.getElementById("lineChart"), refreshChartAggregation);
 
 let statusGranularity = granularityForSpan(sourceSpan);
 const initialStatusPoints = aggregateStatusPoints(statusGranularity);
-document.getElementById("statusChartGranularity").textContent = `${granularityLabel(statusGranularity)} · started and empty lobbies.`;
+document.getElementById("statusChartGranularity").textContent = `${granularityLabel(statusGranularity)} · scroll to zoom, drag to move.`;
 
 const statusChart = new Chart(document.getElementById("statusChart").getContext("2d"), {
     type: "bar",
@@ -232,7 +303,7 @@ const statusChart = new Chart(document.getElementById("statusChart").getContext(
             },
             zoom: {
                 limits: { x: { min: "original", max: "original", minRange: 2 * dayMs } },
-                pan: { enabled: true, mode: "x", threshold: 4, onPanComplete: refreshStatusAggregation },
+                pan: { enabled: false },
                 zoom: {
                     wheel: { enabled: true, speed: .08 },
                     pinch: { enabled: true },
@@ -242,6 +313,7 @@ const statusChart = new Chart(document.getElementById("statusChart").getContext(
             },
         },
         onClick(event, elements) {
+            if (dragFlags.get(document.getElementById("statusChart"))) return;
             if (!elements.length) return;
             const point = statusChart.data.datasets[elements[0].datasetIndex].data[elements[0].index];
             filterTableToBucket(point);
@@ -257,14 +329,17 @@ function refreshStatusAggregation({ chart } = { chart: statusChart }) {
     chart.data.datasets[0].data = points.map((point) => ({ ...point, y: point.started }));
     chart.data.datasets[1].data = points.map((point) => ({ ...point, y: point.empty }));
     chart.options.scales.x.time.unit = granularity;
-    document.getElementById("statusChartGranularity").textContent = `${granularityLabel(granularity)} · started and empty lobbies.`;
+    document.getElementById("statusChartGranularity").textContent = `${granularityLabel(granularity)} · scroll to zoom, drag to move.`;
     chart.update("none");
 }
 
 document.getElementById("resetStatusZoomBtn").addEventListener("click", () => {
+    delete statusChart.options.scales.x.min;
+    delete statusChart.options.scales.x.max;
     statusChart.resetZoom();
     refreshStatusAggregation();
 });
+setupNativePan(statusChart, document.getElementById("statusChart"), refreshStatusAggregation);
 
 const query = new URLSearchParams(window.location.search);
 const tableState = {
