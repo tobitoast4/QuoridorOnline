@@ -120,7 +120,7 @@
                 <table>
                     <thead><tr>
                         <th><button class="sort-button" data-sort="lobby_id">Lobby ID <span></span></button></th>
-                        <th><button class="sort-button active desc" data-sort="created_at">Created <span></span></button></th>
+                        <th><button class="sort-button active desc" data-sort="created_at">Created (MESZ) <span></span></button></th>
                         <th><button class="sort-button" data-sort="players">Players <span></span></button></th>
                         <th><button class="sort-button" data-sort="ai_players">AI <span></span></button></th>
                         <th><button class="sort-button" data-sort="status">Status <span></span></button></th>
@@ -156,6 +156,6 @@
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     {{ lobbies_count_per_day|json_script:"lobbies_count_per_day" }}
-    <script src="{% static 'js/dashboard.js' %}?v=20261121-8"></script>
+    <script src="{% static 'js/dashboard.js' %}?v=20261121-14"></script>
 </body>
 </html>

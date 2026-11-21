@@ -384,8 +384,13 @@ function lobbyApiUrl() {
 
 function formatCreatedAt(value) {
     return new Intl.DateTimeFormat("en-GB", {
-        dateStyle: "medium",
-        timeStyle: "short",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23",
         timeZone: "Europe/Berlin",
     }).format(new Date(value));
 }
