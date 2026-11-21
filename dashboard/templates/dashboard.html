@@ -4,113 +4,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuoridorOnline Dashboard</title>
+    <title>QuoridorOnline · Dashboard</title>
     <link rel="shortcut icon" href="{% static 'fav_icon_64x64.png' %}">
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@0.1.1"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.0"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Moul&effect=outline">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     <link rel="stylesheet" href="{% static 'css/json-viewer.css' %}">
     <script src="{% static 'js/json-viewer.js' %}"></script>
     <script src="{% static 'js/utils.js' %}"></script>
-    <script src="{% static 'js/settings.js' %}"></script>
 </head>
 <body>
-    <div id="navbar">
-        <h2>Navigation</h2>
-        <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/admin">Admin</a></li>
-            <li><a href="/dashboard">Dashboard</a></li>
-            <li><a href="#">Settings</a></li>
-        </ul>
-    </div>
+    <aside class="sidebar">
+        <a class="brand" href="/" aria-label="QuoridorOnline home">
+            <span class="brand-mark">Q</span>
+            <span>Quoridor<span>Online</span></span>
+        </a>
+        <nav aria-label="Main navigation">
+            <a href="/">Home</a>
+            <a href="/admin/">Admin</a>
+            <a class="active" href="/dashboard/" aria-current="page">Dashboard</a>
+        </nav>
+        <div class="sidebar-note"><span class="live-dot"></span>Admin analytics</div>
+    </aside>
 
-    <div id="content">
-        <h1>Dashboard for QuoridorOnline</h1>
+    <main>
+        <header class="page-header">
+            <div>
+                <p class="eyebrow">Administration</p>
+                <h1>Game overview</h1>
+                <p class="subtitle">Monitor activity, inspect lobbies and spot trends.</p>
+            </div>
+            <a class="button secondary" href="/admin/">Open Django admin</a>
+        </header>
 
-        <div class="widget" style="margin-bottom: 20px;">
-            <h2 style="margin-bottom: 0px;">Online Users: {{ online_user_count }}</h2>
-        </div>
+        <section class="metrics" aria-label="Summary">
+            <article class="metric-card accent">
+                <span class="metric-label">Online now</span>
+                <strong>{{ online_user_count }}</strong>
+                <span class="metric-caption"><i class="live-dot"></i> live players</span>
+            </article>
+            <article class="metric-card">
+                <span class="metric-label">Lobbies</span>
+                <strong>{{ lobbies_count }}</strong>
+                <span class="metric-caption">in selected period</span>
+            </article>
+            <article class="metric-card">
+                <span class="metric-label">Games started</span>
+                <strong>{{ games_count }}</strong>
+                <span class="metric-caption">with game data</span>
+            </article>
+            <article class="metric-card">
+                <span class="metric-label">Empty lobbies</span>
+                <strong>{{ empty_lobbies_count }}</strong>
+                <span class="metric-caption">safe to review or clear</span>
+            </article>
+        </section>
 
-        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-            <div style="width: 100%">
-                <div class="widget">
-                    <h2>Amount of lobbies created per time</h2>
-                    <canvas id="lineChart" width="400" height="200"></canvas>
-                    <div style="margin-top: 10px; display: flex; gap: 10px; align-items: center;">
-                        <button id="resetZoomBtn" type="button">Reset Zoom</button>
-                        <button id="resetZoomBtn" type="button" onclick="deleteEmptyLobbies()">Clear empty lobbies</button>
+        <section class="panel chart-panel">
+            <div class="panel-header">
+                <div>
+                    <p class="eyebrow">Activity</p>
+                    <h2>Lobby creation</h2>
+                    <p id="chartGranularity" class="panel-copy">Grouped automatically for the visible range.</p>
+                </div>
+                <div class="toolbar"><button id="resetZoomBtn" class="button secondary" type="button">Reset view</button></div>
+            </div>
+            <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
+            <div class="chart-help"><span>Scroll to zoom</span><span>Drag to move</span><span>Click a point to filter the table</span></div>
+        </section>
+
+        <section class="panel table-panel">
+            <div class="panel-header table-heading">
+                <div>
+                    <p class="eyebrow">Lobby explorer</p>
+                    <h2>All lobbies <span id="tableCount" class="count-badge">0</span></h2>
+                    <p id="tableContext" class="panel-copy">Sorted by newest first.</p>
+                </div>
+                <div class="toolbar wrap">
+                    <div class="range-buttons" aria-label="Time range">
+                        <button type="button" data-range="0">Today</button>
+                        <button type="button" data-range="7">7 days</button>
+                        <button type="button" data-range="30">30 days</button>
+                        <button type="button" data-range="365">1 year</button>
+                        <button type="button" data-range="all">All</button>
                     </div>
+                    <label class="select-label">Status
+                        <select id="statusSelect"><option value="all">All</option><option value="started">Started</option><option value="empty">Empty</option></select>
+                    </label>
+                    <label class="select-label">Per load
+                        <select id="pageSizeSelect"><option value="20">20</option><option value="30" selected>30</option><option value="50">50</option><option value="100">100</option></select>
+                    </label>
                 </div>
             </div>
-            <div style="width: 100%">
-                <div class="widget">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px;">
-                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                            <h2 style="display:inline-block; margin:0;">List of lobbies</h2>
-                            <h2 id="amount_of_lobbies_in_list" style="display:inline-block; margin:0;"></h2>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                            <span for="lobbyLimitSelect">Show maximum</span>
-                            <select id="lobbyLimitSelect" style="padding:4px 8px;">
-                                <option value="">----</option>
-                                <option value="10">10</option>
-                                <option value="20">20</option>
-                                <option value="35">35</option>
-                                <option value="100">100</option>
-                            </select>
-                            <span>entries</span>
-                        </div>
-                    </div>
 
-                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
-                        <button type="button" class="time-range-btn" data-range="today" onclick="reloadDashboardWithDateOffset(0)">Today</button>
-                        <button type="button" class="time-range-btn" data-range="7" onclick="reloadDashboardWithDateOffset(7)">Last 7 Days</button>
-                        <button type="button" class="time-range-btn" data-range="30" onclick="reloadDashboardWithDateOffset(30)">Last 30 Days</button>
-                        <button type="button" class="time-range-btn" data-range="365" onclick="reloadDashboardWithDateOffset(365)">Last 365 Days</button>
-                        <button type="button" class="time-range-btn" data-range="365" onclick="reloadDashboardWithDateOffset(null)">All</button>
-                    </div>
-<!-- 
-                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; align-items:center;">
-                        <label style="font-weight:600;">From <input type="date" id="dateFromInput" value="{{ date_from|default_if_none:'' }}" style="padding:4px 8px;"></label>
-                        <label style="font-weight:600;">To <input type="date" id="dateToInput" value="{{ date_to|default_if_none:'' }}" style="padding:4px 8px;"></label>
-                        <button id="applyDateFilterBtn" type="button">Search</button>
-                        <button id="resetDateFilterBtn" type="button">Reset</button>
-                    </div> -->
+            <div id="tableScroll" class="table-scroll">
+                <table>
+                    <thead><tr>
+                        <th><button class="sort-button" data-sort="lobby_id">Lobby ID <span></span></button></th>
+                        <th><button class="sort-button active desc" data-sort="created_at">Created <span></span></button></th>
+                        <th><button class="sort-button" data-sort="players">Players <span></span></button></th>
+                        <th><button class="sort-button" data-sort="ai_players">AI <span></span></button></th>
+                        <th><button class="sort-button" data-sort="status">Status <span></span></button></th>
+                        <th><span class="sr-only">Actions</span></th>
+                    </tr></thead>
+                    <tbody id="lobbyTableBody"></tbody>
+                </table>
+                <div id="emptyState" class="empty-state" hidden>No lobbies match this view.</div>
+                <div id="loadingState" class="loading-state"><span class="spinner"></span>Loading lobbies…</div>
+                <div id="loadSentinel" aria-hidden="true"></div>
+            </div>
+            <div class="table-footer"><span id="loadedCount">0 loaded</span><button id="loadMoreBtn" class="button secondary" type="button">Load more</button></div>
+        </section>
 
-                    <div id="list_of_games_container">
-                        Click one day to see the lobbies
-                    </div>
+        <section class="panel detail-panel">
+            <div class="panel-header">
+                <div>
+                    <p class="eyebrow">Inspector</p>
+                    <h2>Selected lobby</h2>
+                    <p id="selectedLobbyHint" class="panel-copy">Select a lobby ID to inspect its current game data.</p>
                 </div>
+                <a id="selectedLobbyLink" class="button secondary" href="#" target="_blank" hidden>Open game</a>
             </div>
-        </div>
+            <div id="selectedGameJsonContainer" class="json-shell"><div class="json-placeholder">No lobby selected</div></div>
+        </section>
 
-        <div class="widget">
-            <h2>Selected lobby</h2>
-            <div class="widget" style="background-color: white">
-                <pre id="selected_game_json_container"></pre>
-            </div>
-        </div>
+        <section class="danger-zone">
+            <div><strong>Maintenance</strong><span>Remove all lobbies without game data.</span></div>
+            <button id="deleteEmptyBtn" class="button danger" type="button">Clear empty lobbies</button>
+        </section>
+    </main>
 
-        <div style="height: 50rem"></div>
-    </div>
-
-    {{ lobbies|json_script:"lobbies" }}
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
     {{ lobbies_count_per_day|json_script:"lobbies_count_per_day" }}
-    <script>
-        lobbies = get_script_json_value("lobbies");
-        lobbies_count_per_day = get_script_json_value("lobbies_count_per_day");
-        var labels_as_str = lobbies_count_per_day["labels"];
-        var data = lobbies_count_per_day["data"];
-    </script>
     <script src="{% static 'js/dashboard.js' %}"></script>
 </body>
 </html>
