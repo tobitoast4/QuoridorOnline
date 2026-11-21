@@ -48,7 +48,13 @@ def get_current_time():
 def get_redis_client():
     if not hasattr(get_redis_client, "_client"):
         redis_url = os.getenv("REDIS_URL", "redis://127.0.0.1:6379")
-        get_redis_client._client = redis.from_url(redis_url, decode_responses=True)
+        socket_timeout = float(os.getenv("REDIS_SOCKET_TIMEOUT", "1.0"))
+        get_redis_client._client = redis.from_url(
+            redis_url,
+            decode_responses=True,
+            socket_connect_timeout=socket_timeout,
+            socket_timeout=socket_timeout,
+        )
     return get_redis_client._client
 
 

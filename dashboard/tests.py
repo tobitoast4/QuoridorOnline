@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib.staticfiles import finders
 
 from web import models
 
@@ -32,9 +33,24 @@ class DashboardLobbyApiTests(TestCase):
         self.assertContains(response, 'id="lineChart"')
         self.assertContains(response, 'id="statusChart"')
         self.assertNotContains(response, 'id="lobbies"')
+        self.assertNotContains(response, "cdn.jsdelivr.net")
+        self.assertContains(response, "vendor/chart.umd.min.js")
+        self.assertContains(response, "<script defer", count=8)
         chart_data = response.context["lobbies_count_per_day"]
         self.assertEqual(sum(chart_data["started"]), 1)
         self.assertEqual(sum(chart_data["empty"]), 1)
+
+    def test_dashboard_vendor_assets_are_available_locally(self):
+        assets = (
+            "vendor/chart.umd.min.js",
+            "vendor/moment.min.js",
+            "vendor/chartjs-adapter-moment.min.js",
+            "vendor/hammer.min.js",
+            "vendor/chartjs-plugin-zoom.min.js",
+        )
+        for asset in assets:
+            with self.subTest(asset=asset):
+                self.assertIsNotNone(finders.find(asset))
 
     def test_lobbies_are_paginated(self):
         for _ in range(12):

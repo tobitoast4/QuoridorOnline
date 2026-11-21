@@ -39,21 +39,20 @@ def filtered_lobbies(request):
 def dashboard(request):
     lobbies_queryset, date_from, date_to = filtered_lobbies(request)
 
-    first_lobby = lobbies_queryset.order_by('created_at').first()
-    start_date = date_from or (first_lobby.created_at.date() if first_lobby else None)
-    end_date = date_to or timezone.localdate()
-
-    lobbies_per_day_query = lobbies_queryset.annotate(
+    lobbies_per_day = list(lobbies_queryset.annotate(
         date=TruncDate('created_at')
     ).values('date').annotate(
         count=Count('id'),
         started=Count('id', filter=Q(game__isnull=False) & ~Q(game="")),
         empty=Count('id', filter=Q(game__isnull=True) | Q(game="")),
-    ).order_by('date')
+    ).order_by('date'))
+
+    start_date = date_from or (lobbies_per_day[0]['date'] if lobbies_per_day else None)
+    end_date = date_to or timezone.localdate()
 
     lobbies_count_dict = {
         item['date']: item
-        for item in lobbies_per_day_query
+        for item in lobbies_per_day
     }
 
     lobbies_count_per_day = {
@@ -72,14 +71,20 @@ def dashboard(request):
             lobbies_count_per_day["empty"].append(daily_counts.get('empty', 0))
             current_date += timedelta(days=1)
 
+    metrics = lobbies_queryset.aggregate(
+        total=Count('id'),
+        games=Count('id', filter=Q(game__isnull=False) & ~Q(game="")),
+        empty=Count('id', filter=Q(game__isnull=True) | Q(game="")),
+    )
+
     context = {
         "lobbies_count_per_day": lobbies_count_per_day,
         "date_from": date_from,
         "date_to": date_to,
         "online_user_count": utils.get_online_user_count(),
-        "lobbies_count": lobbies_queryset.count(),
-        "games_count": lobbies_queryset.exclude(game__isnull=True).exclude(game="").count(),
-        "empty_lobbies_count": lobbies_queryset.filter(Q(game__isnull=True) | Q(game="")).count(),
+        "lobbies_count": metrics['total'],
+        "games_count": metrics['games'],
+        "empty_lobbies_count": metrics['empty'],
     }
     return render(request, 'dashboard.html', context)
 

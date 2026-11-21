@@ -6,15 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuoridorOnline · Dashboard</title>
     <link rel="shortcut icon" href="{% static 'fav_icon_64x64.png' %}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@0.1.1"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0"></script>
+    <script defer src="{% static 'vendor/chart.umd.min.js' %}"></script>
+    <script defer src="{% static 'vendor/moment.min.js' %}"></script>
+    <script defer src="{% static 'vendor/chartjs-adapter-moment.min.js' %}"></script>
+    <script defer src="{% static 'vendor/hammer.min.js' %}"></script>
+    <script defer src="{% static 'vendor/chartjs-plugin-zoom.min.js' %}"></script>
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=20261121-10">
     <link rel="stylesheet" href="{% static 'css/json-viewer.css' %}">
-    <script src="{% static 'js/json-viewer.js' %}"></script>
-    <script src="{% static 'js/utils.js' %}"></script>
+    <script defer src="{% static 'js/json-viewer.js' %}"></script>
+    <script defer src="{% static 'js/utils.js' %}"></script>
 </head>
 <body>
     <aside class="sidebar">
@@ -156,6 +156,6 @@
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     {{ lobbies_count_per_day|json_script:"lobbies_count_per_day" }}
-    <script src="{% static 'js/dashboard.js' %}?v=20261121-14"></script>
+    <script defer src="{% static 'js/dashboard.js' %}?v=20261121-15"></script>
 </body>
 </html>
