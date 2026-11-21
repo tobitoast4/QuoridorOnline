@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.db import models as djmodels
+from django.db.models import Count, Q
 from web import models
 
 # Register your models here.
@@ -23,7 +24,36 @@ class AutoSearchAdmin(admin.ModelAdmin):
 
 @admin.register(models.GameUser)
 class GameUserAdmin(AutoSearchAdmin):
-    pass
+    list_display = (
+        "username",
+        "email",
+        "is_guest",
+        "registered_time",
+        "last_login",
+        "games_played",
+        "is_active",
+        "is_staff",
+    )
+    list_filter = ("is_guest", "is_active", "is_staff")
+    date_hierarchy = "date_joined"
+    ordering = ("-date_joined",)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(
+            _games_played=Count(
+                "gameplayer__lobby",
+                filter=Q(gameplayer__lobby__game__isnull=False),
+                distinct=True,
+            )
+        )
+
+    @admin.display(description="Registered time", ordering="date_joined")
+    def registered_time(self, obj):
+        return obj.date_joined
+
+    @admin.display(description="Games played", ordering="_games_played")
+    def games_played(self, obj):
+        return obj._games_played
 
 @admin.register(models.GamePlayer)
 class GamePlayerAdmin(AutoSearchAdmin):

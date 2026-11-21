@@ -1,9 +1,12 @@
 import uuid
 
+from django.contrib import admin
+from django.test import RequestFactory
 from django.test import SimpleTestCase, TestCase
 from django.urls import resolve
 
 from web import models
+from web.admin import GameUserAdmin
 from web.quoridor.game import Game
 from web.quoridor.wall import is_wall_within_board
 from web.views import lobby
@@ -21,6 +24,29 @@ class GameWallHelperTests(SimpleTestCase):
         self.assertTrue(is_wall_within_board(0, 0.5, 1, 0.5, 9))
         self.assertTrue(is_wall_within_board(5, 0.5, 6, 0.5, 9))
         self.assertFalse(is_wall_within_board(-1, 0.5, 0, 0.5, 9))
+
+
+class GameUserAdminTests(TestCase):
+    def setUp(self):
+        self.model_admin = GameUserAdmin(models.GameUser, admin.site)
+        self.request = RequestFactory().get("/admin/web/gameuser/")
+
+    def test_guest_filter_and_additional_columns_are_configured(self):
+        self.assertIn("is_guest", self.model_admin.list_filter)
+        self.assertIn("registered_time", self.model_admin.list_display)
+        self.assertIn("games_played", self.model_admin.list_display)
+
+    def test_games_played_counts_only_distinct_started_games(self):
+        user = models.GameUser.objects.create_user(username="player")
+        started_lobby = models.Lobby.objects.create(game='{"state": "started"}')
+        waiting_lobby = models.Lobby.objects.create()
+        models.GamePlayer.objects.create(game_user=user, lobby=started_lobby)
+        models.GamePlayer.objects.create(game_user=user, lobby=started_lobby)
+        models.GamePlayer.objects.create(game_user=user, lobby=waiting_lobby)
+
+        annotated_user = self.model_admin.get_queryset(self.request).get(pk=user.pk)
+
+        self.assertEqual(self.model_admin.games_played(annotated_user), 1)
 
 
 # class LobbyCreationTests(TestCase):
