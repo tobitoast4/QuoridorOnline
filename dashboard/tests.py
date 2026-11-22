@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.staticfiles import finders
@@ -35,6 +37,7 @@ class DashboardLobbyApiTests(TestCase):
         self.assertNotContains(response, 'id="lobbies"')
         self.assertNotContains(response, "cdn.jsdelivr.net")
         self.assertContains(response, "vendor/chart.umd.min.js")
+        self.assertContains(response, "js/utils.js?v=20261122-1")
         self.assertContains(response, "<script defer", count=8)
         chart_data = response.context["lobbies_count_per_day"]
         self.assertEqual(sum(chart_data["started"]), 1)
@@ -51,6 +54,12 @@ class DashboardLobbyApiTests(TestCase):
         for asset in assets:
             with self.subTest(asset=asset):
                 self.assertIsNotNone(finders.find(asset))
+
+    def test_dashboard_cookie_helper_is_available(self):
+        utils_path = finders.find("js/utils.js")
+
+        self.assertIsNotNone(utils_path)
+        self.assertIn("function getCookie(", Path(utils_path).read_text(encoding="utf-8"))
 
     def test_lobbies_are_paginated(self):
         for _ in range(12):
